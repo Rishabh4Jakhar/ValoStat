@@ -1,0 +1,20 @@
+[
+  {
+    "id": "rishabh",
+    "name": "Rishabh Jakhar",
+    "rank": "Ascendant 2",
+    "rr": 64,
+    "kd": 1.21,
+    "winrate": 53,
+    "matches": 312
+  },
+  {
+    "id": "advik",
+    "name": "Advik Gupta",
+    "rank": "Diamond 3",
+    "rr": 88,
+    "kd": 1.08,
+    "winrate": 49,
+    "matches": 271
+  }
+]
