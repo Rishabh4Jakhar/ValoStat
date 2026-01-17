@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ValoStat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <h1 class="title">🎯 ValoStat</h1>
+
+  <!-- PLAYER CARDS -->
+  <div id="profiles" class="grid">
+    <p>Loading stats...</p>
+  </div>
+
+  <!-- COMPARISON -->
+  <div class="compare-section">
+    <h2>Compare Players</h2>
+    <div class="compare-controls">
+      <select id="playerA"></select>
+      <span>vs</span>
+      <select id="playerB"></select>
+      <button id="compareBtn">Compare</button>
+    </div>
+    <div id="comparison"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
