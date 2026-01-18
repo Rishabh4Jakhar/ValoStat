@@ -135,3 +135,21 @@ th {
   color: #ffff05;
   font-weight: bold;
 }
+
+.player-link {
+  color: #ff9aa2;       
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.player-link:visited {
+  color: #ff9aa2;      
+}
+
+.player-link:hover {
+  color: #ffd1d4;        
+  text-decoration: none;
+}
+.player-link:active {
+  color: #ff7f87;        
+}
