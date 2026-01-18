@@ -6,6 +6,11 @@ const comparison = document.getElementById("comparison");
 
 let players = [];
 
+function trackerProfileUrl(riotId) {
+  return `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(riotId)}/overview`;
+}
+
+
 /* ------------------ ValoStat Score ------------------ */
 
 function normalizeACS(acs) {
@@ -51,7 +56,12 @@ function renderCards(data) {
     profiles.innerHTML += `
       <div class="card">
         <img src="${p.banner}" class="banner" />
-        <h3>${p.id}</h3>
+        <h3>
+          <a href="${trackerProfileUrl(p.riot_id)}" target="_blank" class="player-link">
+            ${p.id}
+          </a>
+        </h3>
+
         <p class="riot-id">${p.riot_id}</p>
 
         <p><strong>Rank:</strong> ${p.rank} (${p.rr} RR)</p>
