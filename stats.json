@@ -29,11 +29,11 @@
     "matches": 9,
     "wins": 3,
     "winrate": 33.3,
-    "avg_acs_10": 245.6,
-    "kd_10": 1.13,
-    "kad_10": 1.84,
-    "kast_10": 91.5,
-    "dd_delta_10": 31.3
+    "avg_acs_10": 247.4,
+    "kd_10": 1.16,
+    "kad_10": 1.88,
+    "kast_10": 92.2,
+    "dd_delta_10": 35.0
   },
   {
     "id": "Advik",
@@ -90,7 +90,7 @@
     "dd_delta_10": 23.9
   },
   {
-    "id": "Modit alt",
+    "id": "Punisher",
     "riot_id": "Punisher#8643",
     "name": "Punisher",
     "banner": "https://media.valorant-api.com/playercards/f0ed2c16-4152-9dd9-694b-19873d209492/smallart.png",
@@ -101,11 +101,11 @@
     "matches": 6,
     "wins": 2,
     "winrate": 33.3,
-    "avg_acs_10": 284.3,
-    "kd_10": 1.47,
-    "kad_10": 1.85,
-    "kast_10": 94.3,
-    "dd_delta_10": 55.2
+    "avg_acs_10": 282.0,
+    "kd_10": 1.31,
+    "kad_10": 1.76,
+    "kast_10": 92.7,
+    "dd_delta_10": 48.0
   },
   {
     "id": "Moksh",
@@ -155,11 +155,11 @@
     "matches": 9,
     "wins": 1,
     "winrate": 11.1,
-    "avg_acs_10": 166.8,
-    "kd_10": 0.88,
-    "kad_10": 1.17,
-    "kast_10": 78.9,
-    "dd_delta_10": -29.2
+    "avg_acs_10": 172.3,
+    "kd_10": 0.92,
+    "kad_10": 1.21,
+    "kast_10": 80.2,
+    "dd_delta_10": -21.1
   },
   {
     "id": "Siddharth",
@@ -173,11 +173,11 @@
     "matches": 9,
     "wins": 3,
     "winrate": 33.3,
-    "avg_acs_10": 298.4,
-    "kd_10": 1.49,
-    "kad_10": 1.96,
-    "kast_10": 87.2,
-    "dd_delta_10": 58.7
+    "avg_acs_10": 295.7,
+    "kd_10": 1.54,
+    "kad_10": 2.02,
+    "kast_10": 87.4,
+    "dd_delta_10": 59.9
   },
   {
     "id": "Hardik",
@@ -191,11 +191,11 @@
     "matches": 4,
     "wins": 0,
     "winrate": 0.0,
-    "avg_acs_10": 202.8,
-    "kd_10": 0.9,
-    "kad_10": 1.28,
-    "kast_10": 78.2,
-    "dd_delta_10": -18.6
+    "avg_acs_10": 208.3,
+    "kd_10": 1.03,
+    "kad_10": 1.54,
+    "kast_10": 86.4,
+    "dd_delta_10": -10.2
   },
   {
     "id": "Ritwik",
@@ -209,11 +209,11 @@
     "matches": 4,
     "wins": 0,
     "winrate": 0.0,
-    "avg_acs_10": 243.7,
-    "kd_10": 1.18,
-    "kad_10": 1.43,
-    "kast_10": 79.6,
-    "dd_delta_10": 11.8
+    "avg_acs_10": 294.6,
+    "kd_10": 1.59,
+    "kad_10": 1.84,
+    "kast_10": 84.9,
+    "dd_delta_10": 49.7
   },
   {
     "id": "Sonu",
