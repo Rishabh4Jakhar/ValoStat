@@ -151,8 +151,8 @@ function renderComparison(a, b) {
       <tr><td>Avg ACS (10)</td>${statRow(a.avg_acs_10, b.avg_acs_10)}</tr>
       <tr><td>K/D (10)</td>${statRow(a.kd_10, b.kd_10)}</tr>
       <tr><td>KA/D (10)</td>${statRow(a.kad_10, b.kad_10)}</tr>
-      <tr><td>KAST %</td>${statRow(a.kast_10, b.kast_10)}</tr>
-      <tr><td>DDΔ / round</td>${statRow(a.dd_delta_10, b.dd_delta_10)}</tr>
+      <tr><td>KAST % (10)</td>${statRow(a.kast_10, b.kast_10)}</tr>
+      <tr><td>DDΔ / round (10)</td>${statRow(a.dd_delta_10, b.dd_delta_10)}</tr>
     </table>
   `;
 }
