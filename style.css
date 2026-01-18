@@ -5,16 +5,17 @@
 
 body {
   background: #0f0f0f;
-  color: #fff;
+  color: #ffffff;
   margin: 0;
   padding: 20px;
 }
 
-.title {
+h1, h2 {
   text-align: center;
-  margin-bottom: 30px;
   color: #ff4d4d;
 }
+
+/* ---------- Cards ---------- */
 
 .grid {
   display: grid;
@@ -25,33 +26,54 @@ body {
 .card {
   background: #181818;
   border-radius: 12px;
-  padding: 16px;
+  padding: 14px;
   border: 2px solid #ff3333;
-  box-shadow: 0 0 12px rgba(255, 0, 0, 0.3);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.25);
 }
 
-.card.good {
-  border-color: #00ff88;
-  box-shadow: 0 0 12px rgba(0, 255, 136, 0.4);
+.banner {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 10px;
 }
 
 .card h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #ff8080;
+  margin: 5px 0;
+  color: #ffb3b3;
 }
+
+.riot-id {
+  font-size: 0.85em;
+  color: #aaa;
+}
+
+.score {
+  margin-top: 10px;
+  padding: 6px;
+  background: #101010;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: bold;
+  color: #00ff88;
+}
+
+.muted {
+  font-size: 0.8em;
+  color: #888;
+}
+
+/* ---------- Compare ---------- */
 
 .compare-section {
   margin-top: 50px;
-  padding: 20px;
   background: #141414;
+  padding: 20px;
   border-radius: 12px;
-  border: 2px solid #444;
 }
 
 .compare-controls {
   display: flex;
-  align-items: center;
+  justify-content: center;
   gap: 10px;
   margin-bottom: 20px;
 }
@@ -64,13 +86,26 @@ select, button {
 
 button {
   background: #ff4d4d;
-  color: #fff;
+  color: white;
   cursor: pointer;
 }
 
 button:hover {
   background: #ff1a1a;
 }
+
+.compare-card {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.compare-card img {
+  width: 48%;
+  border-radius: 8px;
+}
+
+/* ---------- Table ---------- */
 
 table {
   width: 100%;
@@ -79,14 +114,24 @@ table {
 
 th, td {
   padding: 8px;
-  text-align: center;
   border-bottom: 1px solid #333;
+  text-align: center;
+}
+
+th {
+  color: #ff8080;
 }
 
 .good-stat {
   color: #00ff88;
+  font-weight: bold;
 }
 
 .bad-stat {
   color: #ff4d4d;
+}
+
+.equal-stat {
+  color: #ffff05;
+  font-weight: bold;
 }
