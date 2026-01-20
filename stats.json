@@ -134,14 +134,14 @@
     "rr": 0,
     "elo": 600,
     "season": "e11a1",
-    "matches": 42,
+    "matches": 43,
     "wins": 16,
-    "winrate": 38.1,
-    "avg_acs_10": 147.2,
-    "kd_10": 0.61,
-    "kad_10": 0.94,
-    "kast_10": 63.3,
-    "dd_delta_10": -52.7
+    "winrate": 37.2,
+    "avg_acs_10": 164.2,
+    "kd_10": 0.66,
+    "kad_10": 1.02,
+    "kast_10": 67.2,
+    "dd_delta_10": -46.6
   },
   {
     "id": "Tanmay",
