@@ -257,16 +257,16 @@
     "name": "Anya",
     "banner": "https://media.valorant-api.com/playercards/c27560d1-42e8-aeca-1420-f1a130d11ccb/smallart.png",
     "rank": "Iron 3",
-    "rr": 21,
-    "elo": 221,
+    "rr": 1,
+    "elo": 201,
     "season": "e11a1",
-    "matches": 64,
+    "matches": 65,
     "wins": 27,
-    "winrate": 42.2,
-    "avg_acs_10": 112.4,
-    "kd_10": 0.46,
-    "kad_10": 0.82,
-    "kast_10": 64.6,
-    "dd_delta_10": -70.1
+    "winrate": 41.5,
+    "avg_acs_10": 101.4,
+    "kd_10": 0.41,
+    "kad_10": 0.73,
+    "kast_10": 61.1,
+    "dd_delta_10": -77.6
   }
 ]
