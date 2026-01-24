@@ -116,14 +116,14 @@
     "rr": 48,
     "elo": 648,
     "season": "e11a1",
-    "matches": 56,
+    "matches": 57,
     "wins": 23,
-    "winrate": 41.1,
-    "avg_acs_10": 210.4,
-    "kd_10": 0.95,
-    "kad_10": 1.29,
-    "kast_10": 71.6,
-    "dd_delta_10": -22.0
+    "winrate": 40.4,
+    "avg_acs_10": 223.9,
+    "kd_10": 1.03,
+    "kad_10": 1.38,
+    "kast_10": 75.2,
+    "dd_delta_10": -12.2
   },
   {
     "id": "Tanmay",
@@ -242,13 +242,13 @@
     "rr": 54,
     "elo": 154,
     "season": "e11a1",
-    "matches": 68,
+    "matches": 69,
     "wins": 27,
-    "winrate": 39.7,
-    "avg_acs_10": 90.0,
-    "kd_10": 0.35,
-    "kad_10": 0.73,
-    "kast_10": 62.4,
-    "dd_delta_10": -79.0
+    "winrate": 39.1,
+    "avg_acs_10": 88.2,
+    "kd_10": 0.32,
+    "kad_10": 0.65,
+    "kast_10": 60.5,
+    "dd_delta_10": -80.6
   }
 ]
