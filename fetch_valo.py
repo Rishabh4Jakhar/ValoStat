@@ -17,7 +17,7 @@ PLAYERS = {
     "Advik": "NøVä#8790",
     "Akshat": "Flashgaming4#FAST",
     "Modit": "Limitless065#5079",
-    "Punisher": "Punisher#8643",
+    "Bodit": "Limited065#8643",
     "Moksh": "CuteBoyMox#9710",
     "Timmy": "timmyy#latte",
     "Tanmay": "KabruhSingh#Drunk",
