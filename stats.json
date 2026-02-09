@@ -36,6 +36,24 @@
     "dd_delta_10": 26.6
   },
   {
+    "id": "Ria_alt",
+    "riot_id": "Ria4#4444",
+    "name": "Ria4",
+    "banner": "https://media.valorant-api.com/playercards/42d080df-41c6-4c11-ab17-948cb440bf6c/smallart.png",
+    "rank": "Bronze 2",
+    "rr": 89,
+    "elo": 489,
+    "season": "e11a1",
+    "matches": 7,
+    "wins": 2,
+    "winrate": 28.6,
+    "avg_acs_10": 252.6,
+    "kd_10": 1.05,
+    "kad_10": 1.23,
+    "kast_10": 73.6,
+    "dd_delta_10": -4.5
+  },
+  {
     "id": "Advik",
     "riot_id": "N\u00f8V\u00e4#8790",
     "name": "N\u00f8V\u00e4",
@@ -134,14 +152,14 @@
     "rr": 0,
     "elo": 900,
     "season": "e11a1",
-    "matches": 108,
-    "wins": 55,
+    "matches": 110,
+    "wins": 56,
     "winrate": 50.9,
-    "avg_acs_10": 161.5,
-    "kd_10": 0.59,
-    "kad_10": 0.93,
-    "kast_10": 68.8,
-    "dd_delta_10": -41.9
+    "avg_acs_10": 181.7,
+    "kd_10": 0.69,
+    "kad_10": 1.03,
+    "kast_10": 73.5,
+    "dd_delta_10": -29.5
   },
   {
     "id": "Tanmay",
@@ -275,16 +293,16 @@
     "name": "Anya",
     "banner": "https://media.valorant-api.com/playercards/312cbb6c-494a-df58-8300-d69bda7e1fc3/smallart.png",
     "rank": "Bronze 1",
-    "rr": 0,
-    "elo": 300,
+    "rr": 33,
+    "elo": 333,
     "season": "e11a1",
-    "matches": 126,
-    "wins": 53,
-    "winrate": 42.1,
-    "avg_acs_10": 109.6,
-    "kd_10": 0.42,
-    "kad_10": 0.75,
-    "kast_10": 60.7,
-    "dd_delta_10": -72.6
+    "matches": 128,
+    "wins": 55,
+    "winrate": 43.0,
+    "avg_acs_10": 118.3,
+    "kd_10": 0.49,
+    "kad_10": 0.85,
+    "kast_10": 63.9,
+    "dd_delta_10": -68.2
   }
 ]
