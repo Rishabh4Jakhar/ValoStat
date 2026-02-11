@@ -12,23 +12,23 @@ CURRENT_ACT = "e11a1"
 
 PLAYERS = {
     "Rishabh": "Rishabh4#Gamer",
+    "Akshat": "Flashgaming4#FAST",
+    "Advik": "NøVä#8790",
+    "Modit": "Limitless065#5079",
+    "Moksh": "CuteBoyMox#9710",
+    "Nityaa": "Anya#XZG0",
+    "Timmy": "timmyy#latte",
+    "Dhimanth": "MicCheck123#hallo",
     "Ria": "Ria4#2222",
     "Ria_alt": "Ria4#4444",
-    "Advik": "NøVä#8790",
-    "Akshat": "Flashgaming4#FAST",
-    "Modit": "Limitless065#5079",
     "Bodit": "Limited065#8643",
-    "Moksh": "CuteBoyMox#9710",
-    "Timmy": "timmyy#latte",
-    "Tanmay": "KabruhSingh#Drunk",
     "Siddharth": "BravosidOP#India",
-    "Eklavya": "MadLiberator2005#9683",
     "Hardik": "Livein#1234",
     "Ritwik": "RITWIK#6493",
     "Sonu": "reducto#12432",
+    "Tanmay": "KabruhSingh#Drunk",
     "Aryan": "TheChosenOne#2205",
-    "Dhimanth": "MicCheck123#hallo",
-    "Nityaa": "Anya#XZG0",
+    "Eklavya": "MadLiberator2005#9683",
 }
 LAST_REQUEST_TIME = 0
 MIN_INTERVAL = 200 / 28  # ~2.15 seconds per request (safe)
