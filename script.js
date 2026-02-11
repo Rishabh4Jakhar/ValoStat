@@ -45,6 +45,22 @@ async function loadStats() {
 
   renderCards(players);
   populateDropdowns(players);
+  lastUpdate(res);
+}
+
+function lastUpdate(res) {
+  const lastModified = res.headers.get("Last-Modified");
+  if (!lastModified) return;
+  const date = new Date(lastModified);
+  const now = new Date();
+  const diffMinutes = Math.floor((now - date) / 60000);
+  const hours = Math.floor(diffMinutes / 60);
+  const minutes = diffMinutes % 60;
+  let text = "Stats last updated ";
+  if (hours > 0) text += `${hours}h `;
+  if (minutes > 0) text += `${minutes}m `;
+  text += "ago";
+  document.getElementById("updateTime").textContent = text;
 }
 
 function renderCards(data) {
