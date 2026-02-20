@@ -29,6 +29,7 @@ PLAYERS = {
     "Tanmay": "KabruhSingh#Drunk",
     "Aryan": "TheChosenOne#2205",
     "Eklavya": "MadLiberator2005#9683",
+    "Yash": "yashkali997#kali"
 }
 LAST_REQUEST_TIME = 0
 MIN_INTERVAL = 200 / 28  # ~2.15 seconds per request (safe)
