@@ -16,7 +16,7 @@ PLAYERS = {
     "Advik": "NøVä#8790",
     "Modit": "Limitless065#5079",
     "Moksh": "CuteBoyMox#9710",
-    "Nityaa": "Anya#XZG0",
+    "Nityaa": "LadyWhistledown#2310",
     "Timmy": "timmyy#latte",
     "Dhimanth": "MicCheck123#hallo",
     "Ria": "Ria4#2222",
