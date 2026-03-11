@@ -18,7 +18,7 @@ PLAYERS = {
     "Moksh": "CuteBoyMox#9710",
     "Nityaa": "LadyWhistledown#2310",
     "Timmy": "timmyy#latte",
-    "Dhimanth": "MicCheck123#hallo",
+    "Dhimanth": "DeeKay#6875",
     "Ria": "Ria4#2222",
     "Ria_alt": "Ria4#4444",
     "Bodit": "Limited065#8643",
