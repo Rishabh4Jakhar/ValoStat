@@ -13,28 +13,31 @@ function trackerProfileUrl(riotId) {
 
 /* ------------------ ValoStat Score ------------------ */
 
-function normalizeACS(acs) {
-  if (acs < 300) return acs / 300;
-  if (acs < 400) return acs / 400;
-  if (acs < 500) return acs / 500;
-  return acs / 600;
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function sigmoidNormalize(value, midpoint, steepness) {
+  const v = Number.isFinite(value) ? value : 0;
+  return 1 / (1 + Math.exp(-(v - midpoint) / steepness));
 }
 
 function valoStatScore(p) {
-  const acs = normalizeACS(p.avg_acs_10);
-  const kast = p.kast_10 / 100;
-  const kad = Math.min(p.kad_10 / 2, 1);
-  const dd = (p.dd_delta_10 + 50) / 100;
-  const win = p.wins / p.matches;
+  // Bounded [0,1] transforms prevent any single metric from overpowering the final score.
+  const acs = sigmoidNormalize(p.avg_acs, 200, 65);
+  const kast = clamp(p.kast / 100, 0, 1);
+  const kad = sigmoidNormalize(p.kad, 1.2, 0.28);
+  const dd = sigmoidNormalize(p.dd_delta, 0, 30);
+  const win = p.matches > 0 ? clamp(p.wins / p.matches, 0, 1) : 0;
 
   const score =
     0.30 * acs +
-    0.25 * kast +
-    0.10 * kad +
+    0.20 * kast +
+    0.15 * kad +
     0.25 * dd +
     0.10 * win;
 
-  return Math.round(score * 1000);
+  return clamp(Math.round(score * 1000), 10, 1000);
 }
 
 /* ------------------ Load & Render ------------------ */
@@ -82,7 +85,7 @@ function renderCards(data) {
 
         <p><strong>Rank:</strong> ${p.rank} (${p.rr} RR)</p>
         <p><strong>Wins:</strong> ${p.wins}/${p.matches}</p>
-        <p><strong>Elo:</strong> ${p.elo} <span class="muted">(API)</span></p>
+        <p><strong>Win Rate:</strong> ${p.winrate}%</p>
 
         <div class="score">
           ValoStat Score: <span>${score}</span>
@@ -162,13 +165,13 @@ function renderComparison(a, b) {
           : statRow(a.rank, b.rank, true, true)
       }</tr>
       <tr><td>ValoStat Score</td>${statRow(valoStatScore(a), valoStatScore(b))}</tr>
-      <tr><td>Elo</td>${statRow(a.elo, b.elo)}</tr>
+      <tr><td>Matches</td>${statRow(a.matches, b.matches)}</tr>
       <tr><td>Winrate %</td>${statRow(a.winrate, b.winrate)}</tr>
-      <tr><td>Avg ACS (10)</td>${statRow(a.avg_acs_10, b.avg_acs_10)}</tr>
-      <tr><td>K/D (10)</td>${statRow(a.kd_10, b.kd_10)}</tr>
-      <tr><td>KA/D (10)</td>${statRow(a.kad_10, b.kad_10)}</tr>
-      <tr><td>KAST % (10)</td>${statRow(a.kast_10, b.kast_10)}</tr>
-      <tr><td>DDΔ / round (10)</td>${statRow(a.dd_delta_10, b.dd_delta_10)}</tr>
+      <tr><td>Avg ACS</td>${statRow(a.avg_acs, b.avg_acs)}</tr>
+      <tr><td>K/D</td>${statRow(a.kd, b.kd)}</tr>
+      <tr><td>KA/D</td>${statRow(a.kad, b.kad)}</tr>
+      <tr><td>KAST %</td>${statRow(a.kast, b.kast)}</tr>
+      <tr><td>DDΔ / round </td>${statRow(a.dd_delta, b.dd_delta)}</tr>
     </table>
   `;
 }
