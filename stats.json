@@ -1,20 +1,20 @@
 [
   {
-    "id": "Hardik test",
-    "riot_id": "HARDY#3074",
-    "name": "HARDY",
-    "banner": "https://media.valorant-api.com/playercards/0819fbcd-4bd4-c379-5384-52803440f2b2/smallart.png",
-    "rank": "Silver 2",
-    "rr": 24,
-    "elo": 724,
+    "id": "Advik",
+    "riot_id": "N\u00f8V\u00e4#8790",
+    "name": "N\u00f8V\u00e4",
+    "banner": "https://media.valorant-api.com/playercards/6c8c6d61-4106-16ef-5113-79b3137dcda4/smallart.png",
+    "rank": "Diamond 2",
+    "rr": 29,
+    "elo": 1629,
     "season": "e11a2",
-    "matches": 5,
-    "wins": 3,
-    "winrate": 60.0,
-    "avg_acs_10": 361.7,
-    "kd_10": 1.67,
-    "kad_10": 2.03,
-    "kast_10": 87.5,
-    "dd_delta_10": 89.8
+    "matches": 1,
+    "wins": 1,
+    "winrate": 100.0,
+    "avg_acs_10": 186.6,
+    "kd_10": 0.88,
+    "kad_10": 1.12,
+    "kast_10": 85.7,
+    "dd_delta_10": -12.9
   }
 ]
