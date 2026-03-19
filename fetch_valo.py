@@ -3,8 +3,7 @@ import json
 import os
 import time
 
-#API_KEY = os.environ["HENRIK_API_KEY"]
-API_KEY = "HDEV-aff432b4-6ba3-476e-897c-fdafb9929b91"
+API_KEY = os.environ["HENRIK_API_KEY"]
 HEADERS = {"Authorization": API_KEY}
 
 REGION = "ap"
