@@ -16,9 +16,9 @@ PLAYERS = {
     "Advik": "NøVä#8790",
     "Modit": "Limitless065#5079",
     "Moksh": "CuteBoyMox#9710",
-    "Nityaa": "Anya#XZG0",
+    "Nityaa": "LadyWhistledown#2310",
     "Timmy": "timmyy#latte",
-    "Dhimanth": "MicCheck123#hallo",
+    "Dhimanth": "DeeKay#6875",
     "Ria": "Ria4#2222",
     "Ria_alt": "Ria4#4444",
     "Bodit": "Limited065#8643",
@@ -29,6 +29,7 @@ PLAYERS = {
     "Tanmay": "KabruhSingh#Drunk",
     "Aryan": "TheChosenOne#2205",
     "Eklavya": "MadLiberator2005#9683",
+    "Yash": "yashkali997#kali"
 }
 LAST_REQUEST_TIME = 0
 MIN_INTERVAL = 200 / 28  # ~2.15 seconds per request (safe)
