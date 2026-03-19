@@ -8,7 +8,7 @@ HEADERS = {"Authorization": API_KEY}
 
 REGION = "ap"
 PLATFORM = "pc"
-CURRENT_ACT = "e11a1"
+CURRENT_ACT = "e11a2"
 
 PLAYERS = {
     "Rishabh": "Rishabh4#Gamer",
