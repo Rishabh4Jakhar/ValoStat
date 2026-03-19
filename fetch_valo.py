@@ -3,7 +3,8 @@ import json
 import os
 import time
 
-API_KEY = os.environ["HENRIK_API_KEY"]
+#API_KEY = os.environ["HENRIK_API_KEY"]
+API_KEY = "HDEV-aff432b4-6ba3-476e-897c-fdafb9929b91"
 HEADERS = {"Authorization": API_KEY}
 
 REGION = "ap"
@@ -34,6 +35,8 @@ PLAYERS = {
 LAST_REQUEST_TIME = 0
 MIN_INTERVAL = 200 / 28  # ~2.15 seconds per request (safe)
 
+# API Rate Limit
+
 def rate_limited_get(url):
     global LAST_REQUEST_TIME
 
@@ -53,6 +56,8 @@ def rate_limited_get(url):
     r.raise_for_status()
     return r
 
+# API Calls
+
 def get_account(name, tag):
     url = f"https://api.henrikdev.xyz/valorant/v1/account/{name}/{tag}"
     return rate_limited_get(url).json()["data"]
@@ -69,71 +74,15 @@ def get_matches(puuid):
     )
     return rate_limited_get(url).json()["data"]
 
-def filter_matches_by_act(matches, act):
-    filtered = []
-    for m in matches:
-        season = m.get("metadata", {}).get("season", {})
-        if season.get("short") == act:
-            filtered.append(m)
-    return filtered
+# Load existing data
 
+if os.path.exists("stats.json"):
+    with open("stats.json") as f:
+        old_data = json.load(f)
+else:
+    old_data = []
 
-def compute_match_stats(matches, puuid):
-    acs_sum = 0
-    kd_sum = 0
-    kad_sum = 0
-    total_rounds = 0
-    kast_rounds = 0
-    damage_delta = 0
-    match_count = 0
-
-    for m in matches:
-        rounds = len(m["rounds"])
-        if rounds == 0:
-            continue
-
-        match_count += 1
-        total_rounds += rounds
-
-        player = next(p for p in m["players"] if p["puuid"] == puuid)
-        stats = player["stats"]
-
-        kills = stats["kills"]
-        deaths = max(stats["deaths"], 1)
-        assists = stats["assists"]
-
-        # ACS (per match)
-        acs_sum += stats["score"] / rounds
-
-        # KD / KA-D
-        kd_sum += kills / deaths
-        kad_sum += (kills + assists) / deaths
-
-        # Damage delta
-        damage_delta += (
-            stats["damage"]["dealt"] - stats["damage"]["received"]
-        )
-
-        # ---- KAST (OR logic, round counted once) ----
-        kast_round_flags = set()
-
-        for k in m["kills"]:
-            if k["killer"]["puuid"] == puuid:
-                kast_round_flags.add(k["round"])
-            for a in k.get("assistants", []):
-                if a["puuid"] == puuid:
-                    kast_round_flags.add(k["round"])
-
-        survived_rounds = rounds - stats["deaths"]
-        kast_rounds += min(rounds, len(kast_round_flags) + survived_rounds)
-
-    return {
-        "avg_acs_10": round(acs_sum / match_count, 1) if match_count else 0,
-        "kd_10": round(kd_sum / match_count, 2) if match_count else 0,
-        "kad_10": round(kad_sum / match_count, 2) if match_count else 0,
-        "kast_10": round((kast_rounds / total_rounds) * 100, 1) if total_rounds else 0,
-        "dd_delta_10": round(damage_delta / total_rounds, 1) if total_rounds else 0
-    }
+old_data_map = {d["id"]: d for d in old_data}
 
 out = []
 
@@ -156,16 +105,84 @@ for pid, riot in PLAYERS.items():
         )
 
         if not season:
+            print(f"No MMR data for current act for {riot}")
             continue
 
         matches = get_matches(puuid)
-        matches = filter_matches_by_act(matches, CURRENT_ACT)
+        old=old_data_map.get(pid, {})
+        processed_match_ids = set(old.get("processed_matches", []))
+
+        acs_total=old.get("acs_total", 0)
+        rounds_total=old.get("rounds_total", 0)
+        kills_total=old.get("kills_total", 0)
+        deaths_total=old.get("deaths_total", 0)
+        assists_total=old.get("assists_total", 0)
+        kast_rounds_total=old.get("kast_rounds_total", 0)
+        damage_delta_total=old.get("damage_delta_total", 0)
+
+        new_matches_count=0
+
+        for m in matches:
+            #print(m, "\n", "for ", riot)
+            match_id = m["metadata"]["match_id"]
+            act= m["metadata"].get("season", {}).get("short")
+            if act != CURRENT_ACT or match_id in processed_match_ids:
+                continue
+
+            rounds = len(m["rounds"])
+            if rounds == 0:
+                continue
+
+            player = next(p for p in m["players"] if p["puuid"] == puuid)
+            stats = player["stats"]
+
+            kills = stats["kills"]
+            deaths = stats["deaths"]
+            assists = stats["assists"]
+            acs = stats["score"]
+
+            kills_total += kills
+            deaths_total += deaths
+            assists_total += assists
+            acs_total += acs
+            rounds_total += rounds
+
+            damage_delta_total += (
+                stats["damage"]["dealt"] - stats["damage"]["received"]
+            )
+
+            kast_round_flags = set()
+            death_rounds=set()
+
+            for k in m["kills"]:
+                if k["killer"]["puuid"] == puuid:
+                    kast_round_flags.add(k["round"])
+                if k["victim"]["puuid"] == puuid:
+                    death_rounds.add(k["round"])
+                for a in k.get("assistants", []):
+                    if a["puuid"] == puuid:
+                        kast_round_flags.add(k["round"])
+            
+            survived_rounds = set(range(1, rounds+1)) - death_rounds
+            kast_round_flags.update(survived_rounds)
+            kast_rounds_total += min(rounds, len(kast_round_flags))
+
+            processed_match_ids.add(match_id)
+            new_matches_count+=1
+
+        #matches = filter_matches_by_act(matches, CURRENT_ACT)
+        print(f"New matches for {riot}: {new_matches_count}")
 
         if len(matches)==0:
             print(f"No matches in current act for {riot}")
             continue
-        perf = compute_match_stats(matches, puuid)
+        #perf = compute_match_stats(matches, puuid)
 
+        avg_acs=round(acs_total / rounds_total, 1) if rounds_total else 0
+        kd = round(kills_total / max(deaths_total, 1), 2)
+        kad = round((kills_total + assists_total) / max(deaths_total, 1), 2)
+        kast = round((kast_rounds_total / rounds_total) * 100, 1) if rounds_total else 0
+        dd_delta = round(damage_delta_total / rounds_total, 1) if rounds_total else 0
 
         matches_played = season["games"]
         wins = season["wins"]
@@ -182,13 +199,25 @@ for pid, riot in PLAYERS.items():
             "matches": matches_played,
             "wins": wins,
             "winrate": round((wins / matches_played) * 100, 1),
-            **perf
+            "avg_acs": avg_acs,
+            "kd": kd,
+            "kad": kad,
+            "kast": kast,
+            "dd_delta": dd_delta,
+            "acs_total": acs_total,
+            "rounds_total": rounds_total,
+            "kills_total": kills_total,
+            "deaths_total": deaths_total,
+            "assists_total": assists_total,
+            "kast_rounds_total": kast_rounds_total,
+            "damage_delta_total": damage_delta_total,
+            "processed_matches": list(processed_match_ids)
         })
 
     except Exception as e:
-        print(f"❌ Failed {riot}: {e}")
+        print(f"Failed {riot}: {e}")
 
 with open("stats.json", "w") as f:
     json.dump(out, f, indent=2)
 
-print("✅ stats.json updated")
+print("stats.json updated")
