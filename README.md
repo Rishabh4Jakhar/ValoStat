@@ -9,7 +9,7 @@ Display Valorant stats of friends
 
 ## Notes
 
-> Uses [HenrikDev Valorant API](https://api.henrikdev.xyz)
+> Uses [HenrikDev Valorant API](https://api.henrikdev.xyz/dashboard)
 
 - Valo Stat Score = ACS (30%) + KAST (20%) + KAD (25%) + DD (15%) + WR (10%)
 - Favours individual performance over team performance
