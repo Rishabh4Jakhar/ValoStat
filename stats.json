@@ -25,9 +25,9 @@
     "damage_delta_total": 3460,
     "processed_matches": [
       "2c7f375e-47d3-438a-9a53-98b94f0b4a71",
-      "7439993c-417e-4cfd-b226-c6a7c26dc56b",
       "3c709f2e-4ced-4cfa-9d07-ea2b3c173703",
-      "44e9dee1-1ad0-40f0-9ab9-5afe185b7fdf"
+      "44e9dee1-1ad0-40f0-9ab9-5afe185b7fdf",
+      "7439993c-417e-4cfd-b226-c6a7c26dc56b"
     ]
   },
   {
@@ -55,13 +55,13 @@
     "kast_rounds_total": 109,
     "damage_delta_total": 400,
     "processed_matches": [
-      "e4b3461e-727b-4b8a-a0ec-987658f19144",
-      "7439993c-417e-4cfd-b226-c6a7c26dc56b",
-      "b87b38e6-8011-407a-bf4a-0078fcab114b",
-      "2c7f375e-47d3-438a-9a53-98b94f0b4a71",
-      "2e7a0431-6e74-4f83-83d4-08dac8dc0310",
       "3c709f2e-4ced-4cfa-9d07-ea2b3c173703",
-      "44e9dee1-1ad0-40f0-9ab9-5afe185b7fdf"
+      "44e9dee1-1ad0-40f0-9ab9-5afe185b7fdf",
+      "2c7f375e-47d3-438a-9a53-98b94f0b4a71",
+      "b87b38e6-8011-407a-bf4a-0078fcab114b",
+      "2e7a0431-6e74-4f83-83d4-08dac8dc0310",
+      "7439993c-417e-4cfd-b226-c6a7c26dc56b",
+      "e4b3461e-727b-4b8a-a0ec-987658f19144"
     ]
   },
   {
@@ -117,14 +117,14 @@
     "kast_rounds_total": 132,
     "damage_delta_total": 9855,
     "processed_matches": [
-      "e4b3461e-727b-4b8a-a0ec-987658f19144",
-      "20d22a74-0f3d-45da-8942-ddf5551fa040",
-      "7439993c-417e-4cfd-b226-c6a7c26dc56b",
-      "b87b38e6-8011-407a-bf4a-0078fcab114b",
-      "2c7f375e-47d3-438a-9a53-98b94f0b4a71",
-      "2e7a0431-6e74-4f83-83d4-08dac8dc0310",
       "3c709f2e-4ced-4cfa-9d07-ea2b3c173703",
-      "44e9dee1-1ad0-40f0-9ab9-5afe185b7fdf"
+      "20d22a74-0f3d-45da-8942-ddf5551fa040",
+      "44e9dee1-1ad0-40f0-9ab9-5afe185b7fdf",
+      "2c7f375e-47d3-438a-9a53-98b94f0b4a71",
+      "b87b38e6-8011-407a-bf4a-0078fcab114b",
+      "2e7a0431-6e74-4f83-83d4-08dac8dc0310",
+      "7439993c-417e-4cfd-b226-c6a7c26dc56b",
+      "e4b3461e-727b-4b8a-a0ec-987658f19144"
     ]
   },
   {
@@ -152,14 +152,14 @@
     "kast_rounds_total": 112,
     "damage_delta_total": -10029,
     "processed_matches": [
-      "e4b3461e-727b-4b8a-a0ec-987658f19144",
-      "20d22a74-0f3d-45da-8942-ddf5551fa040",
-      "7439993c-417e-4cfd-b226-c6a7c26dc56b",
-      "b87b38e6-8011-407a-bf4a-0078fcab114b",
-      "885801e3-8fcf-4a1b-97da-bd7628810ee1",
-      "2e7a0431-6e74-4f83-83d4-08dac8dc0310",
       "3c709f2e-4ced-4cfa-9d07-ea2b3c173703",
-      "5d29c41d-627f-4501-982a-bdb209a336f2"
+      "20d22a74-0f3d-45da-8942-ddf5551fa040",
+      "885801e3-8fcf-4a1b-97da-bd7628810ee1",
+      "5d29c41d-627f-4501-982a-bdb209a336f2",
+      "b87b38e6-8011-407a-bf4a-0078fcab114b",
+      "2e7a0431-6e74-4f83-83d4-08dac8dc0310",
+      "7439993c-417e-4cfd-b226-c6a7c26dc56b",
+      "e4b3461e-727b-4b8a-a0ec-987658f19144"
     ]
   },
   {
@@ -187,10 +187,10 @@
     "kast_rounds_total": 58,
     "damage_delta_total": -6361,
     "processed_matches": [
-      "8628abc0-dd37-4131-9109-680fe9283c46",
+      "83c48e29-32bc-4989-8f3f-28c2fd0888f5",
       "ab4c8a5c-90fe-4d43-9802-491f38a052f0",
-      "ea21ddce-7677-4602-a8b4-f673a35c3f63",
-      "83c48e29-32bc-4989-8f3f-28c2fd0888f5"
+      "8628abc0-dd37-4131-9109-680fe9283c46",
+      "ea21ddce-7677-4602-a8b4-f673a35c3f63"
     ]
   },
   {
@@ -199,27 +199,28 @@
     "name": "DeeKay",
     "banner": "https://media.valorant-api.com/playercards/5d47c8cb-4719-efd4-c385-8cb2dafbc15f/smallart.png",
     "rank": "Gold 2",
-    "rr": 47,
-    "elo": 1047,
+    "rr": 75,
+    "elo": 1075,
     "season": "e11a2",
-    "matches": 3,
-    "wins": 3,
+    "matches": 4,
+    "wins": 4,
     "winrate": 100.0,
-    "avg_acs": 278.5,
-    "kd": 1.7,
-    "kad": 2.26,
-    "kast": 82.9,
-    "dd_delta": 71.5,
-    "acs_total": 21165,
-    "rounds_total": 76,
-    "kills_total": 73,
-    "deaths_total": 43,
-    "assists_total": 24,
-    "kast_rounds_total": 63,
-    "damage_delta_total": 5436,
+    "avg_acs": 297.6,
+    "kd": 1.91,
+    "kad": 2.41,
+    "kast": 85.7,
+    "dd_delta": 84.7,
+    "acs_total": 29165,
+    "rounds_total": 98,
+    "kills_total": 103,
+    "deaths_total": 54,
+    "assists_total": 27,
+    "kast_rounds_total": 84,
+    "damage_delta_total": 8296,
     "processed_matches": [
-      "e4b3461e-727b-4b8a-a0ec-987658f19144",
       "20d22a74-0f3d-45da-8942-ddf5551fa040",
+      "d8c46691-ceb1-4ed2-934f-ba7959704901",
+      "e4b3461e-727b-4b8a-a0ec-987658f19144",
       "2e7a0431-6e74-4f83-83d4-08dac8dc0310"
     ]
   },
@@ -248,9 +249,9 @@
     "kast_rounds_total": 57,
     "damage_delta_total": 979,
     "processed_matches": [
-      "fffb8a17-97b2-4908-8269-49e0add90256",
       "02fd0cc7-abad-4b25-8912-1cdfb4a2059b",
       "ea21ddce-7677-4602-a8b4-f673a35c3f63",
+      "fffb8a17-97b2-4908-8269-49e0add90256",
       "e30ba7dc-28c9-442c-9fa9-f370dc64da68"
     ]
   },
@@ -288,32 +289,33 @@
     "name": "reducto",
     "banner": "https://media.valorant-api.com/playercards/213c4c4a-44e6-12a5-6ab2-ae8282e93e57/smallart.png",
     "rank": "Platinum 1",
-    "rr": 27,
-    "elo": 1227,
+    "rr": 41,
+    "elo": 1241,
     "season": "e11a2",
-    "matches": 7,
-    "wins": 3,
-    "winrate": 42.9,
-    "avg_acs": 244.4,
-    "kd": 1.22,
-    "kad": 1.61,
-    "kast": 79.5,
-    "dd_delta": 31.2,
-    "acs_total": 39348,
-    "rounds_total": 161,
-    "kills_total": 138,
-    "deaths_total": 113,
-    "assists_total": 44,
-    "kast_rounds_total": 128,
-    "damage_delta_total": 5020,
+    "matches": 8,
+    "wins": 4,
+    "winrate": 50.0,
+    "avg_acs": 238.9,
+    "kd": 1.18,
+    "kad": 1.57,
+    "kast": 78.1,
+    "dd_delta": 29.2,
+    "acs_total": 44679,
+    "rounds_total": 187,
+    "kills_total": 156,
+    "deaths_total": 132,
+    "assists_total": 51,
+    "kast_rounds_total": 146,
+    "damage_delta_total": 5454,
     "processed_matches": [
-      "4141e4e5-9efa-40a4-b881-e778facb45f9",
+      "158c30da-74ce-459b-985c-aac050cccfea",
       "a152c6b4-aa4a-45f6-bf52-f1f8361d185d",
+      "4141e4e5-9efa-40a4-b881-e778facb45f9",
       "5ef3005d-d408-4e52-b3ad-c995815a67bb",
       "f9214046-e671-44be-bbfc-ad85e83c9fe3",
+      "e8ad9943-69e6-4fc4-965f-a3eaa9f9c1a4",
       "28ea746a-386a-4fe1-8f8b-aaf4479b7669",
-      "158c30da-74ce-459b-985c-aac050cccfea",
-      "e8ad9943-69e6-4fc4-965f-a3eaa9f9c1a4"
+      "f51cb9c1-9b27-4076-b9a5-190f4eb1f101"
     ]
   }
 ]
