@@ -24,10 +24,10 @@
     "kast_rounds_total": 70,
     "damage_delta_total": 3460,
     "processed_matches": [
-      "44e9dee1-1ad0-40f0-9ab9-5afe185b7fdf",
       "2c7f375e-47d3-438a-9a53-98b94f0b4a71",
-      "3c709f2e-4ced-4cfa-9d07-ea2b3c173703",
-      "7439993c-417e-4cfd-b226-c6a7c26dc56b"
+      "44e9dee1-1ad0-40f0-9ab9-5afe185b7fdf",
+      "7439993c-417e-4cfd-b226-c6a7c26dc56b",
+      "3c709f2e-4ced-4cfa-9d07-ea2b3c173703"
     ]
   },
   {
@@ -55,10 +55,10 @@
     "kast_rounds_total": 58,
     "damage_delta_total": 571,
     "processed_matches": [
-      "44e9dee1-1ad0-40f0-9ab9-5afe185b7fdf",
       "2c7f375e-47d3-438a-9a53-98b94f0b4a71",
-      "3c709f2e-4ced-4cfa-9d07-ea2b3c173703",
-      "7439993c-417e-4cfd-b226-c6a7c26dc56b"
+      "44e9dee1-1ad0-40f0-9ab9-5afe185b7fdf",
+      "7439993c-417e-4cfd-b226-c6a7c26dc56b",
+      "3c709f2e-4ced-4cfa-9d07-ea2b3c173703"
     ]
   },
   {
@@ -115,10 +115,10 @@
     "damage_delta_total": 3309,
     "processed_matches": [
       "44e9dee1-1ad0-40f0-9ab9-5afe185b7fdf",
-      "7439993c-417e-4cfd-b226-c6a7c26dc56b",
-      "20d22a74-0f3d-45da-8942-ddf5551fa040",
+      "3c709f2e-4ced-4cfa-9d07-ea2b3c173703",
       "2c7f375e-47d3-438a-9a53-98b94f0b4a71",
-      "3c709f2e-4ced-4cfa-9d07-ea2b3c173703"
+      "20d22a74-0f3d-45da-8942-ddf5551fa040",
+      "7439993c-417e-4cfd-b226-c6a7c26dc56b"
     ]
   },
   {
@@ -146,11 +146,11 @@
     "kast_rounds_total": 66,
     "damage_delta_total": -4646,
     "processed_matches": [
-      "7439993c-417e-4cfd-b226-c6a7c26dc56b",
+      "3c709f2e-4ced-4cfa-9d07-ea2b3c173703",
       "885801e3-8fcf-4a1b-97da-bd7628810ee1",
-      "20d22a74-0f3d-45da-8942-ddf5551fa040",
       "5d29c41d-627f-4501-982a-bdb209a336f2",
-      "3c709f2e-4ced-4cfa-9d07-ea2b3c173703"
+      "20d22a74-0f3d-45da-8942-ddf5551fa040",
+      "7439993c-417e-4cfd-b226-c6a7c26dc56b"
     ]
   },
   {
