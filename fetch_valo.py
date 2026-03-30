@@ -210,7 +210,7 @@ for pid, riot in PLAYERS.items():
             "assists_total": assists_total,
             "kast_rounds_total": kast_rounds_total,
             "damage_delta_total": damage_delta_total,
-            "processed_matches": list(processed_match_ids)
+            "processed_matches": sorted(list(processed_match_ids))
         })
 
     except Exception as e:
