@@ -5,6 +5,7 @@ const compareBtn = document.getElementById("compareBtn");
 const comparison = document.getElementById("comparison");
 
 let players = [];
+let cache = {};
 
 function trackerProfileUrl(riotId) {
   return `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(riotId)}/overview`;
@@ -40,13 +41,14 @@ function valoStatScore(p) {
   return clamp(Math.round(score * 1000), 10, 1000);
 }
 
+
 /* ------------------ Load & Render ------------------ */
 
 async function loadStats() {
   const res = await fetch("stats.json?ts=" + Date.now());
   players = await res.json();
-
-  renderCards(players);
+  cache = players;
+  renderCards();
   populateDropdowns(players);
   lastUpdate(res);
 }
@@ -66,7 +68,26 @@ function lastUpdate(res) {
   document.getElementById("updateTime").textContent = text;
 }
 
-function renderCards(data) {
+function renderCards() {
+  const sortType = document.getElementById("sortSelect").value;
+  let data = [...cache];
+  if (sortType !== "default") {
+    data.sort((a, b) => {
+      switch (sortType) {
+        case "score":
+          return valoStatScore(b) - valoStatScore(a);
+        case "rank":
+          return (rankValues[b.rank] || 0) - (rankValues[a.rank] || 0);
+        case "winPercentage":
+          return (b.winrate || 0) - (a.winrate || 0);
+        case "matchesPlayed":
+          return (b.matches || 0) - (a.matches || 0);
+        default:
+          return cache;
+      }
+    });
+  }
+
   profiles.innerHTML = "";
 
   data.forEach(p => {
@@ -177,3 +198,6 @@ function renderComparison(a, b) {
 }
 
 loadStats();
+document.getElementById("sortSelect").addEventListener("change", () => {
+  renderCards();
+});
