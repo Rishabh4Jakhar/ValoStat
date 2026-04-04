@@ -81,6 +81,9 @@ function computeDiff(curr, prev) { // Find players whose stats have changed sinc
         p.winrate !== old.winrate
           ? `${old.winrate}% → ${p.winrate}%`
           : `${p.winrate}%`,
+      time_total:        p.time_total !== old.time_total
+          ? `${formatTime(old.time_total)} → ${formatTime(p.time_total)}`
+          : formatTime(p.time_total),
       score: valoStatScore(p) !== valoStatScore(old)        ? `${valoStatScore(old)} → ${valoStatScore(p)}`
         : valoStatScore(p),
     };
