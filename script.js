@@ -11,7 +11,6 @@ function trackerProfileUrl(riotId) {
   return `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(riotId)}/overview`;
 }
 
-
 /* ------------------ ValoStat Score ------------------ */
 
 function clamp(value, min, max) {
@@ -31,16 +30,10 @@ function valoStatScore(p) {
   const dd = sigmoidNormalize(p.dd_delta, 0, 30);
   const win = p.matches > 0 ? clamp(p.wins / p.matches, 0, 1) : 0;
 
-  const score =
-    0.30 * acs +
-    0.20 * kast +
-    0.15 * kad +
-    0.25 * dd +
-    0.10 * win;
+  const score = 0.3 * acs + 0.2 * kast + 0.15 * kad + 0.25 * dd + 0.1 * win;
 
   return clamp(Math.round(score * 1000), 10, 1000);
 }
-
 
 /* ------------------ Load & Render ------------------ */
 
@@ -82,6 +75,31 @@ function renderCards() {
           return (b.winrate || 0) - (a.winrate || 0);
         case "matchesPlayed":
           return (b.matches || 0) - (a.matches || 0);
+        case "kills":
+          return (
+            (b.kills_total / b.matches || 0) - (a.kills_total / a.matches || 0)
+          );
+        case "deaths":
+          return (
+            -1 *
+            ((b.deaths_total / b.matches || 0) -
+              (a.deaths_total / a.matches || 0))
+          );
+        case "assists":
+          return (
+            (b.assists_total / b.matches || 0) -
+            (a.assists_total / a.matches || 0)
+          );
+        case "acs":
+          return (b.avg_acs || 0) - (a.avg_acs || 0);
+        case "kd":
+          return (b.kd || 0) - (a.kd || 0);
+        case "kad":
+          return (b.kad || 0) - (a.kad || 0);
+        case "kast":
+          return (b.kast || 0) - (a.kast || 0);
+        case "dd":
+          return (b.dd_delta || 0) - (a.dd_delta || 0);
         default:
           return cache;
       }
@@ -90,9 +108,37 @@ function renderCards() {
 
   profiles.innerHTML = "";
 
-  data.forEach(p => {
+  data.forEach((p) => {
     const score = valoStatScore(p);
-
+    let extraStat = "";
+    switch (sortType) {
+      case "kills":
+        extraStat = `<p><strong>Kills:</strong> ${Math.trunc((p.kills_total / p.matches) * 100) / 100 || 0}</p>`;
+        break;
+      case "deaths":
+        extraStat = `<p><strong>Deaths:</strong> ${Math.trunc((p.deaths_total / p.matches) * 100) / 100 || 0}</p>`;
+        break;
+      case "assists":
+        extraStat = `<p><strong>Assists:</strong> ${Math.trunc((p.assists_total / p.matches) * 100) / 100 || 0}</p>`;
+        break;
+      case "acs":
+        extraStat = `<p><strong>Avg ACS:</strong> ${p.avg_acs || 0}</p>`;
+        break;
+      case "kd":
+        extraStat = `<p><strong>K/D:</strong> ${p.kd || 0}</p>`;
+        break;
+      case "kad":
+        extraStat = `<p><strong>KA/D:</strong> ${p.kad || 0}</p>`;
+        break;
+      case "kast":
+        extraStat = `<p><strong>KAST %:</strong> ${p.kast || 0}%</p>`;
+        break;
+      case "dd":
+        extraStat = `<p><strong>DDΔ / round:</strong> ${p.dd_delta || 0}</p>`;
+        break;
+      default:
+        break;
+    }
     profiles.innerHTML += `
       <div class="card">
         <img src="${p.banner}" class="banner" />
@@ -107,7 +153,7 @@ function renderCards() {
         <p><strong>Rank:</strong> ${p.rank} (${p.rr} RR)</p>
         <p><strong>Wins:</strong> ${p.wins}/${p.matches}</p>
         <p><strong>Win Rate:</strong> ${p.winrate}%</p>
-
+        ${extraStat}
         <div class="score">
           ValoStat Score: <span>${score}</span>
         </div>
@@ -120,7 +166,7 @@ function populateDropdowns(data) {
   selectA.innerHTML = "";
   selectB.innerHTML = "";
 
-  data.forEach(p => {
+  data.forEach((p) => {
     selectA.add(new Option(p.id, p.id));
     selectB.add(new Option(p.id, p.id));
   });
@@ -129,23 +175,39 @@ function populateDropdowns(data) {
 /* ------------------ Comparison ------------------ */
 
 compareBtn.addEventListener("click", () => {
-  const a = players.find(p => p.id === selectA.value);
-  const b = players.find(p => p.id === selectB.value);
+  const a = players.find((p) => p.id === selectA.value);
+  const b = players.find((p) => p.id === selectB.value);
   if (!a || !b || a.id === b.id) return;
 
   renderComparison(a, b);
 });
 
 const rankValues = {
-  "Iron 1": 1, "Iron 2": 2, "Iron 3": 3,
-  "Bronze 1": 4, "Bronze 2": 5, "Bronze 3": 6,
-  "Silver 1": 7, "Silver 2": 8, "Silver 3": 9,
-  "Gold 1": 10, "Gold 2": 11, "Gold 3": 12,
-  "Platinum 1": 13, "Platinum 2": 14, "Platinum 3": 15,
-  "Diamond 1": 16, "Diamond 2": 17, "Diamond 3": 18,
-  "Ascendant 1": 19, "Ascendant 2": 20, "Ascendant 3": 21,
-  "Immortal 1": 22, "Immortal 2": 23, "Immortal 3": 24,
-  "Radiant": 25
+  "Iron 1": 1,
+  "Iron 2": 2,
+  "Iron 3": 3,
+  "Bronze 1": 4,
+  "Bronze 2": 5,
+  "Bronze 3": 6,
+  "Silver 1": 7,
+  "Silver 2": 8,
+  "Silver 3": 9,
+  "Gold 1": 10,
+  "Gold 2": 11,
+  "Gold 3": 12,
+  "Platinum 1": 13,
+  "Platinum 2": 14,
+  "Platinum 3": 15,
+  "Diamond 1": 16,
+  "Diamond 2": 17,
+  "Diamond 3": 18,
+  "Ascendant 1": 19,
+  "Ascendant 2": 20,
+  "Ascendant 3": 21,
+  "Immortal 1": 22,
+  "Immortal 2": 23,
+  "Immortal 3": 24,
+  Radiant: 25,
 };
 
 function statRow(a, b, higherBetter = true, rank = false) {
@@ -181,7 +243,7 @@ function renderComparison(a, b) {
       </tr>
 
       <tr><td>Rank</td>${
-        a.rank === b.rank 
+        a.rank === b.rank
           ? `<td class="equal-stat">${a.rank}</td><td class="equal-stat">${b.rank}</td><tr><td>RR</td>${statRow(a.rr, b.rr)}</td></tr>`
           : statRow(a.rank, b.rank, true, true)
       }</tr>
