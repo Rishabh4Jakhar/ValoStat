@@ -203,7 +203,7 @@ function renderCards() {
     // Check if prev diff is true for this player
     const playerDiff = prev.find(d => d.id === p.id);
     if (showDiff && playerDiff && playerDiff.diff) {
-      console.log("diff found for", p.id);
+      //console.log("diff found for", p.id);
       profiles.innerHTML += `
         <div class="card diff-highlight">
           <img src="${p.banner}" class="banner" />
@@ -217,7 +217,7 @@ function renderCards() {
           <p><strong>Rank:</strong> ${playerDiff.rank} (${playerDiff.rr} RR)</p>
           <p><strong>Wins:</strong> ${playerDiff.wins}/${playerDiff.matches}</p>
           <p><strong>Win Rate:</strong> ${playerDiff.winrate}</p>
-          <p><strong>Playtime:</strong> ${formatTime(playerDiff.time_total)}</p>
+          <p><strong>Playtime:</strong> ${playerDiff.time_total}</p>
           ${extraStat}
           <div class="score">
             ValoStat Score: <span>${playerDiff.score}</span>
@@ -226,7 +226,7 @@ function renderCards() {
       `;
       return;
     } else if (showDiff && playerDiff && !playerDiff.diff) {
-      console.log("No diff for", p.id);
+      //console.log("No diff for", p.id);
       return;
     }
 
