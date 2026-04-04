@@ -81,6 +81,8 @@ function computeDiff(curr, prev) { // Find players whose stats have changed sinc
         p.winrate !== old.winrate
           ? `${old.winrate}% → ${p.winrate}%`
           : `${p.winrate}%`,
+      score: valoStatScore(p) !== valoStatScore(old)        ? `${valoStatScore(old)} → ${valoStatScore(p)}`
+        : valoStatScore(p),
     };
     diffs.push(diff);
   });
@@ -215,7 +217,7 @@ function renderCards() {
           <p><strong>Playtime:</strong> ${formatTime(playerDiff.time_total)}</p>
           ${extraStat}
           <div class="score">
-            ValoStat Score: <span>${score}</span>
+            ValoStat Score: <span>${playerDiff.score}</span>
           </div>
         </div>
       `;
