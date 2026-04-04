@@ -5,6 +5,8 @@ Display Valorant stats of friends
 - Auto update player stats
 - Act based rating
 - Custom ValoStat Score
+- See differences between each update
+- Sorting by various stats
 - Player vs Player Comparision
 
 ## Notes
