@@ -171,13 +171,11 @@ th {
 }
 
 .toggle {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  display: inline-block;
+  position: relative;
+  display: block;
   width: 46px;
   height: 24px;
-  z-index: 20;
+  margin: 0 0 10px auto;
 }
 
 .toggle input {
@@ -198,14 +196,14 @@ th {
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(50px);
+  transform: translateY(4px);
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .toggle:hover::before,
 .toggle:focus-within::before {
   opacity: 1;
-  transform: translateY(60px);
+  transform: translateY(0);
 }
 
 .slider {
