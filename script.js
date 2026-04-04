@@ -6,6 +6,8 @@ const comparison = document.getElementById("comparison");
 
 let players = [];
 let cache = {};
+let prev = null;
+let showDiff = false;
 
 function trackerProfileUrl(riotId) {
   return `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(riotId)}/overview`;
@@ -38,13 +40,41 @@ function valoStatScore(p) {
 /* ------------------ Load & Render ------------------ */
 
 async function loadStats() {
-  const res = await fetch("stats.json?ts=" + Date.now());
-  players = await res.json();
+  const current = await fetch("stats.json?ts=" + Date.now());
+  const prevs = await fetch("stats_prev.json?ts=" + Date.now()).catch(() => null);
+  players = await current.json();
   cache = players;
+  prev = computeDiff(cache, prevs ? await prevs.json() : []);
   renderCards();
   populateDropdowns(players);
-  lastUpdate(res);
+  lastUpdate(current);
 }
+
+function computeDiff(curr, prev) { // Find players whose stats have changed since the last fetch
+  const prevMap = {};
+  prev.forEach((p) => (prevMap[p.id] = p));
+  const diffs = [];
+  curr.forEach((p) => {
+    const old = prevMap[p.id];
+    if (!old) return;
+    const diff = {
+      id: p.id,
+      banner: p.banner,
+      diff: p.matches !== old.matches ? true: false,
+      rank: p.rank !== old.rank ? `${old.rank} → ${p.rank}` : p.rank,
+      rr: p.rr !== old.rr ? `${old.rr} → ${p.rr}` : p.rr,
+      matches: p.matches !== old.matches ? `${old.matches} → ${p.matches}` : p.matches,
+      wins: p.wins !== old.wins ? `${old.wins} → ${p.wins}` : p.wins,
+      winrate:
+        p.winrate !== old.winrate
+          ? `${old.winrate}% → ${p.winrate}%`
+          : `${p.winrate}%`,
+    };
+    diffs.push(diff);
+  });
+  return diffs;
+}
+
 
 function lastUpdate(res) {
   const lastModified = res.headers.get("Last-Modified");
@@ -108,6 +138,17 @@ function renderCards() {
 
   profiles.innerHTML = "";
 
+  // Show diff arrows if toggled and data has changed since last fetch
+  // Check if prev[i].diff is true 
+  // If false, show no changes text. If true, show old → new values for changed stats and highlight card.
+  if (showDiff && prev.length > 0) {
+    const hasDiff = prev.some((p) => p.diff);
+    if (!hasDiff) {
+      profiles.innerHTML = "<p class='no-changes'>No changes since last update.</p>";
+      return;
+    }
+  }
+
   data.forEach((p) => {
     const score = valoStatScore(p);
     let extraStat = "";
@@ -139,6 +180,36 @@ function renderCards() {
       default:
         break;
     }
+
+    // Check if prev diff is true for this player
+    const playerDiff = prev.find(d => d.id === p.id);
+    if (showDiff && playerDiff && playerDiff.diff) {
+      console.log("diff found for", p.id);
+      profiles.innerHTML += `
+        <div class="card diff-highlight">
+          <img src="${p.banner}" class="banner" />
+          <h3>
+            <a href="${trackerProfileUrl(p.riot_id)}" target="_blank" class="player-link">
+              ${p.id}
+            </a>
+          </h3>
+
+          <p class="riot-id">${p.riot_id}</p>
+          <p><strong>Rank:</strong> ${playerDiff.rank} (${playerDiff.rr} RR)</p>
+          <p><strong>Wins:</strong> ${playerDiff.wins}/${playerDiff.matches}</p>
+          <p><strong>Win Rate:</strong> ${playerDiff.winrate}</p>
+          ${extraStat}
+          <div class="score">
+            ValoStat Score: <span>${score}</span>
+          </div>
+        </div>
+      `;
+      return;
+    } else if (showDiff && playerDiff && !playerDiff.diff) {
+      console.log("No diff for", p.id);
+      return;
+    }
+
     profiles.innerHTML += `
       <div class="card">
         <img src="${p.banner}" class="banner" />
@@ -261,5 +332,9 @@ function renderComparison(a, b) {
 
 loadStats();
 document.getElementById("sortSelect").addEventListener("change", () => {
+  renderCards();
+});
+document.getElementById("toggleDiff").addEventListener("change", (e) => {
+  showDiff = !showDiff;
   renderCards();
 });
