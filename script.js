@@ -37,6 +37,18 @@ function valoStatScore(p) {
   return clamp(Math.round(score * 1000), 10, 1000);
 }
 
+function formatTime(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  let result = "";
+  if (hours > 0) result += `${hours}h `;
+  if (minutes > 0) result += `${minutes}m `;
+  if (seconds > 0 || result === "") result += `${seconds}s`;
+  return result;
+}
+
 /* ------------------ Load & Render ------------------ */
 
 async function loadStats() {
@@ -130,6 +142,8 @@ function renderCards() {
           return (b.kast || 0) - (a.kast || 0);
         case "dd":
           return (b.dd_delta || 0) - (a.dd_delta || 0);
+        case "time":
+          return (b.time_total || 0) - (a.time_total || 0);
         default:
           return cache;
       }
@@ -198,6 +212,7 @@ function renderCards() {
           <p><strong>Rank:</strong> ${playerDiff.rank} (${playerDiff.rr} RR)</p>
           <p><strong>Wins:</strong> ${playerDiff.wins}/${playerDiff.matches}</p>
           <p><strong>Win Rate:</strong> ${playerDiff.winrate}</p>
+          <p><strong>Playtime:</strong> ${formatTime(playerDiff.time_total)}</p>
           ${extraStat}
           <div class="score">
             ValoStat Score: <span>${score}</span>
@@ -224,6 +239,7 @@ function renderCards() {
         <p><strong>Rank:</strong> ${p.rank} (${p.rr} RR)</p>
         <p><strong>Wins:</strong> ${p.wins}/${p.matches}</p>
         <p><strong>Win Rate:</strong> ${p.winrate}%</p>
+        <p><strong>Playtime:</strong> ${formatTime(p.time_total)}</p>
         ${extraStat}
         <div class="score">
           ValoStat Score: <span>${score}</span>
@@ -281,13 +297,17 @@ const rankValues = {
   Radiant: 25,
 };
 
-function statRow(a, b, higherBetter = true, rank = false) {
+function statRow(a, b, higherBetter = true, rank = false, isTime = false) {
   let compareA = a;
   let compareB = b;
 
   if (rank) {
     compareA = rankValues[a] || 0;
     compareB = rankValues[b] || 0;
+  }
+  if (isTime) {
+    a = formatTime(a);
+    b = formatTime(b);
   }
   console.log(compareA, compareB);
   if (compareA === compareB) {
@@ -319,6 +339,7 @@ function renderComparison(a, b) {
           : statRow(a.rank, b.rank, true, true)
       }</tr>
       <tr><td>ValoStat Score</td>${statRow(valoStatScore(a), valoStatScore(b))}</tr>
+      <tr><td>Playtime</td>${statRow(a.time_total, b.time_total, true, false, true)}</tr>
       <tr><td>Matches</td>${statRow(a.matches, b.matches)}</tr>
       <tr><td>Winrate %</td>${statRow(a.winrate, b.winrate)}</tr>
       <tr><td>Avg ACS</td>${statRow(a.avg_acs, b.avg_acs)}</tr>
