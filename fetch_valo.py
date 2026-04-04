@@ -118,6 +118,7 @@ for pid, riot in PLAYERS.items():
         assists_total=old.get("assists_total", 0)
         kast_rounds_total=old.get("kast_rounds_total", 0)
         damage_delta_total=old.get("damage_delta_total", 0)
+        time_total=old.get("time_total", 0)
 
         new_matches_count=0
 
@@ -145,7 +146,7 @@ for pid, riot in PLAYERS.items():
             assists_total += assists
             acs_total += acs
             rounds_total += rounds
-
+            time_total += m["metadata"]["game_length_in_ms"]
             damage_delta_total += (
                 stats["damage"]["dealt"] - stats["damage"]["received"]
             )
@@ -210,6 +211,7 @@ for pid, riot in PLAYERS.items():
             "assists_total": assists_total,
             "kast_rounds_total": kast_rounds_total,
             "damage_delta_total": damage_delta_total,
+            "time_total": time_total,
             "processed_matches": sorted(list(processed_match_ids))
         })
 
