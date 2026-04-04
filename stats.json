@@ -23,6 +23,7 @@
     "assists_total": 104,
     "kast_rounds_total": 268,
     "damage_delta_total": 11694,
+    "time_total": 35280000,
     "processed_matches": [
       "0b69a08d-c9c7-45c2-b70b-0e3bc0312051",
       "1c763916-2adc-4ac0-95b8-59bfe773336f",
@@ -66,6 +67,7 @@
     "assists_total": 204,
     "kast_rounds_total": 553,
     "damage_delta_total": -11216,
+    "time_total": 82800000,
     "processed_matches": [
       "02823ca0-99f5-4261-a103-e0df5629fd8b",
       "18b1c5c2-c88b-4792-a732-7a156e234fdb",
@@ -131,6 +133,7 @@
     "assists_total": 213,
     "kast_rounds_total": 541,
     "damage_delta_total": 48636,
+    "time_total": 61200000,
     "processed_matches": [
       "0ac98ff0-2898-4128-8216-bb17e949f7e3",
       "0b69a08d-c9c7-45c2-b70b-0e3bc0312051",
@@ -190,6 +193,7 @@
     "assists_total": 280,
     "kast_rounds_total": 811,
     "damage_delta_total": 28482,
+    "time_total": 111600000,
     "processed_matches": [
       "02823ca0-99f5-4261-a103-e0df5629fd8b",
       "0b69a08d-c9c7-45c2-b70b-0e3bc0312051",
@@ -266,6 +270,7 @@
     "assists_total": 245,
     "kast_rounds_total": 790,
     "damage_delta_total": -14828,
+    "time_total": 122400000,
     "processed_matches": [
       "0ac98ff0-2898-4128-8216-bb17e949f7e3",
       "0b69a08d-c9c7-45c2-b70b-0e3bc0312051",
@@ -348,6 +353,7 @@
     "assists_total": 419,
     "kast_rounds_total": 786,
     "damage_delta_total": -64517,
+    "time_total": 126000000,
     "processed_matches": [
       "0f95023c-0e70-484c-a8b5-5a96febac634",
       "18b1c5c2-c88b-4792-a732-7a156e234fdb",
@@ -431,6 +437,7 @@
     "assists_total": 530,
     "kast_rounds_total": 732,
     "damage_delta_total": -48063,
+    "time_total": 104400000,
     "processed_matches": [
       "0373eca7-3eeb-43d3-8831-6854f4e4f57a",
       "0ac98ff0-2898-4128-8216-bb17e949f7e3",
@@ -507,6 +514,7 @@
     "assists_total": 164,
     "kast_rounds_total": 566,
     "damage_delta_total": 24605,
+    "time_total": 79200000,
     "processed_matches": [
       "0373eca7-3eeb-43d3-8831-6854f4e4f57a",
       "0621f611-1623-4e4c-8d4f-594b6ee85f4d",
@@ -569,6 +577,7 @@
     "assists_total": 22,
     "kast_rounds_total": 46,
     "damage_delta_total": 277,
+    "time_total": 6720000,
     "processed_matches": [
       "951ee1bc-8856-47c9-aa46-f5072fc32e57",
       "a247a296-b031-41ba-b936-d1af30caa084",
@@ -599,6 +608,7 @@
     "assists_total": 112,
     "kast_rounds_total": 367,
     "damage_delta_total": 21664,
+    "time_total": 43200000,
     "processed_matches": [
       "0f95023c-0e70-484c-a8b5-5a96febac634",
       "32bd4b10-c3c1-4cd5-9c29-3f73e071c488",
@@ -650,6 +660,7 @@
     "assists_total": 44,
     "kast_rounds_total": 157,
     "damage_delta_total": 7536,
+    "time_total": 21000000,
     "processed_matches": [
       "02fd0cc7-abad-4b25-8912-1cdfb4a2059b",
       "58b480c8-447e-4abd-b7e8-4d20733cf8a6",
@@ -687,6 +698,7 @@
     "assists_total": 124,
     "kast_rounds_total": 430,
     "damage_delta_total": 45067,
+    "time_total": 50400000,
     "processed_matches": [
       "0ac98ff0-2898-4128-8216-bb17e949f7e3",
       "107ac94c-21b2-489f-a571-ec7b126589e1",
@@ -738,6 +750,7 @@
     "assists_total": 180,
     "kast_rounds_total": 422,
     "damage_delta_total": 4159,
+    "time_total": 57600000,
     "processed_matches": [
       "0662414d-875c-401b-895e-a496abb5d3de",
       "0ee4a9ec-e6cc-448c-adbe-1a07271e38fd",
@@ -793,6 +806,7 @@
     "assists_total": 9,
     "kast_rounds_total": 21,
     "damage_delta_total": 2792,
+    "time_total": 3024000,
     "processed_matches": [
       "83c48e29-32bc-4989-8f3f-28c2fd0888f5"
     ]
@@ -821,6 +835,7 @@
     "assists_total": 519,
     "kast_rounds_total": 1431,
     "damage_delta_total": 17490,
+    "time_total": 230400000,
     "processed_matches": [
       "018153fc-f40f-41da-9896-f81d00acdfb0",
       "081ca954-4d3b-4692-8448-bd14bd060a18",
@@ -942,6 +957,7 @@
     "assists_total": 199,
     "kast_rounds_total": 596,
     "damage_delta_total": -2192,
+    "time_total": 79200000,
     "processed_matches": [
       "05536b89-a7c3-41a6-bbc7-c4ec0a6c1227",
       "0ac98ff0-2898-4128-8216-bb17e949f7e3",
@@ -1008,6 +1024,7 @@
     "assists_total": 26,
     "kast_rounds_total": 87,
     "damage_delta_total": -226,
+    "time_total": 12000000,
     "processed_matches": [
       "0fe4003a-070c-4602-9d2c-87a9c7ed777b",
       "151f609d-35bc-4581-a2f8-ad57866c6435",
