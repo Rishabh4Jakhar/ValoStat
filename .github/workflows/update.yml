@@ -20,6 +20,12 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
+      - name: Backup previous stats
+        run: |
+          if [ -f stats.json ]; then
+            cp stats.json stats_prev.json
+          fi
+
       - name: Fetch Valorant stats
         env:
           HENRIK_API_KEY: ${{ secrets.HENRIK_API_KEY }}
@@ -29,6 +35,6 @@ jobs:
         run: |
           git config user.name "valostat-bot"
           git config user.email "bot@github.com"
-          git add stats.json
+          git add stats.json stats_prev.json
           git commit -m "Auto-update Valorant stats" || exit 0
           git push
