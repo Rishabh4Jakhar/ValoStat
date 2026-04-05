@@ -1087,6 +1087,35 @@
     ]
   },
   {
+    "id": "Shivansh",
+    "riot_id": "SILVERBOLT#008",
+    "name": "SILVERBOLT",
+    "banner": "https://media.valorant-api.com/playercards/2dfbdbf2-4f2d-328e-01d8-f5a6f0a92318/smallart.png",
+    "rank": "Platinum 3",
+    "rr": 33,
+    "elo": 1433,
+    "season": "e11a2",
+    "matches": 1,
+    "wins": 1,
+    "winrate": 100.0,
+    "avg_acs": 266.2,
+    "kd": 1.11,
+    "kad": 1.26,
+    "kast": 62.5,
+    "dd_delta": 4.3,
+    "acs_total": 6390,
+    "rounds_total": 24,
+    "kills_total": 21,
+    "deaths_total": 19,
+    "assists_total": 3,
+    "kast_rounds_total": 15,
+    "damage_delta_total": 103,
+    "time_total": 2223467,
+    "processed_matches": [
+      "d33620c7-dc05-4b96-ae67-be09d86669ab"
+    ]
+  },
+  {
     "id": "Yash",
     "riot_id": "yashkali997#kali",
     "name": "yashkali997",
