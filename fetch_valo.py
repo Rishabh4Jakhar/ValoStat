@@ -27,8 +27,8 @@ PLAYERS = {
     "Ritwik": "RITWIK#6493",
     "Sonu": "reducto#12432",
     "Tanmay": "KabruhSingh#Drunk",
-    "Aryan": "TheChosenOne#2205",
-    "Eklavya": "MadLiberator2005#9683",
+    "Shivansh": "SILVERBOLT#008",   # Replaced Aryan (doesn't play anymore)
+    #"Eklavya": "MadLiberator2005#9683", doesn't play anymore
     "Yash": "yashkali997#kali"
 }
 LAST_REQUEST_TIME = 0
