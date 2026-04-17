@@ -183,7 +183,7 @@ th {
 }
 
 .toggle::before {
-  content: "Show Differences";
+  content: "Show Updates";
   position: absolute;
   right: 0;
   bottom: calc(100% + 8px);
@@ -191,7 +191,7 @@ th {
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.85);
   color: #ffffff;
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1;
   white-space: nowrap;
   opacity: 0;
