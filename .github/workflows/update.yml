@@ -35,6 +35,12 @@ jobs:
         run: |
           git config user.name "valostat-bot"
           git config user.email "bot@github.com"
+
+          if git diff --quiet -- stats.json; then
+            echo "No changes in stats.json; skipping commit."
+            exit 0
+          fi
+
           git add stats.json stats_prev.json
-          git commit -m "Auto-update Valorant stats" || exit 0
+          git commit -m "Auto-update Valorant stats"
           git push
