@@ -117,7 +117,7 @@ function renderCards() {
         case "score":
           return valoStatScore(b) - valoStatScore(a);
         case "rank":
-          return (rankValues[b.rank] || 0) - (rankValues[a.rank] || 0);
+          return (b.elo || 0) - (a.elo || 0);
         case "winPercentage":
           return (b.winrate || 0) - (a.winrate || 0);
         case "matchesPlayed":
