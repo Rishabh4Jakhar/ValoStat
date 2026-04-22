@@ -217,6 +217,9 @@ for pid, riot in PLAYERS.items():
 
     except Exception as e:
         print(f"Failed {riot}: {e}")
+        # Still add old data if available, to avoid losing it
+        if pid in old_data_map:
+            out.append(old_data_map[pid])
 
 with open("stats.json", "w") as f:
     json.dump(out, f, indent=2)
