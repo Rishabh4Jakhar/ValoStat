@@ -187,10 +187,14 @@ for pid, riot in PLAYERS.items():
         matches_played = season["games"]
         wins = season["wins"]
 
+        # TODO: API might be returning blank riot_id for some accounts, need to verify and handle that case
+        # Currently just using the name and tag from the input mapping, which should be fine as long as they don't change their name/tag
+
         out.append({
             "id": pid,
-            "riot_id": f"{acc['name']}#{acc['tag']}",
-            "name": acc["name"],
+            "riot_id": riot,
+            "name": name,
+            "level": acc["account_level"], # TODO: Use later for detailed player profiles
             "banner": banner,
             "rank": mmr["current"]["tier"]["name"],
             "rr": mmr["current"]["rr"],
