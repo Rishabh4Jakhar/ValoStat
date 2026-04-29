@@ -19,17 +19,18 @@ PLAYERS = {
     "Nityaa": "LadyWhistledown#2310",
     "Timmy": "timmyy#latte",
     "Dhimanth": "DeeKay#6875",
-    "Ria": "Ria4#2222",
-    "Ria_alt": "Ria4#4444",
-    "Bodit": "Limited065#8643",
     "Siddharth": "BravosidOP#India",
     "Hardik": "Livein#1234",
-    "Ritwik": "RITWIK#6493",
+    "Tanmay": "KabruhSingh#Drunk",    
     "Sonu": "reducto#12432",
-    "Tanmay": "KabruhSingh#Drunk",
+    #"Anshul": "AnShu1#GhOul", # Added Anshul, to be uncommented after act reset
     "Shivansh": "SILVERBOLT#008",   # Replaced Aryan (doesn't play anymore)
     #"Eklavya": "MadLiberator2005#9683", doesn't play anymore
-    "Yash": "yashkali997#kali"
+    "Yash": "yashkali997#kali",
+    "Ria": "Ria4#2222",    
+    "Ria_alt": "Ria4#4444",
+    "Bodit": "Limited065#8643",
+    "Ritwik": "RITWIK#6493",        
 }
 LAST_REQUEST_TIME = 0
 MIN_INTERVAL = 200 / 28  # ~2.15 seconds per request (safe)
