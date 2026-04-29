@@ -72,8 +72,11 @@ function computeDiff(curr, prev) { // Find players whose stats have changed sinc
     const diff = {
       id: p.id,
       banner: p.banner,
-      diff: p.matches !== old.matches ? true: false,
+      //diff: p.matches !== old.matches ? true: false,
+      // Make diff true if either matches or level or any other stat changes 
+      diff: p.matches !== old.matches || p.level !== old.level || p.rank !== old.rank || p.rr !== old.rr || p.wins !== old.wins || p.winrate !== old.winrate || p.time_total !== old.time_total || valoStatScore(p) !== valoStatScore(old) ? true : false,
       rank: p.rank !== old.rank ? `${old.rank} → ${p.rank}` : p.rank,
+      level: p.level !== old.level ? `${old.level} → ${p.level}` : p.level,
       rr: p.rr !== old.rr ? `${old.rr} → ${p.rr}` : p.rr,
       matches: p.matches !== old.matches ? `${old.matches} → ${p.matches}` : p.matches,
       wins: p.wins !== old.wins ? `${old.wins} → ${p.wins}` : p.wins,
@@ -118,6 +121,8 @@ function renderCards() {
           return valoStatScore(b) - valoStatScore(a);
         case "rank":
           return (b.elo || 0) - (a.elo || 0);
+        case "level":
+          return (b.level || 0) - (a.level || 0);
         case "winPercentage":
           return (b.winrate || 0) - (a.winrate || 0);
         case "matchesPlayed":
@@ -215,6 +220,7 @@ function renderCards() {
 
           <p class="riot-id">${p.riot_id}</p>
           <p><strong>Rank:</strong> ${playerDiff.rank} (${playerDiff.rr} RR)</p>
+          <p><strong>Level:</strong> ${p.level}</p>
           <p><strong>Wins:</strong> ${playerDiff.wins}/${playerDiff.matches}</p>
           <p><strong>Win Rate:</strong> ${playerDiff.winrate}</p>
           <p><strong>Playtime:</strong> ${playerDiff.time_total}</p>
@@ -242,6 +248,7 @@ function renderCards() {
         <p class="riot-id">${p.riot_id}</p>
 
         <p><strong>Rank:</strong> ${p.rank} (${p.rr} RR)</p>
+        <p><strong>Level:</strong> ${p.level}</p>
         <p><strong>Wins:</strong> ${p.wins}/${p.matches}</p>
         <p><strong>Win Rate:</strong> ${p.winrate}%</p>
         <p><strong>Playtime:</strong> ${formatTime(p.time_total)}</p>
