@@ -1,17 +1,54 @@
+const navButtons = document.querySelectorAll(".nav-btn");
 const profiles = document.getElementById("profiles");
 const selectA = document.getElementById("playerA");
 const selectB = document.getElementById("playerB");
 const compareBtn = document.getElementById("compareBtn");
 const comparison = document.getElementById("comparison");
+const defaultAct = "V26: A3";
 
 let players = [];
 let cache = {};
 let prev = null;
 let showDiff = false;
+let currentAct = defaultAct;
+let actMap = {
+  "overall": "overall",
+  "v26-a3": "e11a3",
+  "v26-a2": "e11a2",
+  // Add more acts here as needed
+};
 
 function trackerProfileUrl(riotId) {
   return `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(riotId)}/overview`;
 }
+
+
+/* ------------------ Act Navigation ------------------ */
+
+function setCurrentAct(act) {
+  currentAct = actMap[act] || act; // Map display name to internal act code
+  
+  navButtons.forEach(btn => {
+    if (btn.dataset.act === act) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+  
+  // Reload data based on selected act
+  onActChange(act);
+}
+
+async function onActChange(act) {
+  if (act === defaultAct) { // Stats.json is default act stats, already loaded on page load, so just re-render cards
+    await renderCards();
+    return;
+  }
+  console.log("Act changed to:", act);
+  await renderCards(actMap[act] || act);
+}
+
 
 /* ------------------ ValoStat Score ------------------ */
 
@@ -57,7 +94,7 @@ async function loadStats() {
   players = await current.json();
   cache = players;
   prev = computeDiff(cache, prevs ? await prevs.json() : []);
-  renderCards();
+  await renderCards();
   populateDropdowns(players);
   lastUpdate(current);
 }
@@ -111,9 +148,103 @@ function lastUpdate(res) {
   document.getElementById("updateTime").textContent = text;
 }
 
-function renderCards() {
+/* ---------- LOADING STATE ---------- */
+
+function showLoading(message = "Calculating scores for overall stats, please wait...") {
+  profiles.innerHTML = `
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">${message}</p>
+    </div>
+  `;
+}
+
+function hideLoading() {
+  // Loading will be replaced by renderCards
+}
+
+/* ---------- LOAD ACT DATA ---------- */
+
+async function loadActData(act) {
+  if (act === "e11a3" || act === defaultAct) {
+    // Default act is already in cache from stats.json
+    return cache;
+  }
+  
+  if (act === "overall") {
+    // Combine all acts: stats.json (e11a3) + data/*.json files
+    let combinedData = [...cache]; // Start with default act (e11a3)
+    
+    try {
+      // Try to fetch e11a2 data
+      const e11a2Response = await fetch("data/e11a2.json?ts=" + Date.now());
+      if (e11a2Response.ok) {
+        const e11a2Data = await e11a2Response.json();
+        
+        // Merge e11a2 data: combine matching players' stats
+        e11a2Data.forEach(e11a2Player => {
+          const existingIndex = combinedData.findIndex(p => p.id === e11a2Player.id);
+          if (existingIndex !== -1) {
+            // Combine stats for matching players
+            const player = combinedData[existingIndex];
+            combinedData[existingIndex] = {
+              ...player,
+              matches: (player.matches || 0) + (e11a2Player.matches || 0),
+              wins: (player.wins || 0) + (e11a2Player.wins || 0),
+              kills_total: (player.kills_total || 0) + (e11a2Player.kills_total || 0),
+              deaths_total: (player.deaths_total || 0) + (e11a2Player.deaths_total || 0),
+              assists_total: (player.assists_total || 0) + (e11a2Player.assists_total || 0),
+              time_total: (player.time_total || 0) + (e11a2Player.time_total || 0),
+              // Recalculate avg stats
+              avg_acs: ((player.avg_acs || 0) + (e11a2Player.avg_acs || 0)) / 2,
+              kd: ((player.kd || 0) + (e11a2Player.kd || 0)) / 2,
+              kad: ((player.kad || 0) + (e11a2Player.kad || 0)) / 2,
+              kast: ((player.kast || 0) + (e11a2Player.kast || 0)) / 2,
+              dd_delta: ((player.dd_delta || 0) + (e11a2Player.dd_delta || 0)) / 2,
+            };
+            // Recalculate winrate
+            if (combinedData[existingIndex].matches > 0) {
+              combinedData[existingIndex].winrate = Math.round(
+                (combinedData[existingIndex].wins / combinedData[existingIndex].matches) * 100
+              );
+            }
+          } else {
+            // Add new player from e11a2
+            combinedData.push(e11a2Player);
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error loading e11a2 data:", error);
+    }
+    
+    return combinedData;
+  }
+  
+  // Load specific act data
+  try {
+    const response = await fetch(`data/${act}.json?ts=${Date.now()}`);
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.error(`Error loading act data ${act}:`, error);
+  }
+  
+  return cache; // Fallback to cache
+}
+
+async function renderCards(act = currentAct) {
+  // Show loading spinner if loading overall stats
+  if (act === "overall") {
+    showLoading("Calculating scores for overall stats, please wait...");
+  }
+  
+  // Load data based on act
+  let data = await loadActData(act);
+  
+  // Apply sorting
   const sortType = document.getElementById("sortSelect").value;
-  let data = [...cache];
   if (sortType !== "default") {
     data.sort((a, b) => {
       switch (sortType) {
@@ -363,11 +494,20 @@ function renderComparison(a, b) {
   `;
 }
 
+
 loadStats();
-document.getElementById("sortSelect").addEventListener("change", () => {
-  renderCards();
+// Add click event listeners to all navbar buttons
+navButtons.forEach(button => {
+  button.addEventListener("click", (e) => {
+    const selectedAct = e.target.dataset.act;
+    setCurrentAct(selectedAct);
+  });
 });
-document.getElementById("toggleDiff").addEventListener("change", (e) => {
+
+document.getElementById("sortSelect").addEventListener("change", async () => {
+  await renderCards();
+});
+document.getElementById("toggleDiff").addEventListener("change", async (e) => {
   showDiff = !showDiff;
-  renderCards();
+  await renderCards();
 });
