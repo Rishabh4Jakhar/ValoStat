@@ -4,7 +4,7 @@ const selectA = document.getElementById("playerA");
 const selectB = document.getElementById("playerB");
 const compareBtn = document.getElementById("compareBtn");
 const comparison = document.getElementById("comparison");
-const defaultAct = "V26: A3";
+const defaultAct = "v26-a3"; 
 
 let players = [];
 let cache = {};
@@ -26,6 +26,7 @@ function trackerProfileUrl(riotId) {
 /* ------------------ Act Navigation ------------------ */
 
 function setCurrentAct(act) {
+  if (act === currentAct) return; // No change
   currentAct = actMap[act] || act; // Map display name to internal act code
   
   navButtons.forEach(btn => {
@@ -45,7 +46,7 @@ async function onActChange(act) {
     await renderCards();
     return;
   }
-  console.log("Act changed to:", act);
+  //console.log("Act changed to:", act);
   await renderCards(actMap[act] || act);
 }
 
@@ -159,10 +160,6 @@ function showLoading(message = "Calculating scores for overall stats, please wai
   `;
 }
 
-function hideLoading() {
-  // Loading will be replaced by renderCards
-}
-
 /* ---------- LOAD ACT DATA ---------- */
 
 async function loadActData(act) {
@@ -172,50 +169,66 @@ async function loadActData(act) {
   }
   
   if (act === "overall") {
-    // Combine all acts: stats.json (e11a3) + data/*.json files
-    let combinedData = [...cache]; // Start with default act (e11a3)
+    // Combine all acts: iterate through actMap and fetch all non-overall acts
+    let combinedData = [...cache]; // Start with default act
+    const actCount = {}; // Track how many acts each player appears in for averaging
+    
+    // Initialize act counts for cache players
+    combinedData.forEach(p => {
+      actCount[p.id] = 1; // They're already in cache (default act)
+    });
     
     try {
-      // Try to fetch e11a2 data
-      const e11a2Response = await fetch("data/e11a2.json?ts=" + Date.now());
-      if (e11a2Response.ok) {
-        const e11a2Data = await e11a2Response.json();
+      // Loop through actMap and fetch all acts except 'overall'
+      for (const [displayName, actCode] of Object.entries(actMap)) {
+        if (displayName === "overall" || actCode === "e11a3") continue; // Skip overall and default act
         
-        // Merge e11a2 data: combine matching players' stats
-        e11a2Data.forEach(e11a2Player => {
-          const existingIndex = combinedData.findIndex(p => p.id === e11a2Player.id);
-          if (existingIndex !== -1) {
-            // Combine stats for matching players
-            const player = combinedData[existingIndex];
-            combinedData[existingIndex] = {
-              ...player,
-              matches: (player.matches || 0) + (e11a2Player.matches || 0),
-              wins: (player.wins || 0) + (e11a2Player.wins || 0),
-              kills_total: (player.kills_total || 0) + (e11a2Player.kills_total || 0),
-              deaths_total: (player.deaths_total || 0) + (e11a2Player.deaths_total || 0),
-              assists_total: (player.assists_total || 0) + (e11a2Player.assists_total || 0),
-              time_total: (player.time_total || 0) + (e11a2Player.time_total || 0),
-              // Recalculate avg stats
-              avg_acs: ((player.avg_acs || 0) + (e11a2Player.avg_acs || 0)) / 2,
-              kd: ((player.kd || 0) + (e11a2Player.kd || 0)) / 2,
-              kad: ((player.kad || 0) + (e11a2Player.kad || 0)) / 2,
-              kast: ((player.kast || 0) + (e11a2Player.kast || 0)) / 2,
-              dd_delta: ((player.dd_delta || 0) + (e11a2Player.dd_delta || 0)) / 2,
-            };
-            // Recalculate winrate
-            if (combinedData[existingIndex].matches > 0) {
-              combinedData[existingIndex].winrate = Math.round(
-                (combinedData[existingIndex].wins / combinedData[existingIndex].matches) * 100
-              );
+        const response = await fetch(`data/${actCode}.json?ts=${Date.now()}`);
+        if (response.ok) {
+          const actData = await response.json();
+          
+          // Merge act data: combine matching players' stats
+          actData.forEach(actPlayer => {
+            const existingIndex = combinedData.findIndex(p => p.id === actPlayer.id);
+            if (existingIndex !== -1) {
+              // Combine stats for matching players
+              const player = combinedData[existingIndex];
+              const oldCount = actCount[player.id] || 1;
+              const newCount = oldCount + 1;
+              
+              combinedData[existingIndex] = {
+                ...player,
+                matches: (player.matches || 0) + (actPlayer.matches || 0),
+                wins: (player.wins || 0) + (actPlayer.wins || 0),
+                kills_total: (player.kills_total || 0) + (actPlayer.kills_total || 0),
+                deaths_total: (player.deaths_total || 0) + (actPlayer.deaths_total || 0),
+                assists_total: (player.assists_total || 0) + (actPlayer.assists_total || 0),
+                time_total: (player.time_total || 0) + (actPlayer.time_total || 0),
+                // Recalculate avg stats
+                avg_acs: ((player.avg_acs || 0) * oldCount + (actPlayer.avg_acs || 0)) / newCount,
+                kd: ((player.kd || 0) * oldCount + (actPlayer.kd || 0)) / newCount,
+                kad: ((player.kad || 0) * oldCount + (actPlayer.kad || 0)) / newCount,
+                kast: ((player.kast || 0) * oldCount + (actPlayer.kast || 0)) / newCount,
+                dd_delta: ((player.dd_delta || 0) * oldCount + (actPlayer.dd_delta || 0)) / newCount,
+              };
+              actCount[player.id] = newCount;
+              
+              // Recalculate winrate
+              if (combinedData[existingIndex].matches > 0) {
+                combinedData[existingIndex].winrate = Math.round(
+                  (combinedData[existingIndex].wins / combinedData[existingIndex].matches) * 100
+                );
+              }
+            } else {
+              // Add new player from this act
+              combinedData.push(actPlayer);
+              actCount[actPlayer.id] = 1;
             }
-          } else {
-            // Add new player from e11a2
-            combinedData.push(e11a2Player);
-          }
-        });
+          });
+        }
       }
     } catch (error) {
-      console.error("Error loading e11a2 data:", error);
+      console.error("Error loading act data:", error);
     }
     
     return combinedData;
@@ -235,6 +248,17 @@ async function loadActData(act) {
 }
 
 async function renderCards(act = currentAct) {
+
+  // Only show toggle for the default act (e11a3), hide for all others
+  const toggleControl = document.querySelector(".toggle-control");
+  if (toggleControl) {
+    if (act === "e11a3" || act === defaultAct) {
+      toggleControl.style.display = "flex";
+    } else {
+      toggleControl.style.display = "none";
+    }
+  }
+  
   // Show loading spinner if loading overall stats
   if (act === "overall") {
     showLoading("Calculating scores for overall stats, please wait...");
@@ -242,7 +266,12 @@ async function renderCards(act = currentAct) {
   
   // Load data based on act
   let data = await loadActData(act);
-  
+
+  if (!data || data.length === 0) {
+    profiles.innerHTML = "<p class='no-changes'>No data available for this act.</p>";
+    return;
+  }
+
   // Apply sorting
   const sortType = document.getElementById("sortSelect").value;
   if (sortType !== "default") {
