@@ -24,6 +24,73 @@ function trackerProfileUrl(riotId) {
   return `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(riotId)}/overview`;
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function ensureCardModal() {
+  let modal = document.getElementById("cardModal");
+  if (modal) return modal;
+
+  modal = document.createElement("div");
+  modal.id = "cardModal";
+  modal.className = "card-modal";
+  modal.innerHTML = `
+    <div class="card-modal-content" role="dialog" aria-modal="true" aria-labelledby="cardModalTitle">
+      <div class="card-modal-header">
+        <h2 id="cardModalTitle" class="card-modal-title">Player</h2>
+        <div class="card-modal-actions">
+          <a id="cardModalOpenLink" class="modal-link-btn" target="_blank" rel="noopener noreferrer">Tracker</a>
+          <button id="cardModalClose" class="modal-close-btn" type="button" aria-label="Close popup">X</button>
+        </div>
+      </div>
+      <div class="card-modal-body" id="cardModalBody"></div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeButton = modal.querySelector("#cardModalClose");
+  closeButton.addEventListener("click", () => {
+    modal.classList.remove("open");
+  });
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      modal.classList.remove("open");
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      modal.classList.remove("open");
+    }
+  });
+
+  return modal;
+}
+
+function openCardModal(player) {
+  const modal = ensureCardModal();
+  const title = modal.querySelector("#cardModalTitle");
+  const body = modal.querySelector("#cardModalBody");
+  const openLink = modal.querySelector("#cardModalOpenLink");
+
+  title.textContent = player.id;
+  body.innerHTML = `
+    <p><strong>${escapeHtml(player.id)}</strong></p>
+    <p>To be implemented.</p>
+  `;
+  openLink.href = trackerProfileUrl(player.riot_id || player.id);
+
+  modal.classList.add("open");
+}
+
 
 /* ------------------ Act Navigation ------------------ */
 
@@ -392,7 +459,7 @@ async function renderCards(act = currentAct) {
     if (showDiff && playerDiff && playerDiff.diff) {
       //console.log("diff found for", p.id);
       profiles.innerHTML += `
-        <div class="card diff-highlight">
+        <div class="card diff-highlight" data-player-id="${escapeHtml(p.id)}">
           <img src="${p.banner}" class="banner" />
           <h3>
             <a href="${trackerProfileUrl(p.riot_id)}" target="_blank" class="player-link">
@@ -419,7 +486,7 @@ async function renderCards(act = currentAct) {
     }
 
     profiles.innerHTML += `
-      <div class="card">
+      <div class="card" data-player-id="${escapeHtml(p.id)}">
         <img src="${p.banner}" class="banner" />
         <h3>
           <a href="${trackerProfileUrl(p.riot_id)}" target="_blank" class="player-link">
@@ -458,9 +525,9 @@ function populateDropdowns(data) {
 
 /* ---------- Helper function to get current act data ---------- */
 function getComparisonData() {
+  if (currentAct === defaultAct) return cache;
   if (currentAct === "overall") return overallCache;
-  if (currentAct === "e11a3") return cache;
-  return currentActData;
+  return currentActData || cache;
 }
 
 /* ------------------ Comparison ------------------ */
@@ -576,4 +643,22 @@ document.getElementById("sortSelect").addEventListener("change", async () => {
 document.getElementById("toggleDiff").addEventListener("change", async (e) => {
   showDiff = !showDiff;
   await renderCards();
+});
+
+profiles.addEventListener("click", (event) => {
+  const card = event.target.closest(".card");
+  if (!card) return;
+
+  if (event.target.closest("a.player-link")) {
+    event.preventDefault();
+  }
+
+  const selectedData = getComparisonData();
+  if (!selectedData || selectedData.length === 0) return;
+
+  const playerId = card.dataset.playerId;
+  const player = selectedData.find((p) => p.id === playerId);
+  if (!player) return;
+
+  openCardModal(player);
 });
