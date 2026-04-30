@@ -24,6 +24,41 @@ function trackerProfileUrl(riotId) {
   return `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(riotId)}/overview`;
 }
 
+function getActLabel(actCode) {
+  if (actCode === "overall") return "Overall";
+  if (actCode === "e11a3" || actCode === defaultAct) return "V26: A3";
+  if (actCode === "e11a2") return "V26: A2";
+  return String(actCode || "Player").toUpperCase();
+}
+
+function formatStat(value) {
+  // If a number has more than 2 decimal places, format to 2 decimals. Otherwise return as is. If not a number, return "0.00"
+  const numeric = Number(value);
+  if (isNaN(numeric)) return "0.00";
+  return numeric.toFixed(2);
+}
+
+function buildPlayerExtras(player) {
+  const entries = [
+    ["Kills Total", player.kills_total],
+    ["ACS Total", player.acs_total],
+    ["Deaths Total", player.deaths_total],
+    ["Assists Total", player.assists_total],
+    ["KAST Rounds Total", player.kast_rounds_total],
+    ["Damage Delta Total", player.damage_delta_total],
+  ];
+
+  return entries
+    .filter(([, value]) => value !== undefined && value !== null && value !== "")
+    .map(([label, value]) => `
+      <div class="modal-extra-item">
+        <span>${escapeHtml(label)}</span>
+        <strong>${value}</strong>
+      </div>
+    `)
+    .join("");
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -45,8 +80,9 @@ function ensureCardModal() {
       <div class="card-modal-header">
         <h2 id="cardModalTitle" class="card-modal-title">Player</h2>
         <div class="card-modal-actions">
+          <a id="cardModalPageLink" class="modal-link-btn modal-page-btn" target="_blank" rel="noopener noreferrer">Open in New Page</a>
           <a id="cardModalOpenLink" class="modal-link-btn" target="_blank" rel="noopener noreferrer">Tracker</a>
-          <button id="cardModalClose" class="modal-close-btn" type="button" aria-label="Close popup">X</button>
+          <button id="cardModalClose" class="modal-close-btn" type="button" aria-label="Close popup">×</button>
         </div>
       </div>
       <div class="card-modal-body" id="cardModalBody"></div>
@@ -80,13 +116,106 @@ function openCardModal(player) {
   const title = modal.querySelector("#cardModalTitle");
   const body = modal.querySelector("#cardModalBody");
   const openLink = modal.querySelector("#cardModalOpenLink");
+  const pageLink = modal.querySelector("#cardModalPageLink");
 
-  title.textContent = player.id;
+  const currentActLabel = getActLabel(currentAct);
+  const winRateValue = Number(player.winrate) || 0;
+  const playerPayload = {
+    player,
+    currentAct,
+    currentActLabel,
+  };
+  const playerPageUrl = `player.html?payload=${encodeURIComponent(JSON.stringify(playerPayload))}`;
+
+  try {
+    localStorage.setItem("valoStatPlayerPayload", JSON.stringify(playerPayload));
+  } catch (error) {
+    console.error("Unable to store player payload for player page:", error);
+  }
+
+  // Write every player stat stored in the player object to the modal
+  title.textContent = `${player.id} · ${currentActLabel}`;
+  const wins = Number(player.wins) || 0;
+  const losses = (Number(player.matches) || 0) - wins;
   body.innerHTML = `
-    <p><strong>${escapeHtml(player.id)}</strong></p>
-    <p>To be implemented.</p>
+    <section class="modal-hero">
+      <div class="modal-hero-art">
+        <img src="${player.banner}" alt="${escapeHtml(player.id)} banner" />
+      </div>
+      <div class="modal-hero-copy">
+        <div class="modal-hero-info">
+          <div class="modal-hero-text">
+            <p class="modal-kicker">Competitive Overview</p>
+            <h3>${escapeHtml(player.rank)} · ${escapeHtml(player.level)} Level</h3>
+            <p class="modal-identity">${escapeHtml(player.riot_id)}</p>
+          </div>
+          <div class="modal-ring" style="--win-percent: ${winRateValue};">
+            <div class="modal-ring-text">
+              <span>${wins}W</span>
+              <span>${losses}L</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-score-panel">
+        <span class="modal-score-label">Tracker Score</span>
+        <strong>${valoStatScore(player)}<small>/1000</small></strong>
+        <span class="modal-score-sub">${currentActLabel}</span>
+      </div>
+    </section>
+
+    <section class="modal-stats-grid">
+      <article class="modal-stat-card">
+        <span>Win %</span>
+        <strong>${formatStat(player.winrate)}%</strong>
+        <small>${player.wins}/${player.matches} matches</small>
+      </article>
+      <article class="modal-stat-card">
+        <span>Avg ACS</span>
+        <strong>${formatStat(player.avg_acs)}</strong>
+        <small>Total Rounds: ${player.acs_total}</small>
+      </article>
+      <article class="modal-stat-card">
+        <span>K/D</span>
+        <strong>${formatStat(player.kd)}</strong>
+        <small>KA/D: ${formatStat(player.kad)}</small>
+      </article>
+      <article class="modal-stat-card">
+        <span>KAST</span>
+        <strong>${formatStat(player.kast)}%</strong>
+        <small>DDΔ/round: ${formatStat(player.dd_delta)}</small>
+      </article>
+    </section>
+
+    <section class="modal-detail-grid">
+      <div>
+        <p><strong>Playtime</strong></p>
+        <p>${formatTime(player.time_total)}</p>
+      </div>
+      <div>
+        <p><strong>Kills / Deaths / Assists</strong></p>
+        <p>${player.kills_total} / ${player.deaths_total} / ${player.assists_total}</p>
+      </div>      
+      <div>
+        <p><strong>Acts Counted</strong></p>
+        <p>${player.actCount || 1}</p>
+      </div>
+      <div>
+        <p><strong>Acts Played</strong></p>
+        <p>${player.actsPlayed ? escapeHtml(player.actsPlayed.toUpperCase()) : currentActLabel.toUpperCase()}</p>
+      </div>
+
+    </section>
+
+    <section class="modal-implemented">
+      <p><strong>Extra Stats</strong></p>
+      <div class="modal-extra-grid">
+        ${buildPlayerExtras(player)}
+      </div>
+    </section>
   `;
   openLink.href = trackerProfileUrl(player.riot_id || player.id);
+  pageLink.href = playerPageUrl;
 
   modal.classList.add("open");
 }
