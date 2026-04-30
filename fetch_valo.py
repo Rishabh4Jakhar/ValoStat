@@ -8,7 +8,7 @@ HEADERS = {"Authorization": API_KEY}
 
 REGION = "ap"
 PLATFORM = "pc"
-CURRENT_ACT = "e11a2"
+CURRENT_ACT = "e11a3" #V26A3
 
 PLAYERS = {
     "Rishabh": "Rishabh4#Gamer",
@@ -23,7 +23,7 @@ PLAYERS = {
     "Hardik": "Livein#1234",
     "Tanmay": "KabruhSingh#Drunk",    
     "Sonu": "reducto#12432",
-    #"Anshul": "AnShu1#GhOul", # Added Anshul, to be uncommented after act reset
+    "Anshul": "AnShu1#GhOul",
     "Shivansh": "SILVERBOLT#008",   # Replaced Aryan (doesn't play anymore)
     #"Eklavya": "MadLiberator2005#9683", doesn't play anymore
     "Yash": "yashkali997#kali",
