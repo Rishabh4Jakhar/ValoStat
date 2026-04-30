@@ -517,7 +517,7 @@ th {
 .modal-hero-copy::after {
   content: "VALORANT";
   position: absolute;
-  right: 16px;
+  right: 65px;
   bottom: 10px;
   font-size: clamp(2.5rem, 5vw, 5rem);
   letter-spacing: 0.2em;
