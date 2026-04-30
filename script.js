@@ -7,7 +7,9 @@ const comparison = document.getElementById("comparison");
 const defaultAct = "v26-a3"; 
 
 let players = [];
-let cache = {};
+let cache = {}; // Stores data of default act (on page load)
+let overallCache = null; // Stores overall act data (calculated once, reused)
+let currentActData = null; // Temp variable for other acts, replaced each time
 let prev = null;
 let showDiff = false;
 let currentAct = defaultAct;
@@ -283,8 +285,16 @@ async function renderCards(act = currentAct) {
     profiles.innerHTML = "<p class='no-changes'>No data available for this act.</p>";
     return data || [];
   }
+  // Store displayed data for comparison based on act
+  if (act === "overall" && !overallCache) {
+    overallCache = data;
+  } else if (act !== "e11a3" && act !== "overall") {
+    currentActData = data;
+  }
+  // For default act (e11a3), cache is already set from loadStats()
 
-  // Apply sorting
+
+  // Sorting
   const sortType = document.getElementById("sortSelect").value;
   if (sortType !== "default") {
     data.sort((a, b) => {
@@ -446,11 +456,21 @@ function populateDropdowns(data) {
   });
 }
 
+/* ---------- Helper function to get current act data ---------- */
+function getComparisonData() {
+  if (currentAct === "overall") return overallCache;
+  if (currentAct === "e11a3") return cache;
+  return currentActData;
+}
+
 /* ------------------ Comparison ------------------ */
 
 compareBtn.addEventListener("click", () => {
-  const a = players.find((p) => p.id === selectA.value);
-  const b = players.find((p) => p.id === selectB.value);
+  const data = getComparisonData();
+  if (!data || data.length === 0) return; // No data to compare
+  
+  const a = data.find((p) => p.id === selectA.value);
+  const b = data.find((p) => p.id === selectB.value);
   if (!a || !b || a.id === b.id) return;
 
   renderComparison(a, b);
@@ -527,6 +547,7 @@ function renderComparison(a, b) {
       }</tr>
       <tr><td>ValoStat Score</td>${statRow(valoStatScore(a), valoStatScore(b))}</tr>
       ${a.actCount || b.actCount ? `<tr><td>Acts Counted</td>${statRow(a.actCount, b.actCount)}</tr>` : ''}
+      ${a.actsPlayed || b.actsPlayed ? `<tr><td>Acts Played</td><td>${a.actsPlayed?.toUpperCase() || "N/A"}</td><td>${b.actsPlayed?.toUpperCase() || "N/A"}</td></tr>` : ''}
       <tr><td>Playtime</td>${statRow(a.time_total, b.time_total, true, false, true)}</tr>
       <tr><td>Matches</td>${statRow(a.matches, b.matches)}</tr>
       <tr><td>Winrate %</td>${statRow(a.winrate, b.winrate)}</tr>
