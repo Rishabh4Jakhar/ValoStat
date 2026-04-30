@@ -645,6 +645,12 @@ th {
   color: #8090a4;
 }
 
+.modal-extra-item small {
+  display: block;
+  margin-top: 6px;
+  color: #8090a4;
+}
+
 .modal-detail-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
