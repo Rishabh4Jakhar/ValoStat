@@ -173,7 +173,7 @@ function openCardModal(player) {
       <article class="modal-stat-card">
         <span>Avg ACS</span>
         <strong>${formatStat(player.avg_acs)}</strong>
-        <small>Total Rounds: ${player.acs_total}</small>
+        <small>Total Rounds: ${player.rounds_total}</small>
       </article>
       <article class="modal-stat-card">
         <span>K/D</span>
@@ -406,6 +406,8 @@ async function loadActData(act) {
                 deaths_total: (player.deaths_total || 0) + (actPlayer.deaths_total || 0),
                 assists_total: (player.assists_total || 0) + (actPlayer.assists_total || 0),
                 time_total: (player.time_total || 0) + (actPlayer.time_total || 0),
+                acs_total: (player.acs_total || 0) + (actPlayer.acs_total || 0),
+                damage_delta_total: (player.damage_delta_total || 0) + (actPlayer.damage_delta_total || 0),
                 // Recalculate avg stats
                 avg_acs: ((player.avg_acs || 0) * oldCount + (actPlayer.avg_acs || 0)) / newCount,
                 kd: ((player.kd || 0) * oldCount + (actPlayer.kd || 0)) / newCount,
