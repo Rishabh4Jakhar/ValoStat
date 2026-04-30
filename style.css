@@ -196,6 +196,9 @@ main {
   background: #181818;
   border-radius: 12px;
   padding: 14px;
+  width: 100%;
+  max-width: 400px;
+  justify-self: center;
   border: 2px solid #ff3333;
   box-shadow: 0 0 10px rgb(255, 51, 51);
   cursor: pointer;
