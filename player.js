@@ -71,18 +71,6 @@ function formatStat(value) {
   return numeric.toFixed(2);
 }
 
-function formatValue(value) {
-  if (Array.isArray(value)) {
-    return escapeHtml(value.join(", "));
-  }
-
-  if (typeof value === "string" && Number.isNaN(Number(value))) {
-    return escapeHtml(value);
-  }
-
-  return escapeHtml(formatStat(value));
-}
-
 function buildPlayerExtras(player) {
   const entries = [
     ["Kills Total", player.kills_total],
@@ -91,11 +79,6 @@ function buildPlayerExtras(player) {
     ["Assists Total", player.assists_total],
     ["KAST Rounds Total", player.kast_rounds_total],
     ["Damage Delta Total", player.damage_delta_total],
-    ["Rounds Total", player.rounds_total],
-    ["Elo", player.elo],
-    ["Season", player.season],
-    ["Processed Matches", Array.isArray(player.processed_matches) ? player.processed_matches.length : player.processed_matches],
-    ["Name", player.name],
   ];
 
   return entries
@@ -103,7 +86,7 @@ function buildPlayerExtras(player) {
     .map(([label, value]) => `
       <div class="modal-extra-item">
         <span>${escapeHtml(label)}</span>
-        <strong>${formatValue(value)}</strong>
+        <strong>${value}</strong>
       </div>
     `)
     .join("");
@@ -188,7 +171,7 @@ function renderPlayerPage(payload) {
           <article class="modal-stat-card">
             <span>Avg ACS</span>
             <strong>${formatStat(player.avg_acs)}</strong>
-            <small>Rounds: ${formatStat(player.acs_total)}</small>
+            <small>Total Rounds: ${player.acs_total}</small>
           </article>
           <article class="modal-stat-card">
             <span>K/D</span>
@@ -208,21 +191,21 @@ function renderPlayerPage(payload) {
             <p>${formatTime(player.time_total)}</p>
           </div>
           <div>
+            <p><strong>Kills / Deaths / Assists</strong></p>
+            <p>${player.kills_total} / ${player.deaths_total} / ${player.assists_total}</p>
+          </div>          
+          <div>
             <p><strong>Acts Counted</strong></p>
-            <p>${formatStat(player.actCount || 1)}</p>
+            <p>${player.actCount || 1}</p>
           </div>
           <div>
             <p><strong>Acts Played</strong></p>
             <p>${player.actsPlayed ? escapeHtml(player.actsPlayed.toUpperCase()) : escapeHtml(actLabel.toUpperCase())}</p>
           </div>
-          <div>
-            <p><strong>Kills / Deaths / Assists</strong></p>
-            <p>${formatStat(player.kills_total)} / ${formatStat(player.deaths_total)} / ${formatStat(player.assists_total)}</p>
-          </div>
         </section>
 
         <section class="modal-implemented">
-          <p><strong>To be implemented in it for now.</strong></p>
+          <p><strong>Extra Stats</strong></p>
           <div class="modal-extra-grid">
             ${buildPlayerExtras(player)}
           </div>
