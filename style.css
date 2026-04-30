@@ -12,7 +12,7 @@ body {
 
 :root {
   --content-max-width: 2000px;
-  --card-min-width: 210px;
+  --card-min-width: 275px;
 }
 
 h1, h2 {
@@ -188,7 +188,7 @@ main {
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--card-min-width)), 1fr));
-  gap: 20px;
+  gap: 26px;
   margin-top: 20px;
 }
 
