@@ -41,10 +41,10 @@ function formatStat(value) {
 function buildPlayerExtras(player) {
   const entries = [
     ["Kills Total", player.kills_total],
-    ["ACS Total", player.acs_total],
     ["Deaths Total", player.deaths_total],
     ["Assists Total", player.assists_total],
     ["KAST Rounds Total", player.kast_rounds_total],
+    ["ACS Total", player.acs_total],    
     ["Damage Delta Total", player.damage_delta_total],
   ];
 
@@ -54,6 +54,7 @@ function buildPlayerExtras(player) {
       <div class="modal-extra-item">
         <span>${escapeHtml(label)}</span>
         <strong>${value}</strong>
+        ${label.includes("Kills") || label.includes("Deaths") || label.includes("Assists") ? `<small>(${formatStat(value / player.matches)} per match)</small>` : ""}
       </div>
     `)
     .join("");
