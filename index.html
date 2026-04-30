@@ -12,49 +12,80 @@
 </head>
 <body>
 
-  <h1 class="title">ValoStat</h1>
-  <label class="toggle">
-    <input type="checkbox" id="toggleDiff" name="toggleDiff" />
-    <span class="slider"></span>
-  </label>
-  <p class="subtitle" id="updateTime" style="text-align: center;">Loading last update time...</p>
-  <p class="subtitle" style="text-align: center;">Act Tracked: E11A3</a></p>
-  <div class="controls">
-    <label for="sortSelect">Sort by:</label>
-    <select id="sortSelect">
-      <option value="default">Default</option>
-      <option value="score">ValoStat Score</option>
-      <option value="rank">Rank</option>
-      <option value="level">Level</option>
-      <option value="winPercentage">Win %</option>
-      <option value="matchesPlayed">Matches Played</option>
-      <option value="time">Time Played</option>
-      <option value="acs">ACS</option>
-      <option value="kd">K/D</option>
-      <option value="kad">KA/D</option>
-      <option value="kast">KAST</option>
-      <option value="dd">DD</option>
-      <option value="kills">Kills per game</option>
-      <option value="deaths">Deaths per game</option>
-      <option value="assists">Assists per game</option>
-    </select>
-  </div>
-  <!-- PLAYER CARDS -->
-  <div id="profiles" class="grid">
-    <p>Loading stats...</p>
+  <!-- HEADER SECTION -->
+  <header class="header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="title">ValoStat</h1>
+        <p class="subtitle" id="updateTime">Loading last update time...</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ACT NAVBAR -->
+  <nav class="act-navbar">
+    <div class="navbar-content">
+      <span class="navbar-label">Act:</span>
+      <div class="navbar-buttons">
+        <button class="nav-btn" data-act="overall">Overall</button>
+        <button class="nav-btn active" data-act="v26-a3">V26: A3</button>
+        <button class="nav-btn" data-act="v26-a2">V26: A2</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CONTROLS SECTION -->
+  <div class="controls-bar">
+    <div class="controls-section">
+      <div class="sort-control">
+        <label for="sortSelect">Sort by:</label>
+        <select id="sortSelect">
+          <option value="default">Default</option>
+          <option value="score">ValoStat Score</option>
+          <option value="rank">Rank</option>
+          <option value="level">Level</option>
+          <option value="winPercentage">Win %</option>
+          <option value="matchesPlayed">Matches Played</option>
+          <option value="time">Time Played</option>
+          <option value="acs">ACS</option>
+          <option value="kd">K/D</option>
+          <option value="kad">KA/D</option>
+          <option value="kast">KAST</option>
+          <option value="dd">DD</option>
+          <option value="kills">Kills per game</option>
+          <option value="deaths">Deaths per game</option>
+          <option value="assists">Assists per game</option>
+        </select>
+      </div>
+
+      <div class="toggle-control">
+        <label for="toggleDiff">Show Changes:</label>
+        <label class="toggle">
+          <input type="checkbox" id="toggleDiff" name="toggleDiff" />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
   </div>
 
-  <!-- COMPARISON -->
-  <div class="compare-section">
-    <h2>Compare Players</h2>
-    <div class="compare-controls">
-      <select id="playerA"></select>
-      <span>vs</span>
-      <select id="playerB"></select>
-      <button id="compareBtn">Compare</button>
+  <main>
+    <!-- PLAYER CARDS -->
+    <div id="profiles" class="grid">
+      <p>Loading stats...</p>
     </div>
-    <div id="comparison"></div>
-  </div>
+
+    <!-- COMPARISON -->
+    <div class="compare-section">
+      <h2>Compare Players</h2>
+      <div class="compare-controls">
+        <select id="playerA"></select>
+        <span>vs</span>
+        <select id="playerB"></select>
+        <button id="compareBtn">Compare</button>
+      </div>
+      <div id="comparison"></div>
+    </div>
+  </main>
 
   <script src="script.js"></script>
 </body>
