@@ -43,11 +43,13 @@ function setCurrentAct(act) {
 
 async function onActChange(act) {
   if (act === defaultAct) { // Stats.json is default act stats, already loaded on page load, so just re-render cards
-    await renderCards();
+    const data = await renderCards();
+    populateDropdowns(data);
     return;
   }
   //console.log("Act changed to:", act);
-  await renderCards(actMap[act] || act);
+  const data = await renderCards(actMap[act] || act);
+  populateDropdowns(data);
 }
 
 
@@ -172,10 +174,12 @@ async function loadActData(act) {
     // Combine all acts: iterate through actMap and fetch all non-overall acts
     let combinedData = [...cache]; // Start with default act
     const actCount = {}; // Track how many acts each player appears in for averaging
+    const actNames = {}; // Track which acts each player appears in
     
-    // Initialize act counts for cache players
+    // Initialize for cache players (default act)
     combinedData.forEach(p => {
-      actCount[p.id] = 1; // They're already in cache (default act)
+      actCount[p.id] = 1;
+      actNames[p.id] = ["V26: A3"]; // Default act name
     });
     
     try {
@@ -212,6 +216,7 @@ async function loadActData(act) {
                 dd_delta: ((player.dd_delta || 0) * oldCount + (actPlayer.dd_delta || 0)) / newCount,
               };
               actCount[player.id] = newCount;
+              actNames[player.id].push(displayName);
               
               // Recalculate winrate
               if (combinedData[existingIndex].matches > 0) {
@@ -223,10 +228,17 @@ async function loadActData(act) {
               // Add new player from this act
               combinedData.push(actPlayer);
               actCount[actPlayer.id] = 1;
+              actNames[actPlayer.id] = [displayName];
             }
           });
         }
       }
+      
+      // Attach act info to players for display
+      combinedData.forEach(p => {
+        p.actCount = actCount[p.id];
+        p.actsPlayed = actNames[p.id] ? actNames[p.id].join(", ") : "";
+      });
     } catch (error) {
       console.error("Error loading act data:", error);
     }
@@ -269,7 +281,7 @@ async function renderCards(act = currentAct) {
 
   if (!data || data.length === 0) {
     profiles.innerHTML = "<p class='no-changes'>No data available for this act.</p>";
-    return;
+    return data || [];
   }
 
   // Apply sorting
@@ -329,7 +341,7 @@ async function renderCards(act = currentAct) {
     const hasDiff = prev.some((p) => p.diff);
     if (!hasDiff) {
       profiles.innerHTML = "<p class='no-changes'>No changes since last update.</p>";
-      return;
+      return data;
     }
   }
 
@@ -412,6 +424,7 @@ async function renderCards(act = currentAct) {
         <p><strong>Wins:</strong> ${p.wins}/${p.matches}</p>
         <p><strong>Win Rate:</strong> ${p.winrate}%</p>
         <p><strong>Playtime:</strong> ${formatTime(p.time_total)}</p>
+        ${p.actCount ? `<p><strong>Acts Counted:</strong> ${p.actCount}</p>` : ''}
         ${extraStat}
         <div class="score">
           ValoStat Score: <span>${score}</span>
@@ -419,6 +432,8 @@ async function renderCards(act = currentAct) {
       </div>
     `;
   });
+  
+  return data;
 }
 
 function populateDropdowns(data) {
@@ -511,6 +526,7 @@ function renderComparison(a, b) {
           : statRow(a.rank, b.rank, true, true)
       }</tr>
       <tr><td>ValoStat Score</td>${statRow(valoStatScore(a), valoStatScore(b))}</tr>
+      ${a.actCount || b.actCount ? `<tr><td>Acts Counted</td>${statRow(a.actCount, b.actCount)}</tr>` : ''}
       <tr><td>Playtime</td>${statRow(a.time_total, b.time_total, true, false, true)}</tr>
       <tr><td>Matches</td>${statRow(a.matches, b.matches)}</tr>
       <tr><td>Winrate %</td>${statRow(a.winrate, b.winrate)}</tr>
