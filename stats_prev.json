@@ -202,6 +202,38 @@
     ]
   },
   {
+    "id": "Timmy",
+    "riot_id": "timmyy#latte",
+    "name": "timmyy",
+    "level": 223,
+    "banner": "https://media.valorant-api.com/playercards/6c8c6d61-4106-16ef-5113-79b3137dcda4/smallart.png",
+    "rank": "Gold 2",
+    "rr": 84,
+    "elo": 1084,
+    "season": "e11a3",
+    "matches": 3,
+    "wins": 2,
+    "winrate": 66.7,
+    "avg_acs": 193.2,
+    "kd": 0.84,
+    "kad": 1.76,
+    "kast": 86.3,
+    "dd_delta": -16.3,
+    "acs_total": 9854,
+    "rounds_total": 51,
+    "kills_total": 32,
+    "deaths_total": 38,
+    "assists_total": 35,
+    "kast_rounds_total": 44,
+    "damage_delta_total": -829,
+    "time_total": 4807484,
+    "processed_matches": [
+      "0623c8ce-ec50-4170-888e-a547247eaa35",
+      "13f6c590-cc17-4bee-b188-9ec17113ef52",
+      "877b712a-62b6-41e9-9ff9-53895c44329e"
+    ]
+  },
+  {
     "id": "Anshul",
     "riot_id": "AnShu1#GhOul",
     "name": "AnShu1",
