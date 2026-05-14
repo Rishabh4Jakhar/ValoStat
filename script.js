@@ -240,6 +240,17 @@ function setCurrentAct(act) {
 }
 
 async function onActChange(act) {
+  // Clear any visible comparison when switching acts
+  try {
+    if (comparison && comparison.innerHTML && comparison.innerHTML.trim() !== "") {
+      comparison.innerHTML = "";
+    }
+    // Reset selects to default empty state to avoid stale selection
+    if (selectA) selectA.selectedIndex = 0;
+    if (selectB) selectB.selectedIndex = 0;
+  } catch (e) {
+    console.warn('Unable to clear comparison UI on act change', e);
+  }
   if (act === defaultAct) { // Stats.json is default act stats, already loaded on page load, so just re-render cards
     const data = await renderCards();
     populateDropdowns(data);
