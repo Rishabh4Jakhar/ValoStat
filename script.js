@@ -34,6 +34,7 @@ function getActLabel(actCode) {
 function formatStat(value) {
   const numeric = Number(value);
   if (Number.isNaN(numeric)) return value ?? "0";
+  if (Number.isInteger(numeric)) return String(numeric);
   return numeric.toFixed(2);
 }
 
