@@ -32,9 +32,8 @@ function getActLabel(actCode) {
 }
 
 function formatStat(value) {
-  // If a number has more than 2 decimal places, format to 2 decimals. Otherwise return as is. If not a number, return "0.00"
   const numeric = Number(value);
-  if (isNaN(numeric)) return "0.00";
+  if (Number.isNaN(numeric)) return value ?? "0";
   return numeric.toFixed(2);
 }
 
@@ -706,25 +705,29 @@ const rankValues = {
 function statRow(a, b, higherBetter = true, rank = false, isTime = false) {
   let compareA = a;
   let compareB = b;
+  let displayA = a;
+  let displayB = b;
 
   if (rank) {
     compareA = rankValues[a] || 0;
     compareB = rankValues[b] || 0;
   }
   if (isTime) {
-    a = formatTime(a);
-    b = formatTime(b);
+    displayA = formatTime(a);
+    displayB = formatTime(b);
+  } else {
+    displayA = formatStat(a);
+    displayB = formatStat(b);
   }
-  console.log(compareA, compareB);
   if (compareA === compareB) {
-    return `<td class="equal-stat">${a}</td><td class="equal-stat">${b}</td>`;
+    return `<td class="equal-stat">${displayA}</td><td class="equal-stat">${displayB}</td>`;
   }
 
   const goodA = higherBetter ? compareA > compareB : compareA < compareB;
 
   return goodA
-    ? `<td class="good-stat">${a}</td><td class="bad-stat">${b}</td>`
-    : `<td class="bad-stat">${a}</td><td class="good-stat">${b}</td>`;
+    ? `<td class="good-stat">${displayA}</td><td class="bad-stat">${displayB}</td>`
+    : `<td class="bad-stat">${displayA}</td><td class="good-stat">${displayB}</td>`;
 }
 
 function renderComparison(a, b) {
