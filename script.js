@@ -241,16 +241,7 @@ function setCurrentAct(act) {
 
 async function onActChange(act) {
   // Clear any visible comparison when switching acts
-  try {
-    if (comparison && comparison.innerHTML && comparison.innerHTML.trim() !== "") {
-      comparison.innerHTML = "";
-    }
-    // Reset selects to default empty state to avoid stale selection
-    if (selectA) selectA.selectedIndex = 0;
-    if (selectB) selectB.selectedIndex = 0;
-  } catch (e) {
-    console.warn('Unable to clear comparison UI on act change', e);
-  }
+  resetComparison();
   if (act === defaultAct) { // Stats.json is default act stats, already loaded on page load, so just re-render cards
     const data = await renderCards();
     populateDropdowns(data);
@@ -672,6 +663,23 @@ function getComparisonData() {
   return currentActData || cache;
 }
 
+/* ------------------ Comparison Helpers ------------------ */
+function resetComparison() {
+  try {
+    if (comparison && comparison.innerHTML && comparison.innerHTML.trim() !== "") {
+      comparison.innerHTML = "";
+    }
+    // Reset selects to default empty state to avoid stale selection
+    if (selectA) selectA.selectedIndex = 0;
+    if (selectB) selectB.selectedIndex = 0;
+
+    const resetBtn = document.getElementById("resetCompareBtn");
+    if (resetBtn) resetBtn.remove();
+  } catch (e) {
+    console.warn("resetComparison failed", e);
+  }
+}
+
 /* ------------------ Comparison ------------------ */
 
 compareBtn.addEventListener("click", () => {
@@ -771,6 +779,26 @@ function renderComparison(a, b) {
       <tr><td>DDΔ / round </td>${statRow(a.dd_delta, b.dd_delta)}</tr>
     </table>
   `;
+
+  // Add a reset button next to the compare button so user can hide the comparison
+  try {
+    let resetBtn = document.getElementById("resetCompareBtn");
+    if (!resetBtn) {
+      resetBtn = document.createElement("button");
+      resetBtn.id = "resetCompareBtn";
+      resetBtn.type = "button";
+      resetBtn.className = "reset-compare-btn";
+      resetBtn.textContent = "Reset";
+      resetBtn.addEventListener("click", resetComparison);
+      if (compareBtn && compareBtn.parentNode) {
+        compareBtn.parentNode.insertBefore(resetBtn, compareBtn.nextSibling);
+      }
+    } else {
+      resetBtn.style.display = "inline-block";
+    }
+  } catch (e) {
+    console.warn("Unable to add reset button for comparison", e);
+  }
 }
 
 
