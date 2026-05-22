@@ -296,7 +296,7 @@ async function loadStats() {
   const current = await fetch("stats.json?ts=" + Date.now());
   const prevs = await fetch("stats_prev.json?ts=" + Date.now()).catch(() => null);
   players = await current.json();
-  cache = players;
+  cache = [...players];
   prev = computeDiff(cache, prevs ? await prevs.json() : []);
   await renderCards();
   populateDropdowns(players);
@@ -481,16 +481,17 @@ async function renderCards(act = currentAct) {
   
   // Load data based on act
   let data = await loadActData(act);
+  const displayData = [...data];
 
-  if (!data || data.length === 0) {
+  if (!displayData || displayData.length === 0) {
     profiles.innerHTML = "<p class='no-changes'>No data available for this act.</p>";
-    return data || [];
+    return displayData || [];
   }
   // Store displayed data for comparison based on act
   if (act === "overall" && !overallCache) {
-    overallCache = data;
+    overallCache = displayData;
   } else if (act !== "e11a3" && act !== "overall") {
-    currentActData = data;
+    currentActData = displayData;
   }
   // For default act (e11a3), cache is already set from loadStats()
 
@@ -498,7 +499,7 @@ async function renderCards(act = currentAct) {
   // Sorting
   const sortType = document.getElementById("sortSelect").value;
   if (sortType !== "default") {
-    data.sort((a, b) => {
+    displayData.sort((a, b) => {
       switch (sortType) {
         case "score":
           return valoStatScore(b) - valoStatScore(a);
@@ -538,7 +539,7 @@ async function renderCards(act = currentAct) {
         case "time":
           return (b.time_total || 0) - (a.time_total || 0);
         default:
-          return cache;
+          return 0;
       }
     });
   }
@@ -552,11 +553,11 @@ async function renderCards(act = currentAct) {
     const hasDiff = prev.some((p) => p.diff);
     if (!hasDiff) {
       profiles.innerHTML = "<p class='no-changes'>No changes since last update.</p>";
-      return data;
+      return displayData;
     }
   }
 
-  data.forEach((p) => {
+  displayData.forEach((p) => {
     const score = valoStatScore(p);
     let extraStat = "";
     switch (sortType) {
@@ -644,7 +645,7 @@ async function renderCards(act = currentAct) {
     `;
   });
   
-  return data;
+  return displayData;
 }
 
 function populateDropdowns(data) {
