@@ -243,6 +243,11 @@ function setCurrentAct(act) {
 async function onActChange(act) {
   // Clear any visible comparison when switching acts
   resetComparison();
+  showDiff = false;
+  const toggleDiff = document.getElementById("toggleDiff");
+  if (toggleDiff) {
+    toggleDiff.checked = false;
+  }
   if (act === defaultAct) { // Stats.json is default act stats, already loaded on page load, so just re-render cards
     const data = await renderCards();
     populateDropdowns(data);
@@ -817,7 +822,7 @@ document.getElementById("sortSelect").addEventListener("change", async () => {
   await renderCards();
 });
 document.getElementById("toggleDiff").addEventListener("change", async (e) => {
-  showDiff = !showDiff;
+  showDiff = e.target.checked;
   await renderCards();
 });
 
