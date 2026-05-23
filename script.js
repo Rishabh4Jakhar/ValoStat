@@ -609,7 +609,7 @@ async function renderCards(act = currentAct) {
 
           <p class="riot-id">${p.riot_id}</p>
           <p><strong>Rank:</strong> ${playerDiff.rank} (${playerDiff.rr} RR)</p>
-          <p><strong>Level:</strong> ${p.level}</p>
+          <p><strong>Level:</strong> ${playerDiff.level}</p>
           <p><strong>Wins:</strong> ${playerDiff.wins}/${playerDiff.matches}</p>
           <p><strong>Win Rate:</strong> ${playerDiff.winrate}</p>
           <p><strong>Playtime:</strong> ${playerDiff.time_total}</p>
