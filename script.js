@@ -20,6 +20,10 @@ let actMap = {
   // Add more acts here as needed
 };
 
+function isDefaultActCode(act) {
+  return act === defaultAct || act === "e11a3";
+}
+
 function trackerProfileUrl(riotId) {
   return `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(riotId)}/overview`;
 }
@@ -225,8 +229,13 @@ function openCardModal(player) {
 /* ------------------ Act Navigation ------------------ */
 
 function setCurrentAct(act) {
-  if (act === currentAct) return; // No change
-  currentAct = actMap[act] || act; // Map display name to internal act code
+  const nextAct = actMap[act] || act;
+  if (nextAct === currentAct) return; // No change
+  currentAct = nextAct; // Map display name to internal act code
+
+  if (isDefaultActCode(currentAct) || currentAct === "overall") {
+    currentActData = null;
+  }
   
   navButtons.forEach(btn => {
     if (btn.dataset.act === act) {
@@ -248,7 +257,7 @@ async function onActChange(act) {
   if (toggleDiff) {
     toggleDiff.checked = false;
   }
-  if (act === defaultAct) { // Stats.json is default act stats, already loaded on page load, so just re-render cards
+  if (isDefaultActCode(act)) { // Stats.json is default act stats, already loaded on page load, so just re-render cards
     const data = await renderCards();
     populateDropdowns(data);
     return;
@@ -371,7 +380,7 @@ function showLoading(message = "Calculating scores for overall stats, please wai
 /* ---------- LOAD ACT DATA ---------- */
 
 async function loadActData(act) {
-  if (act === "e11a3" || act === defaultAct) {
+  if (isDefaultActCode(act)) {
     // Default act is already in cache from stats.json
     return cache;
   }
@@ -472,7 +481,7 @@ async function renderCards(act = currentAct) {
   // Only show toggle for the default act (e11a3), hide for all others
   const toggleControl = document.querySelector(".toggle-control");
   if (toggleControl) {
-    if (act === "e11a3" || act === defaultAct) {
+    if (isDefaultActCode(act)) {
       toggleControl.style.display = "flex";
     } else {
       toggleControl.style.display = "none";
@@ -665,7 +674,7 @@ function populateDropdowns(data) {
 
 /* ---------- Helper function to get current act data ---------- */
 function getComparisonData() {
-  if (currentAct === defaultAct) return cache;
+  if (isDefaultActCode(currentAct)) return cache;
   if (currentAct === "overall") return overallCache;
   return currentActData || cache;
 }
