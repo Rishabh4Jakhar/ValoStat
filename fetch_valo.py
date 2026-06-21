@@ -35,7 +35,7 @@ PLAYERS = {
     "Ritwik": "RITWIK#6493",        
 }
 LAST_REQUEST_TIME = 0
-MIN_INTERVAL = 200 / 28  # ~2.15 seconds per request (safe)
+MIN_INTERVAL = 100 / 28  # ~2.15 seconds per request (safe)
 
 # API Rate Limit
 
