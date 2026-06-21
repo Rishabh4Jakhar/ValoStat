@@ -15,6 +15,7 @@ let showDiff = false;
 let currentAct = defaultAct;
 let actMap = {
   "overall": "overall",
+  "v27-a1": "e12a1",
   "v26-a3": "e11a3",
   "v26-a2": "e11a2",
   // Add more acts here as needed
