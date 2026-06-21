@@ -120,8 +120,13 @@ for pid, riot in PLAYERS.items():
         if not season:
             print(f"No MMR data for current act for {riot}")
             continue
-
-        matches = get_matches(puuid)
+        
+        # If season games = data games, dont get_matches
+        if season["games"] > old_data_map.get(pid, {}).get("matches", 0):
+            matches = get_matches(puuid)
+        else:
+            matches = []
+            print(f"No new matches for {riot}, skipping match fetch")
         old=old_data_map.get(pid, {})
         processed_match_ids = set(old.get("processed_matches", []))
 
