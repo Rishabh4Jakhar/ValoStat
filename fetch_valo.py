@@ -3,7 +3,8 @@ import json
 import os
 import time
 
-API_KEY = os.environ["HENRIK_API_KEY"]
+API_KEY = "HDEV-aff432b4-6ba3-476e-897c-fdafb9929b91"
+#API_KEY = os.environ["HENRIK_API_KEY"]
 HEADERS = {"Authorization": API_KEY}
 
 REGION = "ap"
@@ -17,15 +18,17 @@ PLAYERS = {
     "Modit": "Limitless065#5079",
     "Moksh": "CuteBoyMox#9710",
     "Nityaa": "LadyWhistledown#2310",
+    #"Vandna": "Fluxy#XOXO", To-uncomment from new act
     "Timmy": "timmyy#latte",
-    "Dhimanth": "DeeKay#6875",
     "Siddharth": "BravosidOP#India",
     "Hardik": "Livein#1234",
     "Tanmay": "KabruhSingh#Drunk",    
     "Sonu": "reducto#12432",
     "Anshul": "AnShu1#GhOul",
-    "Shivansh": "SILVERBOLT#008",   # Replaced Aryan (doesn't play anymore)
-    #"Eklavya": "MadLiberator2005#9683", doesn't play anymore
+    "Dhimanth": "DeeKay#6875",    
+    "Shivansh": "SILVERBOLT#008",   
+    #"Eklavya": "MadLiberator2005#9683", To-uncomment from new act
+    #"Aryan": "TheChosenOne#2205", To-uncomment from new act
     "Yash": "yashkali997#kali",
     "Ria": "Ria4#2222",    
     "Ria_alt": "Ria4#4444",
@@ -74,6 +77,19 @@ def get_matches(puuid):
     )
     return rate_limited_get(url).json()["data"]
 
+
+def resolve_player_identity(pid, riot, old_data_map):
+    old = old_data_map.get(pid, {})
+    puuid = old.get("puuid")
+    banner = old.get("banner")
+
+    if puuid and banner:
+        return puuid, banner, None
+
+    name, tag = riot.split("#")
+    acc = get_account(name, tag)
+    return puuid or acc["puuid"], acc["card"]["small"], acc
+
 # Load existing data
 
 if os.path.exists("stats.json"):
@@ -91,9 +107,7 @@ for pid, riot in PLAYERS.items():
     print(f"Fetching {riot}")
 
     try:
-        acc = get_account(name, tag)
-        puuid = acc["puuid"]
-        banner = acc["card"]["small"]
+        puuid, banner, acc = resolve_player_identity(pid, riot, old_data_map)
 
 
         mmr = get_mmr(puuid)
@@ -195,8 +209,9 @@ for pid, riot in PLAYERS.items():
             "id": pid,
             "riot_id": riot,
             "name": name,
-            "level": acc["account_level"], # TODO: Use later for detailed player profiles
+            "level": acc["account_level"] if acc else old_data_map.get(pid, {}).get("level", 0),
             "banner": banner,
+            "puuid": puuid,
             "rank": mmr["current"]["tier"]["name"],
             "rr": mmr["current"]["rr"],
             "elo": mmr["current"]["elo"],  # API-provided
