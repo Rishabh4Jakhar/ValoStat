@@ -305,6 +305,10 @@ function formatTime(ms) {
   return result;
 }
 
+function getPlayerMatchKey(player) {
+  return player?.puuid || player?.riot_id || player?.id || "";
+}
+
 /* ------------------ Load & Render ------------------ */
 
 async function loadStats() {
@@ -320,14 +324,27 @@ async function loadStats() {
 
 function computeDiff(curr, prev) { // Find players whose stats have changed since the last fetch
   const prevMap = {};
-  prev.forEach((p) => (prevMap[p.id] = p));
+  prev.forEach((p) => {
+    const puuidKey = p?.puuid;
+    const riotIdKey = p?.riot_id;
+    const idKey = p?.id;
+
+    if (puuidKey) prevMap[`puuid:${puuidKey}`] = p;
+    if (riotIdKey) prevMap[`riot_id:${riotIdKey}`] = p;
+    if (idKey) prevMap[`id:${idKey}`] = p;
+  });
   const diffs = [];
   curr.forEach((p) => {
-    const old = prevMap[p.id];
+    const old =
+      prevMap[`puuid:${p.puuid}`] ||
+      prevMap[`riot_id:${p.riot_id}`] ||
+      prevMap[`id:${p.id}`];
     if (!old) return;
     const diff = {
       id: p.id,
+      puuid: p.puuid,
       banner: p.banner,
+      riot_id: p.riot_id,
       //diff: p.matches !== old.matches ? true: false,
       // Make diff true if either matches or level or any other stat changes 
       diff: p.matches !== old.matches || p.level !== old.level || p.rank !== old.rank || p.rr !== old.rr || p.wins !== old.wins || p.winrate !== old.winrate || p.time_total !== old.time_total || valoStatScore(p) !== valoStatScore(old) ? true : false,
@@ -605,7 +622,8 @@ async function renderCards(act = currentAct) {
     }
 
     // Check if prev diff is true for this player
-    const playerDiff = prev.find(d => d.id === p.id);
+    const playerKey = getPlayerMatchKey(p);
+    const playerDiff = prev.find((d) => getPlayerMatchKey(d) === playerKey);
     if (showDiff && playerDiff && playerDiff.diff) {
       //console.log("diff found for", p.id);
       profiles.innerHTML += `
