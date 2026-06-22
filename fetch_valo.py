@@ -17,7 +17,7 @@ PLAYERS = {
     "Modit": "Limitless065#5079",
     "Moksh": "CuteBoyMox#9710",
     "Nityaa": "LadyWhistledown#2310",
-    #"Vandna": "Fluxy#XOXO", To-uncomment from new act
+    "Vandna": "Fluxy#XOXO",
     "Timmy": "timmyy#latte",
     "Siddharth": "BravosidOP#India",
     "Hardik": "Livein#1234",
@@ -26,8 +26,8 @@ PLAYERS = {
     "Anshul": "AnShu1#GhOul",
     "Dhimanth": "DeeKay#6875",    
     "Shivansh": "SILVERBOLT#008",   
-    #"Eklavya": "MadLiberator2005#9683", To-uncomment from new act
-    #"Aryan": "TheChosenOne#2205", To-uncomment from new act
+    "Eklavya": "MadLiberator2005#9683", 
+    "Aryan": "TheChosenOne#2205",
     "Yash": "yashkali997#kali",
     "Ria": "Ria4#2222",    
     "Ria_alt": "Ria4#4444",
