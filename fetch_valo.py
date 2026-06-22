@@ -107,6 +107,8 @@ for pid, riot in PLAYERS.items():
 
     try:
         puuid, banner, acc = resolve_player_identity(pid, riot, old_data_map)
+        old = old_data_map.get(pid, {})
+        stored_matches = old.get("matches", 0)
 
 
         mmr = get_mmr(puuid)
@@ -120,14 +122,13 @@ for pid, riot in PLAYERS.items():
         if not season:
             print(f"No MMR data for current act for {riot}")
             continue
-        
-        # If season games = data games, dont get_matches
-        if season["games"] > old_data_map.get(pid, {}).get("matches", 0):
+
+        # Only fetch match history when season data has moved ahead of what we already stored.
+        if season["games"] > stored_matches:
             matches = get_matches(puuid)
         else:
             matches = []
             print(f"No new matches for {riot}, skipping match fetch")
-        old=old_data_map.get(pid, {})
         processed_match_ids = set(old.get("processed_matches", []))
 
         acs_total=old.get("acs_total", 0)
@@ -193,8 +194,7 @@ for pid, riot in PLAYERS.items():
         print(f"New matches for {riot}: {new_matches_count}")
 
         if len(matches)==0:
-            print(f"No matches in current act for {riot}")
-            continue
+            print(f"No matches in current act for {riot}; preserving existing stats")
         #perf = compute_match_stats(matches, puuid)
 
         avg_acs=round(acs_total / rounds_total, 1) if rounds_total else 0
