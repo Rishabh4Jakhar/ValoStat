@@ -1,1 +1,66 @@
-[]
+[
+  {
+    "id": "Sonu",
+    "riot_id": "reducto#12432",
+    "name": "reducto",
+    "level": 299,
+    "banner": "https://media.valorant-api.com/playercards/201be320-4a18-cd81-75fa-228dba06d676/smallart.png",
+    "puuid": "ce9dd3a9-bde3-5b41-91e5-e51d364f557c",
+    "rank": "Unrated",
+    "rr": 0,
+    "elo": 0,
+    "season": "e11a4",
+    "matches": 1,
+    "wins": 0,
+    "winrate": 0.0,
+    "avg_acs": 309.0,
+    "kd": 2.17,
+    "kad": 2.25,
+    "kast": 77.3,
+    "dd_delta": 100.9,
+    "acs_total": 6799,
+    "rounds_total": 22,
+    "kills_total": 26,
+    "deaths_total": 12,
+    "assists_total": 1,
+    "kast_rounds_total": 17,
+    "damage_delta_total": 2220,
+    "time_total": 2059927,
+    "processed_matches": [
+      "e091ea21-5acd-4de6-8e8e-080e719ff8d3"
+    ]
+  },
+  {
+    "id": "Anshul",
+    "riot_id": "AnShu1#GhOul",
+    "name": "AnShu1",
+    "level": 373,
+    "banner": "https://media.valorant-api.com/playercards/bc813b8f-497b-db60-13ce-1f818cbdb865/smallart.png",
+    "puuid": "7ea6f002-e674-5817-af26-f99d72bbad6a",
+    "rank": "Unrated",
+    "rr": 0,
+    "elo": 0,
+    "season": "e11a4",
+    "matches": 3,
+    "wins": 0,
+    "winrate": 0.0,
+    "avg_acs": 268.6,
+    "kd": 1.26,
+    "kad": 1.63,
+    "kast": 75.0,
+    "dd_delta": 34.9,
+    "acs_total": 16118,
+    "rounds_total": 60,
+    "kills_total": 58,
+    "deaths_total": 46,
+    "assists_total": 17,
+    "kast_rounds_total": 45,
+    "damage_delta_total": 2094,
+    "time_total": 5371046,
+    "processed_matches": [
+      "005ccbe4-1076-4760-8a5a-bff5e3dc5016",
+      "74054c33-d394-462d-9325-9a5b7a0730a2",
+      "a0c3dc0a-7814-44bd-b97e-7a3af2238152"
+    ]
+  }
+]
