@@ -129,6 +129,7 @@ for pid, riot in PLAYERS.items():
         else:
             matches = []
             print(f"No new matches for {riot}, skipping match fetch")
+        account_level = old.get("level", 0)
         processed_match_ids = set(old.get("processed_matches", []))
 
         acs_total=old.get("acs_total", 0)
@@ -139,7 +140,7 @@ for pid, riot in PLAYERS.items():
         kast_rounds_total=old.get("kast_rounds_total", 0)
         damage_delta_total=old.get("damage_delta_total", 0)
         time_total=old.get("time_total", 0)
-
+        wins_total=old.get("wins", 0)
         new_matches_count=0
 
         for m in matches:
@@ -155,7 +156,11 @@ for pid, riot in PLAYERS.items():
 
             player = next(p for p in m["players"] if p["puuid"] == puuid)
             stats = player["stats"]
-
+            account_level = player["account_level"]
+            player_team = player["team_id"]
+            winning_team = next(team["team_id"] for team in m["teams"] if team["won"])
+            if player_team == winning_team:
+                wins_total += 1
             kills = stats["kills"]
             deaths = stats["deaths"]
             assists = stats["assists"]
@@ -204,8 +209,9 @@ for pid, riot in PLAYERS.items():
         dd_delta = round(damage_delta_total / rounds_total, 1) if rounds_total else 0
 
         matches_played = season["games"]
-        wins = season["wins"]
-
+        #wins = season["wins"]
+        # Testing manual wins counting
+        wins = wins_total
         # TODO: API might be returning blank riot_id for some accounts, need to verify and handle that case
         # Currently just using the name and tag from the input mapping, which should be fine as long as they don't change their name/tag
 
@@ -213,7 +219,7 @@ for pid, riot in PLAYERS.items():
             "id": pid,
             "riot_id": riot,
             "name": name,
-            "level": acc["account_level"] if acc else old_data_map.get(pid, {}).get("level", 0),
+            "level": account_level,
             "banner": banner,
             "puuid": puuid,
             "rank": mmr["current"]["tier"]["name"],
