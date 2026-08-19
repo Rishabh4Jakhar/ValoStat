@@ -4,7 +4,7 @@ const selectA = document.getElementById("playerA");
 const selectB = document.getElementById("playerB");
 const compareBtn = document.getElementById("compareBtn");
 const comparison = document.getElementById("comparison");
-const defaultAct = "v26-a4"; 
+const defaultAct = "v26-a5"; 
 
 let players = [];
 let cache = {}; // Stores data of default act (on page load)
@@ -15,6 +15,7 @@ let showDiff = false;
 let currentAct = defaultAct;
 let actMap = {
   "overall": "overall",
+  "v26-a5": "e11a5",
   "v26-a4": "e11a4",
   "v26-a3": "e11a3",
   "v26-a2": "e11a2",
@@ -22,7 +23,7 @@ let actMap = {
 };
 
 function isDefaultActCode(act) {
-  return act === defaultAct || act === "e11a4";
+  return act === defaultAct || act === "e11a5";
 }
 
 function trackerProfileUrl(riotId) {
@@ -31,7 +32,8 @@ function trackerProfileUrl(riotId) {
 
 function getActLabel(actCode) {
   if (actCode === "overall") return "Overall";
-  if (actCode === "e11a4" || actCode === defaultAct) return "V26: A4";
+  if (actCode === "e11a5" || actCode === defaultAct) return "V26: A5";
+  if (actCode === "e11a4") return "V26: A4";
   if (actCode === "e11a3") return "V26: A3";
   if (actCode === "e11a2") return "V26: A2";
   return String(actCode || "Player").toUpperCase();
@@ -419,7 +421,7 @@ async function loadActData(act) {
     try {
       // Loop through actMap and fetch all acts except 'overall'
       for (const [displayName, actCode] of Object.entries(actMap)) {
-        if (displayName === "overall" || actCode === "e11a4") continue; // Skip overall and default act
+        if (displayName === "overall" || actCode === "e11a5") continue; // Skip overall and default act
         
         const response = await fetch(`data/${actCode}.json?ts=${Date.now()}`);
         if (response.ok) {
