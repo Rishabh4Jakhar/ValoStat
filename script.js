@@ -415,7 +415,7 @@ async function loadActData(act) {
     // Initialize for cache players (default act)
     combinedData.forEach(p => {
       actCount[p.id] = 1;
-      actNames[p.id] = ["V26: A4"]; // Default act name
+      actNames[p.id] = ["V26: A5"]; // Default act name
     });
     
     try {
@@ -525,7 +525,7 @@ async function renderCards(act = currentAct) {
   // Store displayed data for comparison based on act
   if (act === "overall" && !overallCache) {
     overallCache = displayData;
-  } else if (act !== "e11a4" && act !== "overall") {
+  } else if (act !== "e11a5" && act !== "overall") {
     currentActData = displayData;
   }
   // For default act (e11a4), cache is already set from loadStats()
