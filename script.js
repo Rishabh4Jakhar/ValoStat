@@ -449,11 +449,16 @@ async function loadActData(act) {
                 kast_rounds_total: (player.kast_rounds_total || 0) + (actPlayer.kast_rounds_total || 0),
                 rounds_total: (player.rounds_total || 0) + (actPlayer.rounds_total || 0),
                 // Recalculate avg stats
-                avg_acs: ((player.avg_acs || 0) * oldCount + (actPlayer.avg_acs || 0)) / newCount,
-                kd: ((player.kd || 0) * oldCount + (actPlayer.kd || 0)) / newCount,
-                kad: ((player.kad || 0) * oldCount + (actPlayer.kad || 0)) / newCount,
-                kast: ((player.kast || 0) * oldCount + (actPlayer.kast || 0)) / newCount,
-                dd_delta: ((player.dd_delta || 0) * oldCount + (actPlayer.dd_delta || 0)) / newCount,
+                // avg_acs = total ACS / total rounds accumulated across acts
+                // kd = total kills / total deaths accumulated across acts
+                // kad = (total kills + total assists) / total deaths accumulated across acts
+                // kast = total kast rounds / total rounds accumulated across acts
+                // dd_delta = total damage delta / total rounds accumulated across acts
+                avg_acs: ((player.acs_total || 0) + (actPlayer.acs_total || 0)) / ((player.rounds_total || 0) + (actPlayer.rounds_total || 0)),
+                kd: ((player.kills_total || 0) + (actPlayer.kills_total || 0)) / ((player.deaths_total || 0) + (actPlayer.deaths_total || 0)),
+                kad: ((player.kills_total || 0) + (player.assists_total || 0) + (actPlayer.kills_total || 0) + (actPlayer.assists_total || 0)) / ((player.deaths_total || 0) + (actPlayer.deaths_total || 0)),
+                kast: (((player.kast_rounds_total || 0) + (actPlayer.kast_rounds_total || 0)) / ((player.rounds_total || 0) + (actPlayer.rounds_total || 0)))*100,
+                dd_delta: ((player.damage_delta_total || 0) + (actPlayer.damage_delta_total || 0)) / ((player.rounds_total || 0) + (actPlayer.rounds_total || 0)),
               };
               actCount[player.id] = newCount;
               actNames[player.id].push(displayName);
