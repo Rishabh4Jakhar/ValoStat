@@ -446,6 +446,7 @@ async function loadActData(act) {
                 time_total: (player.time_total || 0) + (actPlayer.time_total || 0),
                 acs_total: (player.acs_total || 0) + (actPlayer.acs_total || 0),
                 damage_delta_total: (player.damage_delta_total || 0) + (actPlayer.damage_delta_total || 0),
+                kast_rounds_total: (player.kast_rounds_total || 0) + (actPlayer.kast_rounds_total || 0),
                 // Recalculate avg stats
                 avg_acs: ((player.avg_acs || 0) * oldCount + (actPlayer.avg_acs || 0)) / newCount,
                 kd: ((player.kd || 0) * oldCount + (actPlayer.kd || 0)) / newCount,
