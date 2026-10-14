@@ -4,8 +4,8 @@ import os
 import time
 from collections import defaultdict, Counter
 
-
-API_KEY = os.environ["HENRIK_API_KEY"]
+API_KEY = "HDEV-aff432b4-6ba3-476e-897c-fdafb9929b91"
+#API_KEY = os.environ["HENRIK_API_KEY"]
 HEADERS = {"Authorization": API_KEY}
 
 REGION = "ap"
@@ -14,28 +14,28 @@ CURRENT_ACT = "e11a6"  # V26A6
 
 PLAYERS = {
 
-    "Rishabh": "Rishabh4#Gamer",
-    "Akshat": "Flashgaming4#FAST",
-    "Advik": "NøVä#8790",
-    "Modit": "Limitless065#5079",
-    "Moksh": "CuteBoyMox#9710",
-    "Nityaa": "LadyWhistledown#2310",
-    "Vandna": "Fluxy#XOXO",
-    "Timmy": "timmyy#latte",
-    "Siddharth": "BravosidOP#India",
-    "Hardik": "Livein#1234",
-    "Tanmay": "KabruhSingh#Drunk",
-    "Sonu": "reducto#12432",
+    #"Rishabh": "Rishabh4#Gamer",
+    #"Akshat": "Flashgaming4#FAST",
+    #"Advik": "NøVä#8790",
+    #"Modit": "Limitless065#5079",
+    #"Moksh": "CuteBoyMox#9710",
+    #"Nityaa": "LadyWhistledown#2310",
+    #"Vandna": "Fluxy#XOXO",
+    #"Timmy": "timmyy#latte",
+    #"Siddharth": "BravosidOP#India",
+    #"Hardik": "Livein#1234",
+    #"Tanmay": "KabruhSingh#Drunk",
+    #"Sonu": "reducto#12432",
     "Anshul": "AnShu1#GhOul",
-    "Dhimanth": "DeeKay#6875",
-    "Shivansh": "SILVERBOLT#008",
-    "Eklavya": "MadLiberator2005#9683",
-    "Aryan": "TheChosenOne#2205",
-    "Yash": "yashkali997#kali",
-    "Ria": "Ria4#2222",
-    "Ria_alt": "Ria4#4444",
-    "Bodit": "Limited065#8643",
-    "Ritwik": "RITWIK#6493",
+    #"Dhimanth": "DeeKay#6875",
+    #"Shivansh": "SILVERBOLT#008",
+    #"Eklavya": "MadLiberator2005#9683",
+    #"Aryan": "TheChosenOne#2205",
+    #"Yash": "yashkali997#kali",
+    #"Ria": "Ria4#2222",
+    #"Ria_alt": "Ria4#4444",
+    #"Bodit": "Limited065#8643",
+    #"Ritwik": "RITWIK#6493",
 }
 
 LAST_REQUEST_TIME = 0
@@ -265,9 +265,9 @@ for pid, riot in PLAYERS.items():
         #else:
         #    matches = []
         #    print(f"No new matches for {riot}, skipping match fetch")
-
+        matches_played = season.get("games", 0)
         processed_match_ids = set(old.get("processed_matches", []))
-        expected_new_matches = max(0, int(season.get("games", 0) or 0) - len(processed_match_ids))
+        expected_new_matches = max(0, int(matches_played or 0) - len(processed_match_ids))
         if expected_new_matches:
             matches = get_unprocessed_current_act_matches(
                 puuid,
@@ -278,7 +278,6 @@ for pid, riot in PLAYERS.items():
             )
             print(
                 f"Fetched {len(matches)} new matches for {riot} (expected {expected_new_matches})"
-                f"MMR expects {season.get('games', 0)} total matches, {len(processed_match_ids)} already processed"
             )
         else:
             matches = []
@@ -416,7 +415,7 @@ for pid, riot in PLAYERS.items():
             processed_match_ids.add(match_id)
             new_matches_count += 1
 
-        print(f"New matches for {riot}: {new_matches_count}")
+        #print(f"New matches for {riot}: {new_matches_count}")
         if new_matches_count > 0:
             try:
                 accolades_data = get_accolades(puuid)
@@ -424,16 +423,18 @@ for pid, riot in PLAYERS.items():
                 #accolades_seasonal = (accolades_data.get("summary") or {}).get("seasons", [])
                 # accolades_data.get("seasons") is a list of dicts, each with a "season" key and a "accolades" key. We want the accolades for the current season, i.e., that is season["short"] = e11a6.
                 accolades_seasonal = []
-                for season in accolades_data.get("summary", {}).get("seasons", []): # data.get summary[seasons]
-                    #print(season)
-                    if season.get("season", {}).get("short") == CURRENT_ACT:
+                for season_a in accolades_data.get("summary", {}).get("seasons", []): # data.get summary[seasons]
+                    #print(season_a)
+                    if season_a.get("season", {}).get("short") == CURRENT_ACT:
                         #print(season)
-                        accolades_seasonal = season.get("accolades", [])
+                        accolades_seasonal = season_a.get("accolades", [])
                         break      
                 #print(accolades_seasonal)
             except Exception as accolades_error:
                 print(f"Could not fetch accolades for {riot}: {accolades_error}")
                 accolades_seasonal = old.get("accolades_seasonal", [])
+        else:
+            accolades_seasonal = old.get("accolades_seasonal", [])
 
         avg_acs = round(acs_total / rounds_total, 1) if rounds_total else 0
         kd = round(kills_total / max(deaths_total, 1), 2)
@@ -465,7 +466,7 @@ for pid, riot in PLAYERS.items():
             for key in PERFORMANCE_BREAKDOWN_KEYS
         }
 
-        matches_played = season.get("games", 0)
+        #matches_played = season.get("games", 0)
         wins = season.get("wins", 0)
 
         # MMR/season data is the source of truth for account-level competitive stats.
