@@ -7,12 +7,13 @@ const comparison = document.getElementById("comparison");
 const defaultAct = "v26-a6";
 
 let players = [];
-let cache = {}; // Stores data of default act (on page load)
-let overallCache = null; // Stores overall act data (calculated once, reused)
-let currentActData = null; // Temp variable for other acts, replaced each time
+let cache = {};
+let overallCache = null;
+let currentActData = null;
 let prev = null;
 let showDiff = false;
 let currentAct = defaultAct;
+
 let actMap = {
   "overall": "overall",
   "v26-a6": "e11a6",
@@ -20,7 +21,6 @@ let actMap = {
   "v26-a4": "e11a4",
   "v26-a3": "e11a3",
   "v26-a2": "e11a2",
-  // Add more acts here as needed
 };
 
 function isDefaultActCode(act) {
@@ -42,9 +42,12 @@ function getActLabel(actCode) {
 }
 
 function formatStat(value) {
+  if (value === null || value === undefined || value === "") return "N/A";
+
   const numeric = Number(value);
-  if (Number.isNaN(numeric)) return value ?? "0";
+  if (Number.isNaN(numeric)) return value;
   if (Number.isInteger(numeric)) return String(numeric);
+
   return numeric.toFixed(2);
 }
 
@@ -54,7 +57,7 @@ function buildPlayerExtras(player) {
     ["Deaths Total", player.deaths_total],
     ["Assists Total", player.assists_total],
     ["KAST Rounds Total", player.kast_rounds_total],
-    ["ACS Total", player.acs_total],    
+    ["ACS Total", player.acs_total],
     ["Damage Delta Total", player.damage_delta_total],
   ];
 
@@ -64,18 +67,22 @@ function buildPlayerExtras(player) {
       <div class="modal-extra-item">
         <span>${escapeHtml(label)}</span>
         <strong>${value}</strong>
-        ${label.includes("Kills") || label.includes("Deaths") || label.includes("Assists") ? `<small>(${formatStat(value / player.matches)} per match)</small>` : ""}
+        ${
+          ["Kills Total", "Deaths Total", "Assists Total"].includes(label)
+            ? `<small>(${formatStat(value / (Number(player.matches) || 1))} per match)</small>`
+            : ""
+        }
       </div>
     `)
     .join("");
 }
 
 function escapeHtml(value) {
-  return String(value)
+  return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
+    .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
 
@@ -86,6 +93,7 @@ function ensureCardModal() {
   modal = document.createElement("div");
   modal.id = "cardModal";
   modal.className = "card-modal";
+
   modal.innerHTML = `
     <div class="card-modal-content" role="dialog" aria-modal="true" aria-labelledby="cardModalTitle">
       <div class="card-modal-header">
@@ -102,8 +110,7 @@ function ensureCardModal() {
 
   document.body.appendChild(modal);
 
-  const closeButton = modal.querySelector("#cardModalClose");
-  closeButton.addEventListener("click", () => {
+  modal.querySelector("#cardModalClose").addEventListener("click", () => {
     modal.classList.remove("open");
   });
 
@@ -131,12 +138,15 @@ function openCardModal(player) {
 
   const currentActLabel = getActLabel(currentAct);
   const winRateValue = Number(player.winrate) || 0;
+
   const playerPayload = {
     player,
     currentAct,
     currentActLabel,
   };
-  const playerPageUrl = `player.html?payload=${encodeURIComponent(JSON.stringify(playerPayload))}`;
+
+  const playerPageUrl =
+    `player.html?payload=${encodeURIComponent(JSON.stringify(playerPayload))}`;
 
   try {
     localStorage.setItem("valoStatPlayerPayload", JSON.stringify(playerPayload));
@@ -144,15 +154,24 @@ function openCardModal(player) {
     console.error("Unable to store player payload for player page:", error);
   }
 
-  // Write every player stat stored in the player object to the modal
   title.textContent = `${player.id} · ${currentActLabel}`;
+
   const wins = Number(player.wins) || 0;
-  const losses = (Number(player.matches) || 0) - wins;
+  const matches = Number(player.matches) || 0;
+  const losses = Math.max(0, matches - wins);
+
+  const averagePerformance = player.avg_performance_score == null
+    ? "N/A"
+    : formatStat(player.avg_performance_score);
+
+  const performanceMatches = Number(player.performance_score_matches) || 0;
+
   body.innerHTML = `
     <section class="modal-hero">
       <div class="modal-hero-art">
-        <img src="${player.banner}" alt="${escapeHtml(player.id)} banner" />
+        <img src="${escapeHtml(player.banner || "")}" alt="${escapeHtml(player.id)} banner" />
       </div>
+
       <div class="modal-hero-copy">
         <div class="modal-hero-info">
           <div class="modal-hero-text">
@@ -160,6 +179,7 @@ function openCardModal(player) {
             <h3>${escapeHtml(player.rank)} · ${escapeHtml(player.level)} Level</h3>
             <p class="modal-identity">${escapeHtml(player.riot_id)}</p>
           </div>
+
           <div class="modal-ring" style="--win-percent: ${winRateValue};">
             <div class="modal-ring-text">
               <span>${wins}W</span>
@@ -168,10 +188,11 @@ function openCardModal(player) {
           </div>
         </div>
       </div>
+
       <div class="modal-score-panel">
-        <span class="modal-score-label">Tracker Score</span>
+        <span class="modal-score-label">ValoStat Score</span>
         <strong>${valoStatScore(player)}<small>/1000</small></strong>
-        <span class="modal-score-sub">${currentActLabel}</span>
+        <span class="modal-score-sub">${escapeHtml(currentActLabel)}</span>
       </div>
     </section>
 
@@ -179,18 +200,21 @@ function openCardModal(player) {
       <article class="modal-stat-card">
         <span>Win %</span>
         <strong>${formatStat(player.winrate)}%</strong>
-        <small>${player.wins}/${player.matches} matches</small>
+        <small>${wins}/${matches} matches</small>
       </article>
+
       <article class="modal-stat-card">
-        <span>Avg ACS</span>
-        <strong>${formatStat(player.avg_acs)}</strong>
-        <small>Total Rounds: ${player.rounds_total}</small>
+        <span>Avg Performance</span>
+        <strong>${averagePerformance}</strong>
+        <small>Average ACS: ${formatStat(player.avg_acs)}</small>
       </article>
+
       <article class="modal-stat-card">
         <span>K/D</span>
         <strong>${formatStat(player.kd)}</strong>
         <small>KA/D: ${formatStat(player.kad)}</small>
       </article>
+
       <article class="modal-stat-card">
         <span>KAST</span>
         <strong>${formatStat(player.kast)}%</strong>
@@ -203,19 +227,21 @@ function openCardModal(player) {
         <p><strong>Playtime</strong></p>
         <p>${formatTime(player.time_total)}</p>
       </div>
+
       <div>
         <p><strong>Kills / Deaths / Assists</strong></p>
-        <p>${player.kills_total} / ${player.deaths_total} / ${player.assists_total}</p>
-      </div>      
+        <p>${formatStat(player.kills_total)} / ${formatStat(player.deaths_total)} / ${formatStat(player.assists_total)}</p>
+      </div>
+
       <div>
         <p><strong>Acts Counted</strong></p>
         <p>${player.actCount || 1}</p>
       </div>
+
       <div>
         <p><strong>Acts Played</strong></p>
-        <p>${player.actsPlayed ? escapeHtml(player.actsPlayed.toUpperCase()) : currentActLabel.toUpperCase()}</p>
+        <p>${player.actsPlayed ? escapeHtml(player.actsPlayed.toUpperCase()) : escapeHtml(currentActLabel.toUpperCase())}</p>
       </div>
-
     </section>
 
     <section class="modal-implemented">
@@ -225,54 +251,48 @@ function openCardModal(player) {
       </div>
     </section>
   `;
+
   openLink.href = trackerProfileUrl(player.riot_id || player.id);
   pageLink.href = playerPageUrl;
 
   modal.classList.add("open");
 }
 
-
 /* ------------------ Act Navigation ------------------ */
 
 function setCurrentAct(act) {
   const nextAct = actMap[act] || act;
-  if (nextAct === currentAct) return; // No change
-  currentAct = nextAct; // Map display name to internal act code
+  if (nextAct === currentAct) return;
+
+  currentAct = nextAct;
 
   if (isDefaultActCode(currentAct) || currentAct === "overall") {
     currentActData = null;
   }
-  
-  navButtons.forEach(btn => {
-    if (btn.dataset.act === act) {
-      btn.classList.add("active");
-    } else {
-      btn.classList.remove("active");
-    }
+
+  navButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.act === act);
   });
-  
-  // Reload data based on selected act
+
   onActChange(act);
 }
 
 async function onActChange(act) {
-  // Clear any visible comparison when switching acts
   resetComparison();
   showDiff = false;
+
   const toggleDiff = document.getElementById("toggleDiff");
-  if (toggleDiff) {
-    toggleDiff.checked = false;
-  }
-  if (isDefaultActCode(act)) { // Stats.json is default act stats, already loaded on page load, so just re-render cards
+  if (toggleDiff) toggleDiff.checked = false;
+
+  if (isDefaultActCode(act)) {
     const data = await renderCards();
     populateDropdowns(data);
     return;
   }
-  //console.log("Act changed to:", act);
+
   const data = await renderCards(actMap[act] || act);
   populateDropdowns(data);
 }
-
 
 /* ------------------ ValoStat Score ------------------ */
 
@@ -286,28 +306,49 @@ function sigmoidNormalize(value, midpoint, steepness) {
 }
 
 function valoStatScore(p) {
-  // Bounded [0,1] transforms prevent any single metric from overpowering the final score.
-  const acs = sigmoidNormalize(p.avg_acs, 200, 65);
-  const kast = clamp(p.kast / 100, 0, 1);
-  const kad = sigmoidNormalize(p.kad, 1.2, 0.28);
-  const dd = sigmoidNormalize(p.dd_delta, 0, 30);
-  const win = p.matches > 0 ? clamp(p.wins / p.matches, 0, 1) : 0;
+  // Performance score is API-provided and normalized to [0, 1].
+  // Missing performance data receives a neutral value until it is available.
+  const performance = p.avg_performance_score == null
+    ? 0.5
+    : sigmoidNormalize(Number(p.avg_performance_score), 200, 60);
 
-  const score = 0.3 * acs + 0.2 * kast + 0.15 * kad + 0.25 * dd + 0.1 * win;
+  const acs = sigmoidNormalize(Number(p.avg_acs) || 0, 200, 65);
+  const kast = clamp((Number(p.kast) || 0) / 100, 0, 1);
+  const kad = sigmoidNormalize(Number(p.kad) || 0, 1.2, 0.28);
+  const dd = sigmoidNormalize(Number(p.dd_delta) || 0, 0, 30);
+
+  const matchCount = Number(p.matches) || 0;
+  const win = matchCount > 0
+    ? clamp((Number(p.wins) || 0) / matchCount, 0, 1)
+    : 0;
+
+  // Weights:
+  // Performance 40%, ACS 20%, KAST 15%, KA/D 10%,
+  // damage delta 10%, win rate 5%.
+  const score =
+    0.40 * performance +
+    0.20 * acs +
+    0.15 * kast +
+    0.10 * kad +
+    0.10 * dd +
+    0.05 * win;
 
   return clamp(Math.round(score * 1000), 10, 1000);
 }
 
 function formatTime(ms) {
-  const totalSeconds = Math.floor(ms / 1000);
+  const totalSeconds = Math.floor((Number(ms) || 0) / 1000);
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
+
   let result = "";
+
   if (hours > 0) result += `${hours}h `;
   if (minutes > 0) result += `${minutes}m `;
   if (seconds > 0 || result === "") result += `${seconds}s`;
-  return result;
+
+  return result.trim();
 }
 
 function getPlayerMatchKey(player) {
@@ -318,78 +359,118 @@ function getPlayerMatchKey(player) {
 
 async function loadStats() {
   const current = await fetch("stats.json?ts=" + Date.now());
-  const prevs = await fetch("stats_prev.json?ts=" + Date.now()).catch(() => null);
+  const previousResponse = await fetch("stats_prev.json?ts=" + Date.now())
+    .catch(() => null);
+
   players = await current.json();
   cache = [...players];
-  prev = computeDiff(cache, prevs ? await prevs.json() : []);
+
+  prev = computeDiff(
+    cache,
+    previousResponse ? await previousResponse.json() : []
+  );
+
   await renderCards();
   populateDropdowns(players);
   lastUpdate(current);
 }
 
-function computeDiff(curr, prev) { // Find players whose stats have changed since the last fetch
-  const prevMap = {};
-  prev.forEach((p) => {
-    const puuidKey = p?.puuid;
-    const riotIdKey = p?.riot_id;
-    const idKey = p?.id;
+function computeDiff(curr, previous) {
+  const previousMap = {};
 
-    if (puuidKey) prevMap[`puuid:${puuidKey}`] = p;
-    if (riotIdKey) prevMap[`riot_id:${riotIdKey}`] = p;
-    if (idKey) prevMap[`id:${idKey}`] = p;
+  previous.forEach((player) => {
+    if (player?.puuid) previousMap[`puuid:${player.puuid}`] = player;
+    if (player?.riot_id) previousMap[`riot_id:${player.riot_id}`] = player;
+    if (player?.id) previousMap[`id:${player.id}`] = player;
   });
+
   const diffs = [];
-  curr.forEach((p) => {
+
+  curr.forEach((player) => {
     const old =
-      prevMap[`puuid:${p.puuid}`] ||
-      prevMap[`riot_id:${p.riot_id}`] ||
-      prevMap[`id:${p.id}`];
+      previousMap[`puuid:${player.puuid}`] ||
+      previousMap[`riot_id:${player.riot_id}`] ||
+      previousMap[`id:${player.id}`];
+
     if (!old) return;
+
+    const scoreChanged = valoStatScore(player) !== valoStatScore(old);
+
     const diff = {
-      id: p.id,
-      puuid: p.puuid,
-      banner: p.banner,
-      riot_id: p.riot_id,
-      //diff: p.matches !== old.matches ? true: false,
-      // Make diff true if either matches or level or any other stat changes 
-      diff: p.matches !== old.matches || p.level !== old.level || p.rank !== old.rank || p.rr !== old.rr || p.wins !== old.wins || p.winrate !== old.winrate || p.time_total !== old.time_total || valoStatScore(p) !== valoStatScore(old) ? true : false,
-      rank: p.rank !== old.rank ? `${old.rank} → ${p.rank}` : p.rank,
-      level: p.level !== old.level ? `${old.level} → ${p.level}` : p.level,
-      rr: p.rr !== old.rr ? `${old.rr} → ${p.rr}` : p.rr,
-      matches: p.matches !== old.matches ? `${old.matches} → ${p.matches}` : p.matches,
-      wins: p.wins !== old.wins ? `${old.wins} → ${p.wins}` : p.wins,
-      winrate:
-        p.winrate !== old.winrate
-          ? `${old.winrate}% → ${p.winrate}%`
-          : `${p.winrate}%`,
-      time_total:        p.time_total !== old.time_total
-          ? `${formatTime(old.time_total)} → ${formatTime(p.time_total)}`
-          : formatTime(p.time_total),
-      score: valoStatScore(p) !== valoStatScore(old)        ? `${valoStatScore(old)} → ${valoStatScore(p)}`
-        : valoStatScore(p),
+      id: player.id,
+      puuid: player.puuid,
+      banner: player.banner,
+      riot_id: player.riot_id,
+
+      diff:
+        player.matches !== old.matches ||
+        player.level !== old.level ||
+        player.rank !== old.rank ||
+        player.rr !== old.rr ||
+        player.wins !== old.wins ||
+        player.winrate !== old.winrate ||
+        player.time_total !== old.time_total ||
+        scoreChanged,
+
+      rank: player.rank !== old.rank
+        ? `${old.rank} → ${player.rank}`
+        : player.rank,
+
+      level: player.level !== old.level
+        ? `${old.level} → ${player.level}`
+        : player.level,
+
+      rr: player.rr !== old.rr
+        ? `${old.rr} → ${player.rr}`
+        : player.rr,
+
+      matches: player.matches !== old.matches
+        ? `${old.matches} → ${player.matches}`
+        : player.matches,
+
+      wins: player.wins !== old.wins
+        ? `${old.wins} → ${player.wins}`
+        : player.wins,
+
+      winrate: player.winrate !== old.winrate
+        ? `${old.winrate}% → ${player.winrate}%`
+        : `${player.winrate}%`,
+
+      time_total: player.time_total !== old.time_total
+        ? `${formatTime(old.time_total)} → ${formatTime(player.time_total)}`
+        : formatTime(player.time_total),
+
+      score: scoreChanged
+        ? `${valoStatScore(old)} → ${valoStatScore(player)}`
+        : valoStatScore(player),
     };
+
     diffs.push(diff);
   });
+
   return diffs;
 }
 
-
-function lastUpdate(res) {
-  const lastModified = res.headers.get("Last-Modified");
+function lastUpdate(response) {
+  const lastModified = response.headers.get("Last-Modified");
   if (!lastModified) return;
+
   const date = new Date(lastModified);
   const now = new Date();
   const diffMinutes = Math.floor((now - date) / 60000);
   const hours = Math.floor(diffMinutes / 60);
   const minutes = diffMinutes % 60;
+
   let text = "Stats last updated ";
   if (hours > 0) text += `${hours}h `;
   if (minutes > 0) text += `${minutes}m `;
   text += "ago";
-  document.getElementById("updateTime").textContent = text;
+
+  const updateTime = document.getElementById("updateTime");
+  if (updateTime) updateTime.textContent = text;
 }
 
-/* ---------- LOADING STATE ---------- */
+/* ---------- Loading State ---------- */
 
 function showLoading(message = "Calculating scores for overall stats, please wait...") {
   profiles.innerHTML = `
@@ -400,148 +481,196 @@ function showLoading(message = "Calculating scores for overall stats, please wai
   `;
 }
 
-/* ---------- LOAD ACT DATA ---------- */
+/* ---------- Load Act Data ---------- */
 
 async function loadActData(act) {
   if (isDefaultActCode(act)) {
-    // Default act is already in cache from stats.json
     return cache;
   }
-  
+
   if (act === "overall") {
-    // Combine all acts: iterate through actMap and fetch all non-overall acts
-    let combinedData = [...cache]; // Start with default act
-    const actCount = {}; // Track how many acts each player appears in for averaging
-    const actNames = {}; // Track which acts each player appears in
-    
-    // Initialize for cache players (default act)
-    combinedData.forEach(p => {
-      actCount[p.id] = 1;
-      actNames[p.id] = ["V26: A6"]; // Default act name
+    const combinedData = [...cache];
+    const actCount = {};
+    const actNames = {};
+
+    combinedData.forEach((player) => {
+      actCount[player.id] = 1;
+      actNames[player.id] = ["V26: A6"];
     });
-    
+
     try {
-      // Loop through actMap and fetch all acts except 'overall'
       for (const [displayName, actCode] of Object.entries(actMap)) {
-        if (displayName === "overall" || actCode === "e11a6") continue; // Skip overall and default act
-        
+        if (displayName === "overall" || actCode === "e11a6") continue;
+
         const response = await fetch(`data/${actCode}.json?ts=${Date.now()}`);
-        if (response.ok) {
-          const actData = await response.json();
-          
-          // Merge act data: combine matching players' stats
-          actData.forEach(actPlayer => {
-            const existingIndex = combinedData.findIndex(p => p.id === actPlayer.id);
-            if (existingIndex !== -1) {
-              // Combine stats for matching players
-              const player = combinedData[existingIndex];
-              const oldCount = actCount[player.id] || 1;
-              const newCount = oldCount + 1;
-              
-              combinedData[existingIndex] = {
-                ...player,
-                matches: (player.matches || 0) + (actPlayer.matches || 0),
-                wins: (player.wins || 0) + (actPlayer.wins || 0),
-                kills_total: (player.kills_total || 0) + (actPlayer.kills_total || 0),
-                deaths_total: (player.deaths_total || 0) + (actPlayer.deaths_total || 0),
-                assists_total: (player.assists_total || 0) + (actPlayer.assists_total || 0),
-                time_total: (player.time_total || 0) + (actPlayer.time_total || 0),
-                acs_total: (player.acs_total || 0) + (actPlayer.acs_total || 0),
-                damage_delta_total: (player.damage_delta_total || 0) + (actPlayer.damage_delta_total || 0),
-                kast_rounds_total: (player.kast_rounds_total || 0) + (actPlayer.kast_rounds_total || 0),
-                rounds_total: (player.rounds_total || 0) + (actPlayer.rounds_total || 0),
-                // Recalculate avg stats
-                // avg_acs = total ACS / total rounds accumulated across acts
-                // kd = total kills / total deaths accumulated across acts
-                // kad = (total kills + total assists) / total deaths accumulated across acts
-                // kast = total kast rounds / total rounds accumulated across acts
-                // dd_delta = total damage delta / total rounds accumulated across acts
-                avg_acs: ((player.acs_total || 0) + (actPlayer.acs_total || 0)) / ((player.rounds_total || 0) + (actPlayer.rounds_total || 0)),
-                kd: ((player.kills_total || 0) + (actPlayer.kills_total || 0)) / ((player.deaths_total || 0) + (actPlayer.deaths_total || 0)),
-                kad: ((player.kills_total || 0) + (player.assists_total || 0) + (actPlayer.kills_total || 0) + (actPlayer.assists_total || 0)) / ((player.deaths_total || 0) + (actPlayer.deaths_total || 0)),
-                kast: (((player.kast_rounds_total || 0) + (actPlayer.kast_rounds_total || 0)) / ((player.rounds_total || 0) + (actPlayer.rounds_total || 0)))*100,
-                dd_delta: ((player.damage_delta_total || 0) + (actPlayer.damage_delta_total || 0)) / ((player.rounds_total || 0) + (actPlayer.rounds_total || 0)),
-              };
-              actCount[player.id] = newCount;
-              actNames[player.id].push(displayName);
-              
-              // Recalculate winrate
-              if (combinedData[existingIndex].matches > 0) {
-                combinedData[existingIndex].winrate = Math.round(
-                  (combinedData[existingIndex].wins / combinedData[existingIndex].matches) * 100
-                );
-              }
-            } else {
-              // Add new player from this act
-              combinedData.push(actPlayer);
-              actCount[actPlayer.id] = 1;
-              actNames[actPlayer.id] = [displayName];
+        if (!response.ok) continue;
+
+        const actData = await response.json();
+
+        actData.forEach((actPlayer) => {
+          const existingIndex = combinedData.findIndex(
+            (player) => player.id === actPlayer.id
+          );
+
+          if (existingIndex !== -1) {
+            const player = combinedData[existingIndex];
+
+            const combinedMatches =
+              (player.matches || 0) + (actPlayer.matches || 0);
+            const combinedWins =
+              (player.wins || 0) + (actPlayer.wins || 0);
+            const combinedRounds =
+              (player.rounds_total || 0) + (actPlayer.rounds_total || 0);
+
+            const combinedAcs =
+              (player.acs_total || 0) + (actPlayer.acs_total || 0);
+            const combinedKills =
+              (player.kills_total || 0) + (actPlayer.kills_total || 0);
+            const combinedDeaths =
+              (player.deaths_total || 0) + (actPlayer.deaths_total || 0);
+            const combinedAssists =
+              (player.assists_total || 0) + (actPlayer.assists_total || 0);
+            const combinedKastRounds =
+              (player.kast_rounds_total || 0) + (actPlayer.kast_rounds_total || 0);
+            const combinedDamageDelta =
+              (player.damage_delta_total || 0) + (actPlayer.damage_delta_total || 0);
+
+            const combinedPerformanceTotal =
+              (player.performance_score_total || 0) +
+              (actPlayer.performance_score_total || 0);
+
+            const combinedPerformanceMatches =
+              (player.performance_score_matches || 0) +
+              (actPlayer.performance_score_matches || 0);
+
+            const combinedEnemyRankSum =
+              (player.enemy_rank_sum || 0) + (actPlayer.enemy_rank_sum || 0);
+            const combinedEnemyRankMatches =
+              (player.enemy_rank_matches || 0) +
+              (actPlayer.enemy_rank_matches || 0);
+
+            const combinedLobbyRankSum =
+              (player.lobby_rank_sum || 0) + (actPlayer.lobby_rank_sum || 0);
+            const combinedLobbyRankMatches =
+              (player.lobby_rank_matches || 0) +
+              (actPlayer.lobby_rank_matches || 0);
+
+            combinedData[existingIndex] = {
+              ...player,
+              matches: combinedMatches,
+              wins: combinedWins,
+              kills_total: combinedKills,
+              deaths_total: combinedDeaths,
+              assists_total: combinedAssists,
+              time_total: (player.time_total || 0) + (actPlayer.time_total || 0),
+              acs_total: combinedAcs,
+              damage_delta_total: combinedDamageDelta,
+              kast_rounds_total: combinedKastRounds,
+              rounds_total: combinedRounds,
+
+              performance_score_total: combinedPerformanceTotal,
+              performance_score_matches: combinedPerformanceMatches,
+
+              enemy_rank_sum: combinedEnemyRankSum,
+              enemy_rank_matches: combinedEnemyRankMatches,
+              lobby_rank_sum: combinedLobbyRankSum,
+              lobby_rank_matches: combinedLobbyRankMatches,
+
+              avg_performance_score: combinedPerformanceMatches
+                ? combinedPerformanceTotal / combinedPerformanceMatches
+                : null,
+
+              enemy_rank_average_value: combinedEnemyRankMatches
+                ? combinedEnemyRankSum / combinedEnemyRankMatches
+                : null,
+
+              lobby_rank_average_value: combinedLobbyRankMatches
+                ? combinedLobbyRankSum / combinedLobbyRankMatches
+                : null,
+
+              avg_acs: combinedRounds ? combinedAcs / combinedRounds : 0,
+
+              kd: combinedDeaths ? combinedKills / combinedDeaths : combinedKills,
+
+              kad: combinedDeaths
+                ? (combinedKills + combinedAssists) / combinedDeaths
+                : combinedKills + combinedAssists,
+
+              kast: combinedRounds
+                ? (combinedKastRounds / combinedRounds) * 100
+                : 0,
+
+              dd_delta: combinedRounds
+                ? combinedDamageDelta / combinedRounds
+                : 0,
+            };
+
+            actCount[player.id] = (actCount[player.id] || 1) + 1;
+            actNames[player.id].push(displayName);
+
+            if (combinedData[existingIndex].matches > 0) {
+              combinedData[existingIndex].winrate = Math.round(
+                combinedWins / combinedMatches * 100
+              );
             }
-          });
-        }
+          } else {
+            combinedData.push(actPlayer);
+            actCount[actPlayer.id] = 1;
+            actNames[actPlayer.id] = [displayName];
+          }
+        });
       }
-      
-      // Attach act info to players for display
-      combinedData.forEach(p => {
-        p.actCount = actCount[p.id];
-        p.actsPlayed = actNames[p.id] ? actNames[p.id].join(", ") : "";
+
+      combinedData.forEach((player) => {
+        player.actCount = actCount[player.id];
+        player.actsPlayed = actNames[player.id]
+          ? actNames[player.id].join(", ")
+          : "";
       });
     } catch (error) {
       console.error("Error loading act data:", error);
     }
-    
+
     return combinedData;
   }
-  
-  // Load specific act data
+
   try {
     const response = await fetch(`data/${act}.json?ts=${Date.now()}`);
-    if (response.ok) {
-      return await response.json();
-    }
+    if (response.ok) return await response.json();
   } catch (error) {
     console.error(`Error loading act data ${act}:`, error);
   }
-  
-  return cache; // Fallback to cache
+
+  return cache;
 }
 
 async function renderCards(act = currentAct) {
-
-  // Only show toggle for the default act (e11a6), hide for all others
   const toggleControl = document.querySelector(".toggle-control");
+
   if (toggleControl) {
-    if (isDefaultActCode(act)) {
-      toggleControl.style.display = "flex";
-    } else {
-      toggleControl.style.display = "none";
-    }
+    toggleControl.style.display = isDefaultActCode(act) ? "flex" : "none";
   }
-  
-  // Show loading spinner if loading overall stats
+
   if (act === "overall") {
     showLoading("Calculating scores for overall stats, please wait...");
   }
-  
-  // Load data based on act
-  let data = await loadActData(act);
+
+  const data = await loadActData(act);
   const displayData = [...data];
 
   if (!displayData || displayData.length === 0) {
     profiles.innerHTML = "<p class='no-changes'>No data available for this act.</p>";
     return displayData || [];
   }
-  // Store displayed data for comparison based on act
+
   if (act === "overall" && !overallCache) {
     overallCache = displayData;
   } else if (act !== "e11a6" && act !== "overall") {
     currentActData = displayData;
   }
-  // For default act (e11a6), cache is already set from loadStats()
 
-
-  // Sorting
   const sortType = document.getElementById("sortSelect").value;
+
   if (sortType !== "default") {
     displayData.sort((a, b) => {
       switch (sortType) {
@@ -556,20 +685,16 @@ async function renderCards(act = currentAct) {
         case "matchesPlayed":
           return (b.matches || 0) - (a.matches || 0);
         case "kills":
-          return (
-            (b.kills_total / b.matches || 0) - (a.kills_total / a.matches || 0)
-          );
+          return ((b.kills_total / b.matches) || 0) -
+            ((a.kills_total / a.matches) || 0);
         case "deaths":
-          return (
-            -1 *
-            ((b.deaths_total / b.matches || 0) -
-              (a.deaths_total / a.matches || 0))
+          return -1 * (
+            ((b.deaths_total / b.matches) || 0) -
+            ((a.deaths_total / a.matches) || 0)
           );
         case "assists":
-          return (
-            (b.assists_total / b.matches || 0) -
-            (a.assists_total / a.matches || 0)
-          );
+          return ((b.assists_total / b.matches) || 0) -
+            ((a.assists_total / a.matches) || 0);
         case "acs":
           return (b.avg_acs || 0) - (a.avg_acs || 0);
         case "kd":
@@ -590,98 +715,96 @@ async function renderCards(act = currentAct) {
 
   profiles.innerHTML = "";
 
-  // Show diff arrows if toggled and data has changed since last fetch
-  // Check if prev[i].diff is true 
-  // If false, show no changes text. If true, show old → new values for changed stats and highlight card.
   if (showDiff && prev.length > 0) {
-    const hasDiff = prev.some((p) => p.diff);
+    const hasDiff = prev.some((player) => player.diff);
+
     if (!hasDiff) {
       profiles.innerHTML = "<p class='no-changes'>No changes since last update.</p>";
       return displayData;
     }
   }
 
-  displayData.forEach((p) => {
-    const score = valoStatScore(p);
+  displayData.forEach((player) => {
+    const score = valoStatScore(player);
     let extraStat = "";
+
     switch (sortType) {
       case "kills":
-        extraStat = `<p><strong>Kills:</strong> ${Math.trunc((p.kills_total / p.matches) * 100) / 100 || 0}</p>`;
+        extraStat = `<p><strong>Kills:</strong> ${Math.trunc((player.kills_total / player.matches) * 100) / 100 || 0}</p>`;
         break;
       case "deaths":
-        extraStat = `<p><strong>Deaths:</strong> ${Math.trunc((p.deaths_total / p.matches) * 100) / 100 || 0}</p>`;
+        extraStat = `<p><strong>Deaths:</strong> ${Math.trunc((player.deaths_total / player.matches) * 100) / 100 || 0}</p>`;
         break;
       case "assists":
-        extraStat = `<p><strong>Assists:</strong> ${Math.trunc((p.assists_total / p.matches) * 100) / 100 || 0}</p>`;
+        extraStat = `<p><strong>Assists:</strong> ${Math.trunc((player.assists_total / player.matches) * 100) / 100 || 0}</p>`;
         break;
       case "acs":
-        extraStat = `<p><strong>Avg ACS:</strong> ${p.avg_acs || 0}</p>`;
+        extraStat = `<p><strong>Avg ACS:</strong> ${player.avg_acs || 0}</p>`;
         break;
       case "kd":
-        extraStat = `<p><strong>K/D:</strong> ${p.kd || 0}</p>`;
+        extraStat = `<p><strong>K/D:</strong> ${player.kd || 0}</p>`;
         break;
       case "kad":
-        extraStat = `<p><strong>KA/D:</strong> ${p.kad || 0}</p>`;
+        extraStat = `<p><strong>KA/D:</strong> ${player.kad || 0}</p>`;
         break;
       case "kast":
-        extraStat = `<p><strong>KAST %:</strong> ${p.kast || 0}%</p>`;
+        extraStat = `<p><strong>KAST %:</strong> ${player.kast || 0}%</p>`;
         break;
       case "dd":
-        extraStat = `<p><strong>DDΔ / round:</strong> ${p.dd_delta || 0}</p>`;
+        extraStat = `<p><strong>DDΔ / round:</strong> ${player.dd_delta || 0}</p>`;
         break;
       default:
         break;
     }
 
-    // Check if prev diff is true for this player
-    const playerKey = getPlayerMatchKey(p);
-    const playerDiff = prev.find((d) => getPlayerMatchKey(d) === playerKey);
+    const playerKey = getPlayerMatchKey(player);
+    const playerDiff = prev.find(
+      (item) => getPlayerMatchKey(item) === playerKey
+    );
+
     if (showDiff && playerDiff && playerDiff.diff) {
-      //console.log("diff found for", p.id);
       profiles.innerHTML += `
-        <div class="card diff-highlight" data-player-id="${escapeHtml(p.id)}">
-          <img src="${p.banner}" class="banner" />
+        <div class="card diff-highlight" data-player-id="${escapeHtml(player.id)}">
+          <img src="${escapeHtml(player.banner || "")}" class="banner" />
           <h3>
-            <a href="${trackerProfileUrl(p.riot_id)}" target="_blank" class="player-link">
-              ${p.id}
+            <a href="${trackerProfileUrl(player.riot_id)}" target="_blank" class="player-link">
+              ${escapeHtml(player.id)}
             </a>
           </h3>
-
-          <p class="riot-id">${p.riot_id}</p>
-          <p><strong>Rank:</strong> ${playerDiff.rank} (${playerDiff.rr} RR)</p>
-          <p><strong>Level:</strong> ${playerDiff.level}</p>
-          <p><strong>Wins:</strong> ${playerDiff.wins}/${playerDiff.matches}</p>
-          <p><strong>Win Rate:</strong> ${playerDiff.winrate}</p>
-          <p><strong>Playtime:</strong> ${playerDiff.time_total}</p>
+          <p class="riot-id">${escapeHtml(player.riot_id)}</p>
+          <p><strong>Rank:</strong> ${escapeHtml(playerDiff.rank)} (${escapeHtml(playerDiff.rr)} RR)</p>
+          <p><strong>Level:</strong> ${escapeHtml(playerDiff.level)}</p>
+          <p><strong>Wins:</strong> ${escapeHtml(playerDiff.wins)}/${escapeHtml(playerDiff.matches)}</p>
+          <p><strong>Win Rate:</strong> ${escapeHtml(playerDiff.winrate)}</p>
+          <p><strong>Playtime:</strong> ${escapeHtml(playerDiff.time_total)}</p>
           ${extraStat}
           <div class="score">
-            ValoStat Score: <span>${playerDiff.score}</span>
+            ValoStat Score: <span>${escapeHtml(playerDiff.score)}</span>
           </div>
         </div>
       `;
       return;
     } else if (showDiff && playerDiff && !playerDiff.diff) {
-      //console.log("No diff for", p.id);
       return;
     }
 
     profiles.innerHTML += `
-      <div class="card" data-player-id="${escapeHtml(p.id)}">
-        <img src="${p.banner}" class="banner" />
+      <div class="card" data-player-id="${escapeHtml(player.id)}">
+        <img src="${escapeHtml(player.banner || "")}" class="banner" />
         <h3>
-          <a href="${trackerProfileUrl(p.riot_id)}" target="_blank" class="player-link">
-            ${p.id}
+          <a href="${trackerProfileUrl(player.riot_id)}" target="_blank" class="player-link">
+            ${escapeHtml(player.id)}
           </a>
         </h3>
 
-        <p class="riot-id">${p.riot_id}</p>
+        <p class="riot-id">${escapeHtml(player.riot_id)}</p>
 
-        <p><strong>Rank:</strong> ${p.rank} (${p.rr} RR)</p>
-        <p><strong>Level:</strong> ${p.level}</p>
-        <p><strong>Wins:</strong> ${p.wins}/${p.matches}</p>
-        <p><strong>Win Rate:</strong> ${p.winrate}%</p>
-        <p><strong>Playtime:</strong> ${formatTime(p.time_total)}</p>
-        ${p.actCount ? `<p><strong>Acts Counted:</strong> ${p.actCount}</p>` : ''}
+        <p><strong>Rank:</strong> ${escapeHtml(player.rank)} (${escapeHtml(player.rr)} RR)</p>
+        <p><strong>Level:</strong> ${escapeHtml(player.level)}</p>
+        <p><strong>Wins:</strong> ${escapeHtml(player.wins)}/${escapeHtml(player.matches)}</p>
+        <p><strong>Win Rate:</strong> ${escapeHtml(player.winrate)}%</p>
+        <p><strong>Playtime:</strong> ${formatTime(player.time_total)}</p>
+        ${player.actCount ? `<p><strong>Acts Counted:</strong> ${player.actCount}</p>` : ""}
         ${extraStat}
         <div class="score">
           ValoStat Score: <span>${score}</span>
@@ -689,7 +812,7 @@ async function renderCards(act = currentAct) {
       </div>
     `;
   });
-  
+
   return displayData;
 }
 
@@ -697,33 +820,33 @@ function populateDropdowns(data) {
   selectA.innerHTML = "";
   selectB.innerHTML = "";
 
-  data.forEach((p) => {
-    selectA.add(new Option(p.id, p.id));
-    selectB.add(new Option(p.id, p.id));
+  data.forEach((player) => {
+    selectA.add(new Option(player.id, player.id));
+    selectB.add(new Option(player.id, player.id));
   });
 }
 
-/* ---------- Helper function to get current act data ---------- */
+/* ---------- Comparison Data ---------- */
+
 function getComparisonData() {
   if (isDefaultActCode(currentAct)) return cache;
   if (currentAct === "overall") return overallCache;
   return currentActData || cache;
 }
 
-/* ------------------ Comparison Helpers ------------------ */
 function resetComparison() {
   try {
-    if (comparison && comparison.innerHTML && comparison.innerHTML.trim() !== "") {
+    if (comparison && comparison.innerHTML.trim() !== "") {
       comparison.innerHTML = "";
     }
-    // Reset selects to default empty state to avoid stale selection
+
     if (selectA) selectA.selectedIndex = 0;
     if (selectB) selectB.selectedIndex = 0;
 
     const resetBtn = document.getElementById("resetCompareBtn");
     if (resetBtn) resetBtn.remove();
-  } catch (e) {
-    console.warn("resetComparison failed", e);
+  } catch (error) {
+    console.warn("resetComparison failed", error);
   }
 }
 
@@ -731,10 +854,11 @@ function resetComparison() {
 
 compareBtn.addEventListener("click", () => {
   const data = getComparisonData();
-  if (!data || data.length === 0) return; // No data to compare
-  
-  const a = data.find((p) => p.id === selectA.value);
-  const b = data.find((p) => p.id === selectB.value);
+  if (!data || data.length === 0) return;
+
+  const a = data.find((player) => player.id === selectA.value);
+  const b = data.find((player) => player.id === selectB.value);
+
   if (!a || !b || a.id === b.id) return;
 
   renderComparison(a, b);
@@ -778,6 +902,7 @@ function statRow(a, b, higherBetter = true, rank = false, isTime = false) {
     compareA = rankValues[a] || 0;
     compareB = rankValues[b] || 0;
   }
+
   if (isTime) {
     displayA = formatTime(a);
     displayB = formatTime(b);
@@ -785,11 +910,14 @@ function statRow(a, b, higherBetter = true, rank = false, isTime = false) {
     displayA = formatStat(a);
     displayB = formatStat(b);
   }
+
   if (compareA === compareB) {
     return `<td class="equal-stat">${displayA}</td><td class="equal-stat">${displayB}</td>`;
   }
 
-  const goodA = higherBetter ? compareA > compareB : compareA < compareB;
+  const goodA = higherBetter
+    ? compareA > compareB
+    : compareA < compareB;
 
   return goodA
     ? `<td class="good-stat">${displayA}</td><td class="bad-stat">${displayB}</td>`
@@ -798,38 +926,55 @@ function statRow(a, b, higherBetter = true, rank = false, isTime = false) {
 
 function renderComparison(a, b) {
   comparison.innerHTML = `
-    <div class="compare-card">
-    </div>
-
     <table>
       <tr>
         <th>Stat</th>
-        <th>${a.id}</th>
-        <th>${b.id}</th>
+        <th>${escapeHtml(a.id)}</th>
+        <th>${escapeHtml(b.id)}</th>
       </tr>
 
-      <tr><td>Rank</td>${
-        a.rank === b.rank
-          ? `<td class="equal-stat">${a.rank}</td><td class="equal-stat">${b.rank}</td><tr><td>RR</td>${statRow(a.rr, b.rr)}</td></tr>`
-          : statRow(a.rank, b.rank, true, true)
-      }</tr>
-      <tr><td>ValoStat Score</td>${statRow(valoStatScore(a), valoStatScore(b))}</tr>
-      ${a.actCount || b.actCount ? `<tr><td>Acts Counted</td>${statRow(a.actCount, b.actCount)}</tr>` : ''}
-      ${a.actsPlayed || b.actsPlayed ? `<tr><td>Acts Played</td><td>${a.actsPlayed?.toUpperCase() || "N/A"}</td><td>${b.actsPlayed?.toUpperCase() || "N/A"}</td></tr>` : ''}
+      <tr>
+        <td>Rank</td>
+        ${statRow(a.rank, b.rank, true, true)}
+      </tr>
+
+      <tr>
+        <td>RR</td>
+        ${statRow(a.rr, b.rr)}
+      </tr>
+
+      <tr>
+        <td>ValoStat Score</td>
+        ${statRow(valoStatScore(a), valoStatScore(b))}
+      </tr>
+
+      ${a.actCount || b.actCount ? `
+        <tr><td>Acts Counted</td>${statRow(a.actCount || 1, b.actCount || 1)}</tr>
+      ` : ""}
+
+      ${a.actsPlayed || b.actsPlayed ? `
+        <tr>
+          <td>Acts Played</td>
+          <td>${escapeHtml(a.actsPlayed?.toUpperCase() || "N/A")}</td>
+          <td>${escapeHtml(b.actsPlayed?.toUpperCase() || "N/A")}</td>
+        </tr>
+      ` : ""}
+
       <tr><td>Playtime</td>${statRow(a.time_total, b.time_total, true, false, true)}</tr>
       <tr><td>Matches</td>${statRow(a.matches, b.matches)}</tr>
       <tr><td>Winrate %</td>${statRow(a.winrate, b.winrate)}</tr>
+      <tr><td>Avg Performance</td>${statRow(a.avg_performance_score, b.avg_performance_score)}</tr>
       <tr><td>Avg ACS</td>${statRow(a.avg_acs, b.avg_acs)}</tr>
       <tr><td>K/D</td>${statRow(a.kd, b.kd)}</tr>
       <tr><td>KA/D</td>${statRow(a.kad, b.kad)}</tr>
       <tr><td>KAST %</td>${statRow(a.kast, b.kast)}</tr>
-      <tr><td>DDΔ / round </td>${statRow(a.dd_delta, b.dd_delta)}</tr>
+      <tr><td>DDΔ / round</td>${statRow(a.dd_delta, b.dd_delta)}</tr>
     </table>
   `;
 
-  // Add a reset button next to the compare button so user can hide the comparison
   try {
     let resetBtn = document.getElementById("resetCompareBtn");
+
     if (!resetBtn) {
       resetBtn = document.createElement("button");
       resetBtn.id = "resetCompareBtn";
@@ -837,32 +982,34 @@ function renderComparison(a, b) {
       resetBtn.className = "reset-compare-btn";
       resetBtn.textContent = "Reset";
       resetBtn.addEventListener("click", resetComparison);
+
       if (compareBtn && compareBtn.parentNode) {
         compareBtn.parentNode.insertBefore(resetBtn, compareBtn.nextSibling);
       }
     } else {
       resetBtn.style.display = "inline-block";
     }
-  } catch (e) {
-    console.warn("Unable to add reset button for comparison", e);
+  } catch (error) {
+    console.warn("Unable to add reset button for comparison", error);
   }
 }
 
+/* ------------------ Start App ------------------ */
 
 loadStats();
-// Add click event listeners to all navbar buttons
-navButtons.forEach(button => {
-  button.addEventListener("click", (e) => {
-    const selectedAct = e.target.dataset.act;
-    setCurrentAct(selectedAct);
+
+navButtons.forEach((button) => {
+  button.addEventListener("click", (event) => {
+    setCurrentAct(event.currentTarget.dataset.act);
   });
 });
 
 document.getElementById("sortSelect").addEventListener("change", async () => {
   await renderCards();
 });
-document.getElementById("toggleDiff").addEventListener("change", async (e) => {
-  showDiff = e.target.checked;
+
+document.getElementById("toggleDiff").addEventListener("change", async (event) => {
+  showDiff = event.target.checked;
   await renderCards();
 });
 
@@ -878,7 +1025,8 @@ profiles.addEventListener("click", (event) => {
   if (!selectedData || selectedData.length === 0) return;
 
   const playerId = card.dataset.playerId;
-  const player = selectedData.find((p) => p.id === playerId);
+  const player = selectedData.find((item) => item.id === playerId);
+
   if (!player) return;
 
   openCardModal(player);
