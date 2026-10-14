@@ -38,6 +38,12 @@
     "performance_score_total": 491.627,
     "performance_score_matches": 2,
     "avg_performance_score": 245.81,
+    "enemy_rank_average_value": 18.0,
+    "enemy_rank_matches": 2,
+    "lobby_rank_average_value": 17.71,
+    "lobby_rank_matches": 2,
+    "enemy_rank_sum": 36.0,
+    "lobby_rank_sum": 35.42857142857143,
     "performance_breakdown_totals": {
       "damage": 244.29446640316206,
       "trades": 0.308300395256917,

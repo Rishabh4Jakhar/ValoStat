@@ -4,8 +4,7 @@ import os
 import time
 from collections import defaultdict, Counter
 
-API_KEY = "HDEV-aff432b4-6ba3-476e-897c-fdafb9929b91"
-#API_KEY = os.environ["HENRIK_API_KEY"]
+API_KEY = os.environ["HENRIK_API_KEY"]
 HEADERS = {"Authorization": API_KEY}
 
 REGION = "ap"
@@ -14,32 +13,44 @@ CURRENT_ACT = "e11a6"  # V26A6
 
 PLAYERS = {
 
-    #"Rishabh": "Rishabh4#Gamer",
-    #"Akshat": "Flashgaming4#FAST",
-    #"Advik": "NøVä#8790",
-    #"Modit": "Limitless065#5079",
-    #"Moksh": "CuteBoyMox#9710",
-    #"Nityaa": "LadyWhistledown#2310",
-    #"Vandna": "Fluxy#XOXO",
-    #"Timmy": "timmyy#latte",
-    #"Siddharth": "BravosidOP#India",
-    #"Hardik": "Livein#1234",
-    #"Tanmay": "KabruhSingh#Drunk",
-    #"Sonu": "reducto#12432",
+    "Rishabh": "Rishabh4#Gamer",
+    "Akshat": "Flashgaming4#FAST",
+    "Advik": "NøVä#8790",
+    "Modit": "Limitless065#5079",
+    "Moksh": "CuteBoyMox#9710",
+    "Nityaa": "LadyWhistledown#2310",
+    "Vandna": "Fluxy#XOXO",
+    "Timmy": "timmyy#latte",
+    "Siddharth": "BravosidOP#India",
+    "Hardik": "Livein#1234",
+    "Tanmay": "KabruhSingh#Drunk",
+    "Sonu": "reducto#12432",
     "Anshul": "AnShu1#GhOul",
-    #"Dhimanth": "DeeKay#6875",
-    #"Shivansh": "SILVERBOLT#008",
-    #"Eklavya": "MadLiberator2005#9683",
-    #"Aryan": "TheChosenOne#2205",
-    #"Yash": "yashkali997#kali",
-    #"Ria": "Ria4#2222",
-    #"Ria_alt": "Ria4#4444",
-    #"Bodit": "Limited065#8643",
-    #"Ritwik": "RITWIK#6493",
+    "Dhimanth": "DeeKay#6875",
+    "Shivansh": "SILVERBOLT#008",
+    "Eklavya": "MadLiberator2005#9683",
+    "Aryan": "TheChosenOne#2205",
+    "Yash": "yashkali997#kali",
+    "Ria": "Ria4#2222",
+    "Ria_alt": "Ria4#4444",
+    "Bodit": "Limited065#8643",
+    "Ritwik": "RITWIK#6493",
 }
 
 LAST_REQUEST_TIME = 0
 MIN_INTERVAL = 100 / 28  # about 3.57 seconds between requests
+
+RANK_VALUES = {
+    "Iron 1": 1, "Iron 2": 2, "Iron 3": 3,
+    "Bronze 1": 4, "Bronze 2": 5, "Bronze 3": 6,
+    "Silver 1": 7, "Silver 2": 8, "Silver 3": 9,
+    "Gold 1": 10, "Gold 2": 11, "Gold 3": 12,
+    "Platinum 1": 13, "Platinum 2": 14, "Platinum 3": 15,
+    "Diamond 1": 16, "Diamond 2": 17, "Diamond 3": 18,
+    "Ascendant 1": 19, "Ascendant 2": 20, "Ascendant 3": 21,
+    "Immortal 1": 22, "Immortal 2": 23, "Immortal 3": 24,
+    "Radiant": 25,
+}
 
 PERFORMANCE_BREAKDOWN_KEYS = (
     "damage", "trades", "assists", "utility_usage", "plants", "defuses",
@@ -311,6 +322,14 @@ for pid, riot in PLAYERS.items():
             "utility": {key: dict(value) for key, value in old.get("performance_ratings", {}).get("utility", {}).items()},
         }
 
+
+        # Match-level rank averages use sums + counts so missing tiers aren't
+        # treated as Iron 1 and future matches can be added correctly.
+        enemy_rank_sum = old.get("enemy_rank_sum", 0.0)
+        enemy_rank_matches = old.get("enemy_rank_matches", 0)
+        lobby_rank_sum = old.get("lobby_rank_sum", 0.0)
+        lobby_rank_matches = old.get("lobby_rank_matches", 0)
+
         agent_totals = {
             agent_name: normalize_agent_totals(agent_data)
             for agent_name, agent_data in old.get("agents", {}).items()
@@ -336,6 +355,7 @@ for pid, riot in PLAYERS.items():
                 continue
 
             stats = player.get("stats", {})
+            player_team = player.get("team_id")
             kills = stats.get("kills", 0) or 0
             deaths = stats.get("deaths", 0) or 0
             assists = stats.get("assists", 0) or 0
@@ -411,6 +431,35 @@ for pid, riot in PLAYERS.items():
             card_id = (player.get("customization") or {}).get("card")
             if card_id:
                 latest_card_id = card_id
+
+
+            # Enemy rank is the opposing team's average; lobby rank includes
+            # every player with a known competitive tier.
+            match_players = match.get("players", [])
+            all_lobby_ranks = []
+            enemy_ranks = []
+
+            for lobby_player in match_players:
+                tier_name = (lobby_player.get("tier") or {}).get("name")
+                tier_value = RANK_VALUES.get(tier_name)
+
+                if tier_value is None:
+                    continue
+
+                all_lobby_ranks.append(tier_value)
+
+                if lobby_player.get("team_id") != player_team:
+                    enemy_ranks.append(tier_value)
+
+            if enemy_ranks:
+                enemy_rank_sum += sum(enemy_ranks) / len(enemy_ranks)
+                enemy_rank_matches += 1
+
+            if all_lobby_ranks:
+                lobby_rank_sum += sum(all_lobby_ranks) / len(all_lobby_ranks)
+                lobby_rank_matches += 1
+
+
 
             processed_match_ids.add(match_id)
             new_matches_count += 1
@@ -511,6 +560,18 @@ for pid, riot in PLAYERS.items():
             "performance_score_matches": performance_score_matches,
             "avg_performance_score": round(performance_score_total / performance_score_matches, 2)
                 if performance_score_matches else None,
+            "enemy_rank_average_value": (
+                round(enemy_rank_sum / enemy_rank_matches, 2)
+                if enemy_rank_matches else None
+            ),
+            "enemy_rank_matches": enemy_rank_matches,
+            "lobby_rank_average_value": (
+                round(lobby_rank_sum / lobby_rank_matches, 2)
+                if lobby_rank_matches else None
+            ),
+            "lobby_rank_matches": lobby_rank_matches,
+            "enemy_rank_sum": enemy_rank_sum,
+            "lobby_rank_sum": lobby_rank_sum,                
             "performance_breakdown_totals": performance_breakdown_totals,
             #"performance_breakdown_counts": performance_breakdown_counts,
             "performance_breakdown_averages": performance_breakdown_averages,
