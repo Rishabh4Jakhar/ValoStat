@@ -1,68 +1,278 @@
 [
   {
-    "id": "Anshul",
-    "riot_id": "AnShu1#GhOul",
-    "name": "AnShu1",
-    "level": 430,
+    "id": "Rishabh",
+    "riot_id": "Rishabh4#Gamer",
+    "name": "Rishabh4",
+    "level": 516,
+    "banner": "https://media.valorant-api.com/playercards/920957bd-4517-2e67-3402-92a0b782c678/smallart.png",
+    "banner_card_id": null,
+    "puuid": "064faaf4-3db5-53c4-98a2-6ca2a78a1e28",
+    "rank": "Diamond 1",
+    "rr": 49,
+    "elo": 1549,
+    "season": "e11a6",
+    "matches": 0,
+    "wins": 0,
+    "winrate": 0,
+    "avg_acs": 0,
+    "kd": 0.0,
+    "kad": 0.0,
+    "kast": 0,
+    "dd_delta": 0,
+    "acs_total": 0,
+    "rounds_total": 0,
+    "kills_total": 0,
+    "deaths_total": 0,
+    "assists_total": 0,
+    "kast_rounds_total": 0,
+    "damage_delta_total": 0,
+    "time_total": 0,
+    "processed_matches": [],
+    "headshots_total": 0,
+    "bodyshots_total": 0,
+    "legshots_total": 0,
+    "hs_percent": 0,
+    "performance_score_total": 0.0,
+    "performance_score_matches": 0,
+    "avg_performance_score": null,
+    "enemy_rank_average_value": null,
+    "enemy_rank_matches": 0,
+    "lobby_rank_average_value": null,
+    "lobby_rank_matches": 0,
+    "enemy_rank_sum": 0.0,
+    "lobby_rank_sum": 0.0,
+    "performance_breakdown_totals": {
+      "damage": 0.0,
+      "trades": 0.0,
+      "assists": 0.0,
+      "utility_usage": 0.0,
+      "plants": 0.0,
+      "defuses": 0.0,
+      "adjusted_kills": 0.0,
+      "adjusted_deaths": 0.0
+    },
+    "performance_breakdown_averages": {
+      "damage": null,
+      "trades": null,
+      "assists": null,
+      "utility_usage": null,
+      "plants": null,
+      "defuses": null,
+      "adjusted_kills": null,
+      "adjusted_deaths": null
+    },
+    "performance_grades": {},
+    "performance_ratings": {
+      "combat": {},
+      "utility": {}
+    },
+    "agents": {},
+    "accolades_seasonal": []
+  },
+  {
+    "id": "Nityaa",
+    "riot_id": "LadyWhistledown#2310",
+    "name": "LadyWhistledown",
+    "level": 138,
+    "banner": "https://media.valorant-api.com/playercards/5b338357-4ee4-b112-a050-bcbf542ad9ba/smallart.png",
+    "banner_card_id": null,
+    "puuid": "c15ff07f-8e9d-5cab-9c8a-2a024132ca36",
+    "rank": "Silver 1",
+    "rr": 36,
+    "elo": 636,
+    "season": "e11a6",
+    "matches": 0,
+    "wins": 0,
+    "winrate": 0,
+    "avg_acs": 0,
+    "kd": 0.0,
+    "kad": 0.0,
+    "kast": 0,
+    "dd_delta": 0,
+    "acs_total": 0,
+    "rounds_total": 0,
+    "kills_total": 0,
+    "deaths_total": 0,
+    "assists_total": 0,
+    "kast_rounds_total": 0,
+    "damage_delta_total": 0,
+    "time_total": 0,
+    "processed_matches": [],
+    "headshots_total": 0,
+    "bodyshots_total": 0,
+    "legshots_total": 0,
+    "hs_percent": 0,
+    "performance_score_total": 0.0,
+    "performance_score_matches": 0,
+    "avg_performance_score": null,
+    "enemy_rank_average_value": null,
+    "enemy_rank_matches": 0,
+    "lobby_rank_average_value": null,
+    "lobby_rank_matches": 0,
+    "enemy_rank_sum": 0.0,
+    "lobby_rank_sum": 0.0,
+    "performance_breakdown_totals": {
+      "damage": 0.0,
+      "trades": 0.0,
+      "assists": 0.0,
+      "utility_usage": 0.0,
+      "plants": 0.0,
+      "defuses": 0.0,
+      "adjusted_kills": 0.0,
+      "adjusted_deaths": 0.0
+    },
+    "performance_breakdown_averages": {
+      "damage": null,
+      "trades": null,
+      "assists": null,
+      "utility_usage": null,
+      "plants": null,
+      "defuses": null,
+      "adjusted_kills": null,
+      "adjusted_deaths": null
+    },
+    "performance_grades": {},
+    "performance_ratings": {
+      "combat": {},
+      "utility": {}
+    },
+    "agents": {},
+    "accolades_seasonal": []
+  },
+  {
+    "id": "Timmy",
+    "riot_id": "timmyy#latte",
+    "name": "timmyy",
+    "level": 267,
+    "banner": "https://media.valorant-api.com/playercards/f6f2be5f-432e-7cfb-8d5e-f8b344c51fb5/smallart.png",
+    "banner_card_id": null,
+    "puuid": "32eff14e-f52c-5df2-a051-902b0adc9fe0",
+    "rank": "Gold 3",
+    "rr": 14,
+    "elo": 1114,
+    "season": "e11a6",
+    "matches": 0,
+    "wins": 0,
+    "winrate": 0,
+    "avg_acs": 0,
+    "kd": 0.0,
+    "kad": 0.0,
+    "kast": 0,
+    "dd_delta": 0,
+    "acs_total": 0,
+    "rounds_total": 0,
+    "kills_total": 0,
+    "deaths_total": 0,
+    "assists_total": 0,
+    "kast_rounds_total": 0,
+    "damage_delta_total": 0,
+    "time_total": 0,
+    "processed_matches": [],
+    "headshots_total": 0,
+    "bodyshots_total": 0,
+    "legshots_total": 0,
+    "hs_percent": 0,
+    "performance_score_total": 0.0,
+    "performance_score_matches": 0,
+    "avg_performance_score": null,
+    "enemy_rank_average_value": null,
+    "enemy_rank_matches": 0,
+    "lobby_rank_average_value": null,
+    "lobby_rank_matches": 0,
+    "enemy_rank_sum": 0.0,
+    "lobby_rank_sum": 0.0,
+    "performance_breakdown_totals": {
+      "damage": 0.0,
+      "trades": 0.0,
+      "assists": 0.0,
+      "utility_usage": 0.0,
+      "plants": 0.0,
+      "defuses": 0.0,
+      "adjusted_kills": 0.0,
+      "adjusted_deaths": 0.0
+    },
+    "performance_breakdown_averages": {
+      "damage": null,
+      "trades": null,
+      "assists": null,
+      "utility_usage": null,
+      "plants": null,
+      "defuses": null,
+      "adjusted_kills": null,
+      "adjusted_deaths": null
+    },
+    "performance_grades": {},
+    "performance_ratings": {
+      "combat": {},
+      "utility": {}
+    },
+    "agents": {},
+    "accolades_seasonal": []
+  },
+  {
+    "id": "Siddharth",
+    "riot_id": "BravosidOP#India",
+    "name": "BravosidOP",
+    "level": 427,
     "banner": "https://media.valorant-api.com/playercards/bc813b8f-497b-db60-13ce-1f818cbdb865/displayicon.png",
     "banner_card_id": "bc813b8f-497b-db60-13ce-1f818cbdb865",
-    "puuid": "7ea6f002-e674-5817-af26-f99d72bbad6a",
-    "rank": "Ascendant 1",
-    "rr": 18,
-    "elo": 1818,
+    "puuid": "a476ec7b-eb58-5e1f-9856-7917425d73fa",
+    "rank": "Diamond 1",
+    "rr": 0,
+    "elo": 1500,
     "season": "e11a6",
     "matches": 2,
     "wins": 1,
     "winrate": 50.0,
-    "avg_acs": 174.0,
-    "kd": 0.79,
-    "kad": 1.52,
-    "kast": 73.3,
-    "dd_delta": 1.0,
-    "acs_total": 7829,
-    "rounds_total": 45,
-    "kills_total": 23,
-    "deaths_total": 29,
-    "assists_total": 21,
-    "kast_rounds_total": 33,
-    "damage_delta_total": 43,
-    "time_total": 3994918,
+    "avg_acs": 173.9,
+    "kd": 0.69,
+    "kad": 1.11,
+    "kast": 63.0,
+    "dd_delta": -13.8,
+    "acs_total": 7998,
+    "rounds_total": 46,
+    "kills_total": 25,
+    "deaths_total": 36,
+    "assists_total": 15,
+    "kast_rounds_total": 29,
+    "damage_delta_total": -637,
+    "time_total": 4791434,
     "processed_matches": [
-      "5f5e53c0-9747-461f-84a8-849537651e2f",
-      "fe6ab094-f6fb-400d-9015-7834db37fbd9"
+      "08a1c63c-8c80-49fd-8135-c3194dcd1615",
+      "43083f22-b0d0-4ca8-a440-7d0901dc4c9a"
     ],
     "headshots_total": 20,
-    "bodyshots_total": 81,
-    "legshots_total": 4,
-    "hs_percent": 19.0,
-    "performance_score_total": 491.627,
+    "bodyshots_total": 84,
+    "legshots_total": 6,
+    "hs_percent": 18.2,
+    "performance_score_total": 416.458,
     "performance_score_matches": 2,
-    "avg_performance_score": 245.81,
-    "enemy_rank_average_value": 18.0,
+    "avg_performance_score": 208.23,
+    "enemy_rank_average_value": 13.6,
     "enemy_rank_matches": 2,
-    "lobby_rank_average_value": 17.71,
+    "lobby_rank_average_value": 13.67,
     "lobby_rank_matches": 2,
-    "enemy_rank_sum": 36.0,
-    "lobby_rank_sum": 35.42857142857143,
+    "enemy_rank_sum": 27.2,
+    "lobby_rank_sum": 27.333333333333336,
     "performance_breakdown_totals": {
-      "damage": 244.29446640316206,
-      "trades": 0.308300395256917,
-      "assists": 0.9308300395256917,
-      "utility_usage": 4.990118577075099,
-      "plants": 0.13438735177865613,
+      "damage": 255.10984848484847,
+      "trades": 0.21969696969696967,
+      "assists": 0.6401515151515151,
+      "utility_usage": 5.208333333333334,
+      "plants": 0.09090909090909093,
       "defuses": 0.0,
-      "adjusted_kills": 1.0749990118577075,
-      "adjusted_deaths": -1.3044347826086957
+      "adjusted_kills": 1.0538958333333333,
+      "adjusted_deaths": -1.554918560606061
     },
     "performance_breakdown_averages": {
-      "damage": 122.147,
-      "trades": 0.154,
-      "assists": 0.465,
-      "utility_usage": 2.495,
-      "plants": 0.067,
+      "damage": 127.555,
+      "trades": 0.11,
+      "assists": 0.32,
+      "utility_usage": 2.604,
+      "plants": 0.045,
       "defuses": 0.0,
-      "adjusted_kills": 0.537,
-      "adjusted_deaths": -0.652
+      "adjusted_kills": 0.527,
+      "adjusted_deaths": -0.777
     },
     "performance_grades": {
       "pass": 2
@@ -70,35 +280,440 @@
     "performance_ratings": {
       "combat": {
         "damage": {
-          "neutral": 1,
-          "down": 1
+          "double_down": 1,
+          "up": 1
         },
         "death_impact": {
           "neutral": 1,
-          "double_up": 1
-        },
-        "kill_impact": {
-          "neutral": 1,
           "down": 1
         },
+        "kill_impact": {
+          "double_down": 1,
+          "neutral": 1
+        },
         "trades": {
-          "down": 1,
-          "up": 1
+          "neutral": 1,
+          "down": 1
         }
       },
       "utility": {
         "assists": {
-          "double_up": 2
+          "neutral": 1,
+          "double_up": 1
         },
         "defuses": {
           "neutral": 2
         },
         "plants": {
+          "up": 1,
+          "neutral": 1
+        },
+        "utility_usage": {
           "up": 2
+        }
+      }
+    },
+    "agents": {
+      "Sova": {
+        "matches": 1,
+        "time_played_ms": 2820000,
+        "kills": 9,
+        "deaths": 17,
+        "assists": 4,
+        "headshots": 5,
+        "bodyshots": 20,
+        "legshots": 2,
+        "damage_dealt": 1768,
+        "damage_received": 3096,
+        "performance_score_total": 131.77756218760902,
+        "performance_score_matches": 1,
+        "performance_breakdown_totals": {
+          "damage": 78.31818181818181,
+          "trades": 0.13636363636363635,
+          "assists": 0.18181818181818185,
+          "utility_usage": 2.5,
+          "plants": 0.09090909090909093,
+          "defuses": 0.0,
+          "adjusted_kills": 0.41275,
+          "adjusted_deaths": -0.7467727272727274
+        },
+        "performance_grades": {
+          "pass": 1
+        },
+        "performance_ratings": {
+          "combat": {
+            "damage": {
+              "double_down": 1
+            },
+            "death_impact": {
+              "neutral": 1
+            },
+            "kill_impact": {
+              "double_down": 1
+            },
+            "trades": {
+              "neutral": 1
+            }
+          },
+          "utility": {
+            "assists": {
+              "neutral": 1
+            },
+            "defuses": {
+              "neutral": 1
+            },
+            "plants": {
+              "up": 1
+            },
+            "utility_usage": {
+              "up": 1
+            }
+          }
+        },
+        "headshot_percentage": 18.5,
+        "average_performance_score": 131.78,
+        "performance_breakdown_averages": {
+          "damage": 78.318,
+          "trades": 0.136,
+          "assists": 0.182,
+          "utility_usage": 2.5,
+          "plants": 0.091,
+          "defuses": 0.0,
+          "adjusted_kills": 0.413,
+          "adjusted_deaths": -0.747
+        }
+      },
+      "Raze": {
+        "matches": 1,
+        "time_played_ms": 240000,
+        "kills": 16,
+        "deaths": 19,
+        "assists": 11,
+        "headshots": 15,
+        "bodyshots": 64,
+        "legshots": 4,
+        "damage_dealt": 4303,
+        "damage_received": 3612,
+        "performance_score_total": 284.6799611107999,
+        "performance_score_matches": 1,
+        "performance_breakdown_totals": {
+          "damage": 176.79166666666666,
+          "trades": 0.08333333333333333,
+          "assists": 0.4583333333333333,
+          "utility_usage": 2.7083333333333335,
+          "plants": 0.0,
+          "defuses": 0.0,
+          "adjusted_kills": 0.6411458333333333,
+          "adjusted_deaths": -0.8081458333333335
+        },
+        "performance_grades": {
+          "pass": 1
+        },
+        "performance_ratings": {
+          "combat": {
+            "damage": {
+              "up": 1
+            },
+            "death_impact": {
+              "down": 1
+            },
+            "kill_impact": {
+              "neutral": 1
+            },
+            "trades": {
+              "down": 1
+            }
+          },
+          "utility": {
+            "assists": {
+              "double_up": 1
+            },
+            "defuses": {
+              "neutral": 1
+            },
+            "plants": {
+              "neutral": 1
+            },
+            "utility_usage": {
+              "up": 1
+            }
+          }
+        },
+        "headshot_percentage": 18.1,
+        "average_performance_score": 284.68,
+        "performance_breakdown_averages": {
+          "damage": 176.792,
+          "trades": 0.083,
+          "assists": 0.458,
+          "utility_usage": 2.708,
+          "plants": 0.0,
+          "defuses": 0.0,
+          "adjusted_kills": 0.641,
+          "adjusted_deaths": -0.808
+        }
+      }
+    },
+    "accolades_seasonal": [
+      {
+        "id": "6dc31cfd-41da-895f-9246-a8b63558cdb8",
+        "type": "damage_per_round",
+        "count": 1,
+        "best_value": 176.79167
+      },
+      {
+        "id": "e43f9acb-448c-4aa1-1591-6db72c0b8dae",
+        "type": "assists",
+        "count": 1,
+        "best_value": 11
+      }
+    ]
+  },
+  {
+    "id": "Hardik",
+    "riot_id": "Livein#1234",
+    "name": "Livein",
+    "level": 478,
+    "banner": "https://media.valorant-api.com/playercards/1a127cbf-4131-3581-da59-529b7e0d9495/smallart.png",
+    "banner_card_id": null,
+    "puuid": "6a037870-ce5a-53d8-87a7-7a8ed4303842",
+    "rank": "Platinum 2",
+    "rr": 10,
+    "elo": 1310,
+    "season": "e11a6",
+    "matches": 0,
+    "wins": 0,
+    "winrate": 0,
+    "avg_acs": 0,
+    "kd": 0.0,
+    "kad": 0.0,
+    "kast": 0,
+    "dd_delta": 0,
+    "acs_total": 0,
+    "rounds_total": 0,
+    "kills_total": 0,
+    "deaths_total": 0,
+    "assists_total": 0,
+    "kast_rounds_total": 0,
+    "damage_delta_total": 0,
+    "time_total": 0,
+    "processed_matches": [],
+    "headshots_total": 0,
+    "bodyshots_total": 0,
+    "legshots_total": 0,
+    "hs_percent": 0,
+    "performance_score_total": 0.0,
+    "performance_score_matches": 0,
+    "avg_performance_score": null,
+    "enemy_rank_average_value": null,
+    "enemy_rank_matches": 0,
+    "lobby_rank_average_value": null,
+    "lobby_rank_matches": 0,
+    "enemy_rank_sum": 0.0,
+    "lobby_rank_sum": 0.0,
+    "performance_breakdown_totals": {
+      "damage": 0.0,
+      "trades": 0.0,
+      "assists": 0.0,
+      "utility_usage": 0.0,
+      "plants": 0.0,
+      "defuses": 0.0,
+      "adjusted_kills": 0.0,
+      "adjusted_deaths": 0.0
+    },
+    "performance_breakdown_averages": {
+      "damage": null,
+      "trades": null,
+      "assists": null,
+      "utility_usage": null,
+      "plants": null,
+      "defuses": null,
+      "adjusted_kills": null,
+      "adjusted_deaths": null
+    },
+    "performance_grades": {},
+    "performance_ratings": {
+      "combat": {},
+      "utility": {}
+    },
+    "agents": {},
+    "accolades_seasonal": []
+  },
+  {
+    "id": "Sonu",
+    "riot_id": "reducto#12432",
+    "name": "reducto",
+    "level": 332,
+    "banner": "https://media.valorant-api.com/playercards/210a6c25-4c3a-7a60-27ed-0b9c26d0780f/smallart.png",
+    "banner_card_id": null,
+    "puuid": "ce9dd3a9-bde3-5b41-91e5-e51d364f557c",
+    "rank": "Platinum 1",
+    "rr": 14,
+    "elo": 1214,
+    "season": "e11a6",
+    "matches": 0,
+    "wins": 0,
+    "winrate": 0,
+    "avg_acs": 0,
+    "kd": 0.0,
+    "kad": 0.0,
+    "kast": 0,
+    "dd_delta": 0,
+    "acs_total": 0,
+    "rounds_total": 0,
+    "kills_total": 0,
+    "deaths_total": 0,
+    "assists_total": 0,
+    "kast_rounds_total": 0,
+    "damage_delta_total": 0,
+    "time_total": 0,
+    "processed_matches": [],
+    "headshots_total": 0,
+    "bodyshots_total": 0,
+    "legshots_total": 0,
+    "hs_percent": 0,
+    "performance_score_total": 0.0,
+    "performance_score_matches": 0,
+    "avg_performance_score": null,
+    "enemy_rank_average_value": null,
+    "enemy_rank_matches": 0,
+    "lobby_rank_average_value": null,
+    "lobby_rank_matches": 0,
+    "enemy_rank_sum": 0.0,
+    "lobby_rank_sum": 0.0,
+    "performance_breakdown_totals": {
+      "damage": 0.0,
+      "trades": 0.0,
+      "assists": 0.0,
+      "utility_usage": 0.0,
+      "plants": 0.0,
+      "defuses": 0.0,
+      "adjusted_kills": 0.0,
+      "adjusted_deaths": 0.0
+    },
+    "performance_breakdown_averages": {
+      "damage": null,
+      "trades": null,
+      "assists": null,
+      "utility_usage": null,
+      "plants": null,
+      "defuses": null,
+      "adjusted_kills": null,
+      "adjusted_deaths": null
+    },
+    "performance_grades": {},
+    "performance_ratings": {
+      "combat": {},
+      "utility": {}
+    },
+    "agents": {},
+    "accolades_seasonal": []
+  },
+  {
+    "id": "Anshul",
+    "riot_id": "AnShu1#GhOul",
+    "name": "AnShu1",
+    "level": 431,
+    "banner": "https://media.valorant-api.com/playercards/bc813b8f-497b-db60-13ce-1f818cbdb865/displayicon.png",
+    "banner_card_id": "bc813b8f-497b-db60-13ce-1f818cbdb865",
+    "puuid": "7ea6f002-e674-5817-af26-f99d72bbad6a",
+    "rank": "Ascendant 1",
+    "rr": 45,
+    "elo": 1845,
+    "season": "e11a6",
+    "matches": 4,
+    "wins": 3,
+    "winrate": 75.0,
+    "avg_acs": 173.4,
+    "kd": 0.85,
+    "kad": 1.42,
+    "kast": 69.4,
+    "dd_delta": -0.5,
+    "acs_total": 14738,
+    "rounds_total": 85,
+    "kills_total": 47,
+    "deaths_total": 55,
+    "assists_total": 31,
+    "kast_rounds_total": 59,
+    "damage_delta_total": -41,
+    "time_total": 7758151,
+    "processed_matches": [
+      "0b96eddc-8ee1-4d1d-8cfe-1552a4b716b8",
+      "120abf01-56c3-45f2-bb88-93038d5f7430",
+      "5f5e53c0-9747-461f-84a8-849537651e2f",
+      "fe6ab094-f6fb-400d-9015-7834db37fbd9"
+    ],
+    "headshots_total": 29,
+    "bodyshots_total": 125,
+    "legshots_total": 7,
+    "hs_percent": 18.0,
+    "performance_score_total": 964.937,
+    "performance_score_matches": 4,
+    "avg_performance_score": 241.23,
+    "enemy_rank_average_value": 17.21,
+    "enemy_rank_matches": 4,
+    "lobby_rank_average_value": 17.11,
+    "lobby_rank_matches": 4,
+    "enemy_rank_sum": 68.83333333333333,
+    "lobby_rank_sum": 68.42857142857143,
+    "performance_breakdown_totals": {
+      "damage": 490.79446640316206,
+      "trades": 0.745800395256917,
+      "assists": 1.514163372859025,
+      "utility_usage": 8.760951910408432,
+      "plants": 0.40522068511198944,
+      "defuses": 0.0,
+      "adjusted_kills": 2.2230719285243743,
+      "adjusted_deaths": -2.7415076992753624
+    },
+    "performance_breakdown_averages": {
+      "damage": 122.699,
+      "trades": 0.186,
+      "assists": 0.379,
+      "utility_usage": 2.19,
+      "plants": 0.101,
+      "defuses": 0.0,
+      "adjusted_kills": 0.556,
+      "adjusted_deaths": -0.685
+    },
+    "performance_grades": {
+      "pass": 4
+    },
+    "performance_ratings": {
+      "combat": {
+        "damage": {
+          "neutral": 2,
+          "down": 2
+        },
+        "death_impact": {
+          "neutral": 1,
+          "double_up": 2,
+          "double_down": 1
+        },
+        "kill_impact": {
+          "neutral": 2,
+          "down": 2
+        },
+        "trades": {
+          "down": 1,
+          "up": 3
+        }
+      },
+      "utility": {
+        "assists": {
+          "double_up": 3,
+          "double_down": 1
+        },
+        "defuses": {
+          "neutral": 4
+        },
+        "plants": {
+          "up": 3,
+          "double_up": 1
         },
         "utility_usage": {
           "neutral": 1,
-          "double_up": 1
+          "double_up": 1,
+          "up": 2
         }
       }
     },
@@ -240,15 +855,451 @@
           "adjusted_kills": 0.463,
           "adjusted_deaths": -0.585
         }
+      },
+      "Chamber": {
+        "matches": 2,
+        "time_played_ms": 180000,
+        "kills": 24,
+        "deaths": 26,
+        "assists": 10,
+        "headshots": 9,
+        "bodyshots": 44,
+        "legshots": 3,
+        "damage_dealt": 4995,
+        "damage_received": 5079,
+        "performance_score_total": 473.3095246120631,
+        "performance_score_matches": 2,
+        "performance_breakdown_totals": {
+          "damage": 246.5,
+          "trades": 0.4375,
+          "assists": 0.5833333333333334,
+          "utility_usage": 3.7708333333333335,
+          "plants": 0.2708333333333333,
+          "defuses": 0.0,
+          "adjusted_kills": 1.1480729166666666,
+          "adjusted_deaths": -1.4370729166666667
+        },
+        "performance_grades": {
+          "pass": 2
+        },
+        "performance_ratings": {
+          "combat": {
+            "damage": {
+              "down": 1,
+              "neutral": 1
+            },
+            "death_impact": {
+              "double_down": 1,
+              "double_up": 1
+            },
+            "kill_impact": {
+              "down": 1,
+              "neutral": 1
+            },
+            "trades": {
+              "up": 2
+            }
+          },
+          "utility": {
+            "assists": {
+              "double_up": 1,
+              "double_down": 1
+            },
+            "defuses": {
+              "neutral": 2
+            },
+            "plants": {
+              "double_up": 1,
+              "up": 1
+            },
+            "utility_usage": {
+              "up": 2
+            }
+          }
+        },
+        "headshot_percentage": 16.1,
+        "average_performance_score": 236.65,
+        "performance_breakdown_averages": {
+          "damage": 123.25,
+          "trades": 0.219,
+          "assists": 0.292,
+          "utility_usage": 1.885,
+          "plants": 0.135,
+          "defuses": 0.0,
+          "adjusted_kills": 0.574,
+          "adjusted_deaths": -0.719
+        }
       }
     },
     "accolades_seasonal": [
       {
+        "id": "352a3ac8-4b2c-db6a-1f36-c0a67b428e65",
+        "type": "plants",
+        "count": 1,
+        "best_value": 3
+      },
+      {
         "id": "e43f9acb-448c-4aa1-1591-6db72c0b8dae",
         "type": "assists",
-        "count": 2,
+        "count": 3,
         "best_value": 12
       }
     ]
+  },
+  {
+    "id": "Dhimanth",
+    "riot_id": "DeeKay#6875",
+    "name": "DeeKay",
+    "level": 323,
+    "banner": "https://media.valorant-api.com/playercards/33a69865-4952-86f9-a2c0-b5880bc0af92/displayicon.png",
+    "banner_card_id": "33a69865-4952-86f9-a2c0-b5880bc0af92",
+    "puuid": "c4d41df0-16bd-547a-be40-d2aa38b65b9f",
+    "rank": "Platinum 1",
+    "rr": 28,
+    "elo": 1228,
+    "season": "e11a6",
+    "matches": 2,
+    "wins": 1,
+    "winrate": 50.0,
+    "avg_acs": 203.1,
+    "kd": 1.21,
+    "kad": 1.83,
+    "kast": 72.9,
+    "dd_delta": 26.1,
+    "acs_total": 9749,
+    "rounds_total": 48,
+    "kills_total": 35,
+    "deaths_total": 29,
+    "assists_total": 18,
+    "kast_rounds_total": 35,
+    "damage_delta_total": 1253,
+    "time_total": 5016515,
+    "processed_matches": [
+      "b11fb10c-5ddf-4b50-a1b8-06964ede6ec1",
+      "c92a4620-af36-4ce7-9732-2e47fe8ce5ac"
+    ],
+    "headshots_total": 29,
+    "bodyshots_total": 62,
+    "legshots_total": 4,
+    "hs_percent": 30.5,
+    "performance_score_total": 564.033,
+    "performance_score_matches": 2,
+    "avg_performance_score": 282.02,
+    "enemy_rank_average_value": 12.8,
+    "enemy_rank_matches": 2,
+    "lobby_rank_average_value": 12.81,
+    "lobby_rank_matches": 2,
+    "enemy_rank_sum": 25.6,
+    "lobby_rank_sum": 25.625,
+    "performance_breakdown_totals": {
+      "damage": 279.0833333333333,
+      "trades": 0.16666666666666666,
+      "assists": 0.75,
+      "utility_usage": 5.916666666666666,
+      "plants": 0.041666666666666664,
+      "defuses": 0.08333333333333333,
+      "adjusted_kills": 1.5481250000000002,
+      "adjusted_deaths": -1.1816875000000002
+    },
+    "performance_breakdown_averages": {
+      "damage": 139.542,
+      "trades": 0.083,
+      "assists": 0.375,
+      "utility_usage": 2.958,
+      "plants": 0.021,
+      "defuses": 0.042,
+      "adjusted_kills": 0.774,
+      "adjusted_deaths": -0.591
+    },
+    "performance_grades": {
+      "merit": 1,
+      "pass": 1
+    },
+    "performance_ratings": {
+      "combat": {
+        "damage": {
+          "up": 1,
+          "down": 1
+        },
+        "death_impact": {
+          "double_up": 1,
+          "up": 1
+        },
+        "kill_impact": {
+          "double_up": 1,
+          "down": 1
+        },
+        "trades": {
+          "down": 1,
+          "double_down": 1
+        }
+      },
+      "utility": {
+        "assists": {
+          "double_up": 1,
+          "up": 1
+        },
+        "defuses": {
+          "double_up": 1,
+          "neutral": 1
+        },
+        "plants": {
+          "up": 1,
+          "neutral": 1
+        },
+        "utility_usage": {
+          "double_up": 1,
+          "down": 1
+        }
+      }
+    },
+    "agents": {
+      "Vyse": {
+        "matches": 1,
+        "time_played_ms": 3600000,
+        "kills": 24,
+        "deaths": 13,
+        "assists": 11,
+        "headshots": 21,
+        "bodyshots": 46,
+        "legshots": 4,
+        "damage_dealt": 4435,
+        "damage_received": 2363,
+        "performance_score_total": 406.67323644054943,
+        "performance_score_matches": 1,
+        "performance_breakdown_totals": {
+          "damage": 184.66666666666663,
+          "trades": 0.125,
+          "assists": 0.4583333333333333,
+          "utility_usage": 3.6666666666666665,
+          "plants": 0.041666666666666664,
+          "defuses": 0.08333333333333333,
+          "adjusted_kills": 1.0665000000000002,
+          "adjusted_deaths": -0.5398125
+        },
+        "performance_grades": {
+          "merit": 1
+        },
+        "performance_ratings": {
+          "combat": {
+            "damage": {
+              "up": 1
+            },
+            "death_impact": {
+              "double_up": 1
+            },
+            "kill_impact": {
+              "double_up": 1
+            },
+            "trades": {
+              "down": 1
+            }
+          },
+          "utility": {
+            "assists": {
+              "double_up": 1
+            },
+            "defuses": {
+              "double_up": 1
+            },
+            "plants": {
+              "up": 1
+            },
+            "utility_usage": {
+              "double_up": 1
+            }
+          }
+        },
+        "headshot_percentage": 29.6,
+        "average_performance_score": 406.67,
+        "performance_breakdown_averages": {
+          "damage": 184.667,
+          "trades": 0.125,
+          "assists": 0.458,
+          "utility_usage": 3.667,
+          "plants": 0.042,
+          "defuses": 0.083,
+          "adjusted_kills": 1.067,
+          "adjusted_deaths": -0.54
+        }
+      },
+      "Sova": {
+        "matches": 1,
+        "time_played_ms": 1020000,
+        "kills": 11,
+        "deaths": 16,
+        "assists": 7,
+        "headshots": 8,
+        "bodyshots": 16,
+        "legshots": 0,
+        "damage_dealt": 2285,
+        "damage_received": 3104,
+        "performance_score_total": 157.36018152628728,
+        "performance_score_matches": 1,
+        "performance_breakdown_totals": {
+          "damage": 94.41666666666669,
+          "trades": 0.041666666666666664,
+          "assists": 0.2916666666666667,
+          "utility_usage": 2.25,
+          "plants": 0.0,
+          "defuses": 0.0,
+          "adjusted_kills": 0.481625,
+          "adjusted_deaths": -0.6418750000000001
+        },
+        "performance_grades": {
+          "pass": 1
+        },
+        "performance_ratings": {
+          "combat": {
+            "damage": {
+              "down": 1
+            },
+            "death_impact": {
+              "up": 1
+            },
+            "kill_impact": {
+              "down": 1
+            },
+            "trades": {
+              "double_down": 1
+            }
+          },
+          "utility": {
+            "assists": {
+              "up": 1
+            },
+            "defuses": {
+              "neutral": 1
+            },
+            "plants": {
+              "neutral": 1
+            },
+            "utility_usage": {
+              "down": 1
+            }
+          }
+        },
+        "headshot_percentage": 33.3,
+        "average_performance_score": 157.36,
+        "performance_breakdown_averages": {
+          "damage": 94.417,
+          "trades": 0.042,
+          "assists": 0.292,
+          "utility_usage": 2.25,
+          "plants": 0.0,
+          "defuses": 0.0,
+          "adjusted_kills": 0.482,
+          "adjusted_deaths": -0.642
+        }
+      }
+    },
+    "accolades_seasonal": [
+      {
+        "id": "0497d585-42ad-61a7-42bc-189571f40e2c",
+        "type": "clutches",
+        "count": 1,
+        "best_value": 1
+      },
+      {
+        "id": "1b13755f-4d5a-2c9e-6a39-bea7e6c53e7f",
+        "type": "kills",
+        "count": 1,
+        "best_value": 24
+      },
+      {
+        "id": "1c926cba-48cb-8aeb-c68d-a1ba2d012784",
+        "type": "top_frag",
+        "count": 1,
+        "best_value": 24
+      },
+      {
+        "id": "6dc31cfd-41da-895f-9246-a8b63558cdb8",
+        "type": "damage_per_round",
+        "count": 1,
+        "best_value": 184.66667
+      },
+      {
+        "id": "745b27f0-4bc2-13a4-4ee7-77be323155c2",
+        "type": "mvp",
+        "count": 1,
+        "best_value": 406.67325
+      },
+      {
+        "id": "e43f9acb-448c-4aa1-1591-6db72c0b8dae",
+        "type": "assists",
+        "count": 1,
+        "best_value": 11
+      }
+    ]
+  },
+  {
+    "id": "Yash",
+    "riot_id": "yashkali997#kali",
+    "name": "yashkali997",
+    "level": 81,
+    "banner": "https://media.valorant-api.com/playercards/edfb9497-48ca-c3d9-cb0a-109cdedf533c/smallart.png",
+    "banner_card_id": null,
+    "puuid": "4f630c33-d69a-56f6-b75a-ddb2c64aa2eb",
+    "rank": "Silver 1",
+    "rr": 0,
+    "elo": 600,
+    "season": "e11a6",
+    "matches": 0,
+    "wins": 0,
+    "winrate": 0,
+    "avg_acs": 0,
+    "kd": 0.0,
+    "kad": 0.0,
+    "kast": 0,
+    "dd_delta": 0,
+    "acs_total": 0,
+    "rounds_total": 0,
+    "kills_total": 0,
+    "deaths_total": 0,
+    "assists_total": 0,
+    "kast_rounds_total": 0,
+    "damage_delta_total": 0,
+    "time_total": 0,
+    "processed_matches": [],
+    "headshots_total": 0,
+    "bodyshots_total": 0,
+    "legshots_total": 0,
+    "hs_percent": 0,
+    "performance_score_total": 0.0,
+    "performance_score_matches": 0,
+    "avg_performance_score": null,
+    "enemy_rank_average_value": null,
+    "enemy_rank_matches": 0,
+    "lobby_rank_average_value": null,
+    "lobby_rank_matches": 0,
+    "enemy_rank_sum": 0.0,
+    "lobby_rank_sum": 0.0,
+    "performance_breakdown_totals": {
+      "damage": 0.0,
+      "trades": 0.0,
+      "assists": 0.0,
+      "utility_usage": 0.0,
+      "plants": 0.0,
+      "defuses": 0.0,
+      "adjusted_kills": 0.0,
+      "adjusted_deaths": 0.0
+    },
+    "performance_breakdown_averages": {
+      "damage": null,
+      "trades": null,
+      "assists": null,
+      "utility_usage": null,
+      "plants": null,
+      "defuses": null,
+      "adjusted_kills": null,
+      "adjusted_deaths": null
+    },
+    "performance_grades": {},
+    "performance_ratings": {
+      "combat": {},
+      "utility": {}
+    },
+    "agents": {},
+    "accolades_seasonal": []
   }
 ]
