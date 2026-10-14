@@ -14,28 +14,28 @@ CURRENT_ACT = "e11a6"  # V26A6
 
 PLAYERS = {
 
-    #"Rishabh": "Rishabh4#Gamer",
-    #"Akshat": "Flashgaming4#FAST",
-    #"Advik": "NøVä#8790",
-    #"Modit": "Limitless065#5079",
-    #"Moksh": "CuteBoyMox#9710",
-    #"Nityaa": "LadyWhistledown#2310",
-    #"Vandna": "Fluxy#XOXO",
-    #"Timmy": "timmyy#latte",
-    #"Siddharth": "BravosidOP#India",
-    #"Hardik": "Livein#1234",
-    #"Tanmay": "KabruhSingh#Drunk",
-    #"Sonu": "reducto#12432",
+    "Rishabh": "Rishabh4#Gamer",
+    "Akshat": "Flashgaming4#FAST",
+    "Advik": "NøVä#8790",
+    "Modit": "Limitless065#5079",
+    "Moksh": "CuteBoyMox#9710",
+    "Nityaa": "LadyWhistledown#2310",
+    "Vandna": "Fluxy#XOXO",
+    "Timmy": "timmyy#latte",
+    "Siddharth": "BravosidOP#India",
+    "Hardik": "Livein#1234",
+    "Tanmay": "KabruhSingh#Drunk",
+    "Sonu": "reducto#12432",
     "Anshul": "AnShu1#GhOul",
-    #"Dhimanth": "DeeKay#6875",
-    #"Shivansh": "SILVERBOLT#008",
-    #"Eklavya": "MadLiberator2005#9683",
-    #"Aryan": "TheChosenOne#2205",
-    #"Yash": "yashkali997#kali",
-    #"Ria": "Ria4#2222",
-    #"Ria_alt": "Ria4#4444",
-    #"Bodit": "Limited065#8643",
-    #Ritwik": "RITWIK#6493",
+    "Dhimanth": "DeeKay#6875",
+    "Shivansh": "SILVERBOLT#008",
+    "Eklavya": "MadLiberator2005#9683",
+    "Aryan": "TheChosenOne#2205",
+    "Yash": "yashkali997#kali",
+    "Ria": "Ria4#2222",
+    "Ria_alt": "Ria4#4444",
+    "Bodit": "Limited065#8643",
+    "Ritwik": "RITWIK#6493",
 }
 
 LAST_REQUEST_TIME = 0
@@ -78,14 +78,55 @@ def get_mmr(puuid):
     return rate_limited_get(url).json()["data"]
 
 
-def get_matches(puuid):
-    # Pagination is intentionally left for the later step.
+def get_matches(puuid, start=0, size=10):
+    """Fetch one page of competitive matches. The API's start parameter is an index."""
     url = (
         f"https://api.henrikdev.xyz/valorant/v4/by-puuid/matches/"
-        f"{REGION}/{PLATFORM}/{puuid}?mode=competitive&size=10"
+        f"{REGION}/{PLATFORM}/{puuid}?mode=competitive&size={size}&start={start}"
     )
-    return rate_limited_get(url).json()["data"]
+    return rate_limited_get(url).json().get("data", [])
 
+def get_unprocessed_current_act_matches(puuid, current_act, processed_match_ids, expected_new_matches, page_size=10):
+    """Page until we've retrieved the expected number of unseen matches for this act.
+
+    The MMR season game count tells us how many matches we should need. We still
+    check each page's act and match ID, because the recent-match feed can include
+    matches from another act and/or IDs that have already been processed.
+    """
+    if expected_new_matches <= 0:
+        return []
+
+    collected = []
+    seen_this_run = set()
+    start = 0
+
+    while len(collected) < expected_new_matches:
+        page = get_matches(puuid, start=start, size=page_size)
+        if not page:
+            break
+
+        for match in page:
+            metadata = match.get("metadata", {})
+            match_id = metadata.get("match_id")
+            act = (metadata.get("season") or {}).get("short")
+            if (
+                match_id
+                and act == current_act
+                and match_id not in processed_match_ids
+                and match_id not in seen_this_run
+            ):
+                collected.append(match)
+                seen_this_run.add(match_id)
+                if len(collected) >= expected_new_matches:
+                    break
+
+        # Use the actual page length for the next index. A short page means
+        # the endpoint has no more results to return.
+        start += len(page)
+        if len(page) < page_size:
+            break
+
+    return collected
 
 def get_accolades(puuid):
     url = (
@@ -218,14 +259,31 @@ for pid, riot in PLAYERS.items():
             #    out.append(old)
             continue
 
-        stored_matches = old.get("matches", 0)
-        if season.get("games", 0) > stored_matches:
-            matches = get_matches(puuid)
+        #stored_matches = old.get("matches", 0)
+        #if season.get("games", 0) > stored_matches:
+        #    matches = get_matches(puuid)
+        #else:
+        #    matches = []
+        #    print(f"No new matches for {riot}, skipping match fetch")
+
+        processed_match_ids = set(old.get("processed_matches", []))
+        expected_new_matches = max(0, int(season.get("games", 0) or 0) - len(processed_match_ids))
+        if expected_new_matches:
+            matches = get_unprocessed_current_act_matches(
+                puuid,
+                CURRENT_ACT,
+                processed_match_ids,
+                expected_new_matches,
+                page_size=10
+            )
+            print(
+                f"Fetched {len(matches)} new matches for {riot} (expected {expected_new_matches})"
+                f"MMR expects {season.get('games', 0)} total matches, {len(processed_match_ids)} already processed"
+            )
         else:
             matches = []
             print(f"No new matches for {riot}, skipping match fetch")
 
-        processed_match_ids = set(old.get("processed_matches", []))
 
         # Existing aggregate fields: keep them, and keep their meanings intact.
         acs_total = old.get("acs_total", 0)
