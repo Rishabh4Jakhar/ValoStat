@@ -4,7 +4,7 @@ const selectA = document.getElementById("playerA");
 const selectB = document.getElementById("playerB");
 const compareBtn = document.getElementById("compareBtn");
 const comparison = document.getElementById("comparison");
-const defaultAct = "v26-a5"; 
+const defaultAct = "v26-a6";
 
 let players = [];
 let cache = {}; // Stores data of default act (on page load)
@@ -15,6 +15,7 @@ let showDiff = false;
 let currentAct = defaultAct;
 let actMap = {
   "overall": "overall",
+  "v26-a6": "e11a6",
   "v26-a5": "e11a5",
   "v26-a4": "e11a4",
   "v26-a3": "e11a3",
@@ -23,7 +24,7 @@ let actMap = {
 };
 
 function isDefaultActCode(act) {
-  return act === defaultAct || act === "e11a5";
+  return act === defaultAct || act === "e11a6";
 }
 
 function trackerProfileUrl(riotId) {
@@ -32,7 +33,8 @@ function trackerProfileUrl(riotId) {
 
 function getActLabel(actCode) {
   if (actCode === "overall") return "Overall";
-  if (actCode === "e11a5" || actCode === defaultAct) return "V26: A5";
+  if (actCode === "e11a6" || actCode === defaultAct) return "V26: A6";
+  if (actCode === "e11a5") return "V26: A5";
   if (actCode === "e11a4") return "V26: A4";
   if (actCode === "e11a3") return "V26: A3";
   if (actCode === "e11a2") return "V26: A2";
@@ -415,13 +417,13 @@ async function loadActData(act) {
     // Initialize for cache players (default act)
     combinedData.forEach(p => {
       actCount[p.id] = 1;
-      actNames[p.id] = ["V26: A5"]; // Default act name
+      actNames[p.id] = ["V26: A6"]; // Default act name
     });
     
     try {
       // Loop through actMap and fetch all acts except 'overall'
       for (const [displayName, actCode] of Object.entries(actMap)) {
-        if (displayName === "overall" || actCode === "e11a5") continue; // Skip overall and default act
+        if (displayName === "overall" || actCode === "e11a6") continue; // Skip overall and default act
         
         const response = await fetch(`data/${actCode}.json?ts=${Date.now()}`);
         if (response.ok) {
@@ -506,7 +508,7 @@ async function loadActData(act) {
 
 async function renderCards(act = currentAct) {
 
-  // Only show toggle for the default act (e11a4), hide for all others
+  // Only show toggle for the default act (e11a6), hide for all others
   const toggleControl = document.querySelector(".toggle-control");
   if (toggleControl) {
     if (isDefaultActCode(act)) {
@@ -532,10 +534,10 @@ async function renderCards(act = currentAct) {
   // Store displayed data for comparison based on act
   if (act === "overall" && !overallCache) {
     overallCache = displayData;
-  } else if (act !== "e11a5" && act !== "overall") {
+  } else if (act !== "e11a6" && act !== "overall") {
     currentActData = displayData;
   }
-  // For default act (e11a4), cache is already set from loadStats()
+  // For default act (e11a6), cache is already set from loadStats()
 
 
   // Sorting
