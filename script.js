@@ -765,7 +765,7 @@ const rankValues = {
   "Immortal 1": 22,
   "Immortal 2": 23,
   "Immortal 3": 24,
-  Radiant: 25,
+  "Radiant": 25,
 };
 
 function statRow(a, b, higherBetter = true, rank = false, isTime = false) {
