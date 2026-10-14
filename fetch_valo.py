@@ -476,7 +476,7 @@ for pid, riot in PLAYERS.items():
             "riot_id": riot,
             "name": name,
             "level": latest_level,
-            "banner": f"https://media.valorant-api.com/badges/{latest_card_id}/smallicon.png" if latest_card_id else banner,
+            "banner": f"https://media.valorant-api.com/playercards/{latest_card_id}/displayicon.png" if latest_card_id else banner,
             "banner_card_id": latest_card_id,
             "puuid": puuid,
             "rank": (mmr.get("current") or {}).get("tier", {}).get("name", old.get("rank", "Unrated")),
