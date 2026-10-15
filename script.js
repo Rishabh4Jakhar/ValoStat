@@ -827,6 +827,7 @@ function openCardModal(player) {
   }
 
   title.textContent = isOverall ? "Overall, all acts combined" : currentActLabel;
+  modal.querySelector(".card-modal-content").dataset.tier = rankTier(player.rank);
 
   // The API's breakdown values are already per-round rates for each match;
   // these are their averages across matches.
@@ -1296,9 +1297,13 @@ function lastUpdate(response) {
   const minutes = diffMinutes % 60;
 
   let text = "Stats last updated ";
-  if (hours > 0) text += `${hours}h `;
-  if (minutes > 0) text += `${minutes}m `;
-  text += "ago";
+  if (diffMinutes < 1) {
+    text += "just now";
+  } else {
+    if (hours > 0) text += `${hours}h `;
+    if (minutes > 0) text += `${minutes}m `;
+    text += "ago";
+  }
 
   const updateTime = document.getElementById("updateTime");
   if (updateTime) updateTime.textContent = text;
@@ -1492,6 +1497,14 @@ async function loadActData(act) {
 }
 
 
+// Rank tier keyword ("Gold 2" -> "gold") used for the colour of cards and the popup.
+const RANK_TIERS = ["iron", "bronze", "silver", "gold", "platinum", "diamond", "ascendant", "immortal", "radiant"];
+
+function rankTier(rank) {
+  const tier = String(rank || "").trim().split(/\s+/)[0].toLowerCase();
+  return RANK_TIERS.includes(tier) ? tier : "unrated";
+}
+
 function cardStat(label, value, className = "") {
   return `
     <div${className ? ` class="${className}"` : ""}>
@@ -1503,7 +1516,7 @@ function cardStat(label, value, className = "") {
 
 function renderPlayerCard(player, view) {
   return `
-    <article class="card${view.isDiff ? " diff-highlight" : ""}" data-player-id="${escapeHtml(player.id)}" tabindex="0" aria-label="${escapeHtml(player.id)}, open full stats">
+    <article class="card${view.isDiff ? " diff-highlight" : ""}" data-tier="${rankTier(player.rank)}" data-player-id="${escapeHtml(player.id)}" tabindex="0" aria-label="${escapeHtml(player.id)}, open full stats">
       <div class="card-head">
         <img src="${escapeHtml(player.banner || "")}" class="banner" alt="" loading="lazy" />
         <div class="card-identity">
