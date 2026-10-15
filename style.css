@@ -1807,3 +1807,58 @@ input:checked + .slider:before {
     gap: 10px;
   }
 }
+
+/* ===== Agent card additions (pick rate, secondary stats, maps table) ===== */
+
+.agent-pick {
+  margin-bottom: 16px;
+}
+
+.agent-pick-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.agent-pick-label span {
+  color: #8799b9;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.agent-pick-label strong {
+  color: #e6eeff;
+  font-size: 13px;
+}
+
+.agent-stats-secondary {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(140, 166, 213, .12);
+}
+
+.agent-stats-secondary strong {
+  font-size: 13px;
+}
+
+.modal-table th,
+.modal-table td {
+  padding: 9px 8px;
+  border-bottom: 1px solid rgba(140, 166, 213, .12);
+  color: #c9d6ee;
+  font-size: 13px;
+}
+
+.modal-table th {
+  color: #8799b9;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.modal-table td:first-child,
+.modal-table th:first-child {
+  text-align: left;
+  color: #e6eeff;
+}
