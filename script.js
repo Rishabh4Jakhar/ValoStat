@@ -51,6 +51,24 @@ function formatStat(value) {
   return numeric.toFixed(2);
 }
 
+/* ------------------ Match counts ------------------ */
+
+// "matches" is the season game count from the MMR endpoint (used for win rate).
+// The kill/death/assist totals only cover matches the fetcher actually
+// processed, so per-match averages must divide by that count instead.
+function trackedMatches(player) {
+  const tracked = Number(player?.matches_tracked);
+  if (Number.isFinite(tracked)) return tracked;
+  if (Array.isArray(player?.processed_matches)) return player.processed_matches.length;
+  return Number(player?.matches) || 0;
+}
+
+function perMatch(player, total) {
+  const matches = trackedMatches(player);
+  const value = Number(total);
+  return matches > 0 && Number.isFinite(value) ? value / matches : null;
+}
+
 function buildPlayerExtras(player) {
   const entries = [
     ["Kills Total", player.kills_total],
@@ -69,7 +87,7 @@ function buildPlayerExtras(player) {
         <strong>${value}</strong>
         ${
           ["Kills Total", "Deaths Total", "Assists Total"].includes(label)
-            ? `<small>(${formatStat(value / (Number(player.matches) || 1))} per match)</small>`
+            ? `<small>(${formatStat(perMatch(player, value))} per match)</small>`
             : ""
         }
       </div>
@@ -86,6 +104,227 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+/* ------------------ Totals and derived stats ------------------ */
+// Mirrors COUNTER_KEYS / derive_summary() in fetch_valo.py so Overall can
+// merge the raw totals of several acts and derive the same summary.
+
+const COUNTER_KEYS = [
+  "matches", "wins", "losses", "draws",
+  "rounds", "rounds_won",
+  "time_played_ms",
+  "score",
+  "kills", "deaths", "assists",
+  "headshots", "bodyshots", "legshots",
+  "damage_dealt", "damage_received",
+  "kast_rounds",
+  "first_bloods", "first_deaths",
+  "trade_kills", "traded_deaths",
+  "multikills_2k", "multikills_3k", "multikills_4k", "aces",
+  "clutches",
+  "plants", "defuses",
+  "match_mvps", "team_mvps",
+  "ability_grenade", "ability_1", "ability_2", "ability_ultimate",
+  "economy_spent", "loadout_value",
+  "afk_rounds",
+  "performance_score_total", "performance_score_matches",
+  "enemy_rank_sum", "enemy_rank_matches",
+  "lobby_rank_sum", "lobby_rank_matches",
+];
+
+const MAP_COUNTER_KEYS = ["matches", "wins", "losses", "draws", "rounds", "rounds_won"];
+
+const PERFORMANCE_BREAKDOWN_KEYS = [
+  "damage", "trades", "assists", "utility_usage", "plants", "defuses",
+  "adjusted_kills", "adjusted_deaths",
+];
+
+function num(value) {
+  const number = Number(value);
+  return value != null && value !== "" && Number.isFinite(number) ? number : 0;
+}
+
+function roundTo(value, digits) {
+  const factor = 10 ** digits;
+  return Math.round(value * factor) / factor;
+}
+
+function ratio(numerator, denominator, digits = 2, scale = 1) {
+  return denominator ? roundTo((numerator / denominator) * scale, digits) : null;
+}
+
+function emptyTotals() {
+  const totals = {};
+  COUNTER_KEYS.forEach((key) => { totals[key] = 0; });
+  totals.performance_breakdown_totals = {};
+  PERFORMANCE_BREAKDOWN_KEYS.forEach((key) => { totals.performance_breakdown_totals[key] = 0; });
+  totals.performance_grades = {};
+  totals.performance_ratings = { combat: {}, utility: {} };
+  totals.maps = {};
+  return totals;
+}
+
+function mergeCounts(target, source) {
+  Object.entries(source || {}).forEach(([key, value]) => {
+    target[key] = (target[key] || 0) + num(value);
+  });
+  return target;
+}
+
+function mergeRatings(target, source) {
+  Object.entries(source || {}).forEach(([group, metrics]) => {
+    target[group] = target[group] || {};
+    Object.entries(metrics || {}).forEach(([metric, counts]) => {
+      target[group][metric] = mergeCounts(target[group][metric] || {}, counts);
+    });
+  });
+  return target;
+}
+
+function mergeTotals(target, source) {
+  if (!source) return target;
+
+  COUNTER_KEYS.forEach((key) => { target[key] += num(source[key]); });
+  PERFORMANCE_BREAKDOWN_KEYS.forEach((key) => {
+    target.performance_breakdown_totals[key] += num(source.performance_breakdown_totals?.[key]);
+  });
+  mergeCounts(target.performance_grades, source.performance_grades);
+  mergeRatings(target.performance_ratings, source.performance_ratings);
+
+  Object.entries(source.maps || {}).forEach(([mapName, mapTotals]) => {
+    const map = target.maps[mapName] || (target.maps[mapName] = {});
+    MAP_COUNTER_KEYS.forEach((key) => { map[key] = (map[key] || 0) + num(mapTotals?.[key]); });
+  });
+
+  return target;
+}
+
+function deriveSummary(t) {
+  const rounds = t.rounds;
+  const matches = t.matches;
+  const shots = t.headshots + t.bodyshots + t.legshots;
+  const perfMatches = t.performance_score_matches;
+
+  const breakdownAverages = {};
+  PERFORMANCE_BREAKDOWN_KEYS.forEach((key) => {
+    breakdownAverages[key] = ratio(t.performance_breakdown_totals[key], perfMatches, 3);
+  });
+
+  const maps = {};
+  Object.entries(t.maps)
+    .sort((a, b) => b[1].matches - a[1].matches)
+    .forEach(([mapName, m]) => {
+      maps[mapName] = {
+        ...m,
+        winrate: ratio(m.wins, m.matches, 1, 100),
+        round_winrate: ratio(m.rounds_won, m.rounds, 1, 100),
+      };
+    });
+
+  return {
+    matches,
+    wins: t.wins,
+    losses: t.losses,
+    draws: t.draws,
+    winrate: ratio(t.wins, matches, 1, 100),
+    rounds,
+    round_winrate: ratio(t.rounds_won, rounds, 1, 100),
+    time_played_ms: t.time_played_ms,
+
+    acs: ratio(t.score, rounds, 1),
+    adr: ratio(t.damage_dealt, rounds, 1),
+    dd_delta: ratio(t.damage_dealt - t.damage_received, rounds, 1),
+    kd: matches ? ratio(t.kills, Math.max(t.deaths, 1), 2) : null,
+    kad: matches ? ratio(t.kills + t.assists, Math.max(t.deaths, 1), 2) : null,
+    kast: ratio(t.kast_rounds, rounds, 1, 100),
+    hs_percent: ratio(t.headshots, shots, 1, 100),
+    kills_per_match: ratio(t.kills, matches, 2),
+    deaths_per_match: ratio(t.deaths, matches, 2),
+    assists_per_match: ratio(t.assists, matches, 2),
+    kills_per_round: ratio(t.kills, rounds, 2),
+
+    first_bloods: t.first_bloods,
+    first_deaths: t.first_deaths,
+    opening_duel_winrate: ratio(t.first_bloods, t.first_bloods + t.first_deaths, 1, 100),
+    trade_kills: t.trade_kills,
+    traded_deaths: t.traded_deaths,
+    multikills: {
+      "2k": t.multikills_2k,
+      "3k": t.multikills_3k,
+      "4k": t.multikills_4k,
+      "5k": t.aces,
+    },
+    clutches: t.clutches,
+    plants: t.plants,
+    defuses: t.defuses,
+    match_mvps: t.match_mvps,
+    team_mvps: t.team_mvps,
+
+    ability_casts_per_round: {
+      grenade: ratio(t.ability_grenade, rounds, 2),
+      ability_1: ratio(t.ability_1, rounds, 2),
+      ability_2: ratio(t.ability_2, rounds, 2),
+      ultimate: ratio(t.ability_ultimate, rounds, 2),
+    },
+    ultimates_per_match: ratio(t.ability_ultimate, matches, 2),
+    avg_spent_per_round: ratio(t.economy_spent, rounds, 0),
+    avg_loadout_per_round: ratio(t.loadout_value, rounds, 0),
+
+    avg_performance_score: ratio(t.performance_score_total, perfMatches, 2),
+    performance_breakdown_averages: breakdownAverages,
+    enemy_rank_average_value: ratio(t.enemy_rank_sum, t.enemy_rank_matches, 2),
+    lobby_rank_average_value: ratio(t.lobby_rank_sum, t.lobby_rank_matches, 2),
+
+    maps,
+  };
+}
+
+function buildAgentEntry(totals) {
+  const summary = deriveSummary(totals);
+  return {
+    matches: totals.matches,
+    kills: totals.kills,
+    deaths: totals.deaths,
+    assists: totals.assists,
+    time_played_ms: totals.time_played_ms,
+    headshot_percentage: summary.hs_percent,
+    average_performance_score: summary.avg_performance_score,
+    summary,
+    totals,
+  };
+}
+
+// Combine accolade arrays from several acts: counts add up, best value is the max.
+function mergeAccolades(lists) {
+  const byType = new Map();
+
+  lists.forEach((list) => {
+    list.forEach((item) => {
+      const type = item?.type;
+      if (!type) return;
+
+      const existing = byType.get(type);
+      const best = Number(item.best_value);
+
+      if (!existing) {
+        byType.set(type, {
+          ...item,
+          count: num(item.count),
+          best_value: Number.isFinite(best) ? best : null,
+        });
+        return;
+      }
+
+      existing.count += num(item.count);
+      if (Number.isFinite(best) && (existing.best_value == null || best > existing.best_value)) {
+        existing.best_value = best;
+      }
+    });
+  });
+
+  return [...byType.values()];
+}
+
+/* ------------------ Modal helpers ------------------ */
 
 function modalNumber(value, digits = 1) {
   const number = Number(value);
@@ -96,9 +335,23 @@ function modalNumber(value, digits = 1) {
       });
 }
 
+function modalPercent(value, digits = 1) {
+  return value == null ? "N/A" : `${modalNumber(value, digits)}%`;
+}
+
 function modalStat(label, value, note = "") {
   return `
     <article class="modal-stat-card">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      ${note ? `<small>${escapeHtml(note)}</small>` : ""}
+    </article>
+  `;
+}
+
+function modalMiniCard(label, value, note = "") {
+  return `
+    <article class="modal-mini-card">
       <span>${escapeHtml(label)}</span>
       <strong>${escapeHtml(value)}</strong>
       ${note ? `<small>${escapeHtml(note)}</small>` : ""}
@@ -153,6 +406,11 @@ function modalProgress(value, max = 100) {
   `;
 }
 
+function formatRecord(wins, losses, draws) {
+  const record = `${num(wins)}–${num(losses)}`;
+  return num(draws) ? `${record}–${num(draws)}` : record;
+}
+
 // Convert nested performance rating data into readable metric cards.
 function modalRatingCards(ratings) {
   if (!ratings || typeof ratings !== "object") {
@@ -177,8 +435,8 @@ function modalRatingCards(ratings) {
       return `
         <article class="modal-mini-card">
           <span>${escapeHtml(metric.replace(/_/g, " "))}</span>
-          <strong>${escapeHtml(displayValue ?? "N/A")}</strong>
-          <small>${escapeHtml(group)}</small>
+          <strong>${escapeHtml(String(displayValue ?? "N/A").replace(/_/g, " "))}</strong>
+          <small>${escapeHtml(group)} · most common</small>
         </article>
       `;
     });
@@ -189,7 +447,51 @@ function modalRatingCards(ratings) {
     : `<p class="modal-empty">No rating data available for this act.</p>`;
 }
 
-// Supports numeric counts and nested accolade objects from the API.
+function modalGradeCards(grades) {
+  const entries = Object.entries(grades || {}).filter(([, count]) => num(count) > 0);
+  if (!entries.length) {
+    return `<p class="modal-empty">No match grades recorded for this period.</p>`;
+  }
+
+  const total = entries.reduce((sum, [, count]) => sum + num(count), 0);
+  const cards = entries
+    .sort((a, b) => num(b[1]) - num(a[1]))
+    .map(([grade, count]) => modalMiniCard(
+      grade.replace(/_/g, " "),
+      modalNumber(count, 0),
+      `${modalNumber((num(count) / total) * 100, 0)}% of graded matches`
+    ));
+
+  return `<div class="modal-mini-grid">${cards.join("")}</div>`;
+}
+
+function renderMapsTable(maps) {
+  const rows = Object.entries(maps || {});
+  if (!rows.length) {
+    return `<p class="modal-empty">Map results are not recorded for this period.</p>`;
+  }
+
+  return `
+    <table class="modal-table">
+      <thead>
+        <tr><th>Map</th><th>Played</th><th>W–L</th><th>Win %</th><th>Round win %</th></tr>
+      </thead>
+      <tbody>
+        ${rows.map(([mapName, m]) => `
+          <tr>
+            <td>${escapeHtml(mapName)}</td>
+            <td>${modalNumber(m.matches, 0)}</td>
+            <td>${formatRecord(m.wins, m.losses, m.draws)}</td>
+            <td>${modalPercent(m.winrate)}</td>
+            <td>${modalPercent(m.round_winrate)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+/* ------------------ Accolades ------------------ */
 
 function findAccolade(source, aliases) {
   if (!Array.isArray(source)) return null;
@@ -207,12 +509,37 @@ function findAccolade(source, aliases) {
   }) || null;
 }
 
+// best_value units differ by accolade type.
+function formatAccoladeBest(type, value) {
+  const number = Number(value);
+  if (value == null || !Number.isFinite(number)) return null;
+
+  switch (type) {
+    case "headshot_percentage":
+      // Stored as a fraction (0.43 = 43%).
+      return `${modalNumber(number <= 1 ? number * 100 : number, 1)}%`;
+    case "damage_per_round":
+      return `${modalNumber(number, 1)} ADR`;
+    case "kills":
+      return `${modalNumber(number, 0)} kills`;
+    case "assists":
+      return `${modalNumber(number, 0)} assists`;
+    case "first_blood":
+      return `${modalNumber(number, 0)} first bloods`;
+    case "trades":
+      return `${modalNumber(number, 0)} trades`;
+    case "plants":
+      return `${modalNumber(number, 0)} plants`;
+    default:
+      return modalNumber(number, number % 1 ? 1 : 0);
+  }
+}
 
 function renderAccoladeGroup(title, subtitle, definitions, source) {
   const items = definitions.map(([label, icon, aliases]) => {
     const accolade = findAccolade(source, aliases);
     const count = accolade ? Number(accolade.count) : null;
-    const bestValue = accolade?.best_value;
+    const best = accolade ? formatAccoladeBest(accolade.type, accolade.best_value) : null;
 
     const hasCount = Number.isFinite(count);
     const earned = hasCount && count > 0;
@@ -236,11 +563,7 @@ function renderAccoladeGroup(title, subtitle, definitions, source) {
             }
           </small>
 
-          ${
-            bestValue != null && Number.isFinite(Number(bestValue))
-              ? `<div class="accolade-best">Best: ${modalNumber(bestValue, 2)}</div>`
-              : ""
-          }
+          ${best ? `<div class="accolade-best">Best: ${escapeHtml(best)}</div>` : ""}
         </div>
       </article>
     `;
@@ -260,6 +583,164 @@ function renderAccoladeGroup(title, subtitle, definitions, source) {
   `;
 }
 
+/* ------------------ Agents ------------------ */
+
+// Wiki filenames that don't match the in-game agent name.
+const AGENT_IMAGE_NAMES = {
+  "KAY/O": "KAYO",
+};
+
+function agentImageUrl(name) {
+  const fileName = AGENT_IMAGE_NAMES[name] || name.trim().replace(/\s+/g, "_");
+  return `https://wiki.playvalorant.com/en-us/images/${encodeURIComponent(fileName)}_icon.png`;
+}
+
+// Agent entries written before per-agent summaries existed only have a few
+// flat fields; build what we can from them.
+function agentSummary(agent) {
+  if (agent?.summary) return agent.summary;
+
+  const kills = num(agent?.kills);
+  const deaths = num(agent?.deaths);
+  return {
+    matches: num(agent?.matches),
+    kd: agent?.matches ? roundTo(kills / Math.max(deaths, 1), 2) : null,
+    hs_percent: agent?.headshot_percentage ?? null,
+    avg_performance_score: agent?.average_performance_score ?? null,
+    legacy: true,
+  };
+}
+
+function bestMap(maps) {
+  const entries = Object.entries(maps || {});
+  if (!entries.length) return null;
+
+  // Most played; ties broken by win rate.
+  const [mapName, m] = entries.sort((a, b) =>
+    (b[1].matches - a[1].matches) || (num(b[1].winrate) - num(a[1].winrate))
+  )[0];
+  return `${mapName} (${formatRecord(m.wins, m.losses, m.draws)})`;
+}
+
+function renderAgentCard(name, agent, totalMatches) {
+  const s = agentSummary(agent);
+  const matches = num(s.matches);
+  const pickRate = totalMatches ? (matches / totalMatches) * 100 : null;
+  const multikills = s.multikills || {};
+  const highlightRounds = num(multikills["3k"]) + num(multikills["4k"]) + num(multikills["5k"]);
+
+  const stat = (label, value) => `
+    <div>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+    </div>
+  `;
+
+  const primary = [
+    stat("Win rate", modalPercent(s.winrate)),
+    stat("ACS", modalNumber(s.acs, 0)),
+    stat("ADR", modalNumber(s.adr, 0)),
+    stat("K/D", modalNumber(s.kd, 2)),
+    stat("KAST", modalPercent(s.kast, 0)),
+    stat("HS%", modalPercent(s.hs_percent)),
+    stat("DD Δ/round", s.dd_delta == null ? "N/A" : `${s.dd_delta > 0 ? "+" : ""}${modalNumber(s.dd_delta, 0)}`),
+    stat("First bloods", s.first_bloods == null ? "N/A" : `${s.first_bloods}–${num(s.first_deaths)}`),
+    stat("Performance", modalNumber(s.avg_performance_score, 0)),
+  ].join("");
+
+  const secondary = s.legacy ? "" : `
+    <div class="agent-stats agent-stats-secondary">
+      ${stat("3K+ rounds", modalNumber(highlightRounds, 0))}
+      ${stat("Aces", modalNumber(multikills["5k"], 0))}
+      ${stat("Clutches", modalNumber(s.clutches, 0))}
+      ${stat("Plants / defuses", `${num(s.plants)} / ${num(s.defuses)}`)}
+      ${stat("Ults / match", modalNumber(s.ultimates_per_match, 1))}
+      ${stat("Trade kills", modalNumber(s.trade_kills, 0))}
+    </div>
+  `;
+
+  const map = s.legacy ? null : bestMap(s.maps);
+  const footer = s.legacy
+    ? "Detailed agent stats appear after the next data refresh"
+    : `${formatTime(s.time_played_ms)} played${map ? ` · Most played map: ${escapeHtml(map)}` : ""}`;
+
+  return `
+    <article class="agent-card">
+      <div class="agent-card-top">
+        <img
+          class="agent-portrait"
+          src="${escapeHtml(agentImageUrl(name))}"
+          alt="${escapeHtml(name)}"
+          loading="lazy"
+          onerror="this.style.display='none'"
+        />
+
+        <div class="agent-card-title">
+          <span class="agent-eyebrow">AGENT</span>
+          <h4>${escapeHtml(name)}</h4>
+        </div>
+
+        <span class="agent-match-count">
+          ${matches} ${matches === 1 ? "match" : "matches"}${s.legacy ? "" : ` · ${formatRecord(s.wins, s.losses, s.draws)}`}
+        </span>
+      </div>
+
+      ${pickRate == null ? "" : `
+        <div class="agent-pick">
+          <div class="agent-pick-label">
+            <span>Pick rate</span>
+            <strong>${modalNumber(pickRate, 0)}%</strong>
+          </div>
+          ${modalProgress(pickRate)}
+        </div>
+      `}
+
+      <div class="agent-stats">${primary}</div>
+      ${secondary}
+
+      <div class="agent-time">${footer}</div>
+    </article>
+  `;
+}
+
+function renderAgentPool(agents, totalMatches) {
+  if (!agents.length) {
+    return `<p class="modal-empty">Agent-specific stats are not available for this period.</p>`;
+  }
+
+  const withSummary = agents
+    .map(([name, agent]) => ({ name, s: agentSummary(agent) }))
+    .filter((item) => !item.s.legacy);
+
+  // Leaders need at least 2 matches so a single good game doesn't top the list.
+  const eligible = withSummary.filter((item) => item.s.matches >= 2);
+  const leader = (key) => eligible
+    .filter((item) => item.s[key] != null)
+    .sort((a, b) => b.s[key] - a.s[key])[0];
+
+  const mostPlayed = agents[0];
+  const bestAcs = leader("acs");
+  const bestWin = leader("winrate");
+  const bestKast = leader("kast");
+
+  const leaders = withSummary.length ? `
+    <div class="modal-stats-grid">
+      ${modalStat("Most played", mostPlayed[0], `${num(agentSummary(mostPlayed[1]).matches)} matches`)}
+      ${modalStat("Best ACS", bestAcs ? bestAcs.name : "N/A", bestAcs ? `${modalNumber(bestAcs.s.acs, 0)} ACS · min 2 matches` : "Needs 2+ matches on an agent")}
+      ${modalStat("Best win rate", bestWin ? bestWin.name : "N/A", bestWin ? `${modalPercent(bestWin.s.winrate, 0)} · ${formatRecord(bestWin.s.wins, bestWin.s.losses, bestWin.s.draws)}` : "Needs 2+ matches on an agent")}
+      ${modalStat("Best KAST", bestKast ? bestKast.name : "N/A", bestKast ? `${modalPercent(bestKast.s.kast, 0)} · min 2 matches` : "Needs 2+ matches on an agent")}
+    </div>
+  ` : "";
+
+  return `
+    ${leaders}
+    <div class="agent-grid">
+      ${agents.map(([name, agent]) => renderAgentCard(name, agent, totalMatches)).join("")}
+    </div>
+  `;
+}
+
+/* ------------------ Modal ------------------ */
 
 function ensureCardModal() {
   let modal = document.getElementById("cardModal");
@@ -313,10 +794,8 @@ function openCardModal(player) {
   const pageLink = modal.querySelector("#cardModalPageLink");
 
   const currentActLabel = getActLabel(currentAct);
-  const score = currentAct === "overall" &&
-    Number.isFinite(player.valostat_score)
-      ? player.valostat_score
-      : valoStatScore(player);
+  const isOverall = currentAct === "overall";
+  const score = getDisplayedValoStatScore(player, currentAct);
 
   const wins = Number(player.wins) || 0;
   const matches = Number(player.matches) || 0;
@@ -326,6 +805,17 @@ function openCardModal(player) {
   const averagePerformance = performanceMatches
     ? modalNumber(player.avg_performance_score, 1)
     : "N/A";
+
+  // Detailed stats (summary / agents / maps) are only recorded from the
+  // current fetcher onwards. In Overall, say how many acts they cover.
+  const summary = player.summary || null;
+  const detailedActs = Array.isArray(player.detailedActs) ? player.detailedActs : null;
+  const coverage = isOverall && detailedActs && detailedActs.length < (player.actCount || 1)
+    ? (detailedActs.length
+        ? `Only ${detailedActs.join(", ")} has detailed tracking`
+        : "No act in this period has detailed tracking")
+    : "";
+  const notRecorded = `<p class="modal-empty">Not recorded for this period. Detailed tracking started in V26: A6.</p>`;
 
   const playerPayload = { player, currentAct, currentActLabel };
   const playerPageUrl =
@@ -339,6 +829,8 @@ function openCardModal(player) {
 
   title.textContent = `${player.id} · ${currentActLabel}`;
 
+  // The API's breakdown values are already per-round rates for each match;
+  // these are their averages across matches.
   const performanceBreakdown = player.performance_breakdown_averages || {};
   const performanceBreakdownLabels = {
     damage: "Damage",
@@ -353,82 +845,15 @@ function openCardModal(player) {
 
   const breakdownCards = Object.entries(performanceBreakdown)
     .filter(([, value]) => value != null)
-    .map(([key, value]) => `
-      <article class="modal-mini-card">
-        <span>${escapeHtml(performanceBreakdownLabels[key] || key.replace(/_/g, " "))}</span>
-        <strong>${modalNumber(value, 2)}</strong>
-        <small>Average per match</small>
-      </article>
-    `).join("");
+    .map(([key, value]) => modalMiniCard(
+      performanceBreakdownLabels[key] || key.replace(/_/g, " "),
+      modalNumber(value, key === "damage" ? 1 : 2),
+      "Per round, averaged over matches"
+    )).join("");
 
   const agents = Object.entries(player.agents || {})
     .sort((a, b) => (b[1].matches || 0) - (a[1].matches || 0));
-
-
-  const agentCards = agents.map(([name, agent]) => {
-    const agentMatches = Number(agent.matches) || 0;
-    const kd = agent.deaths
-      ? (Number(agent.kills) || 0) / Number(agent.deaths)
-      : Number(agent.kills) || 0;
-
-    // Build the wiki image URL from the agent name.
-    const agentImageName = name.trim().replace(/\s+/g, "_");
-    const agentImageUrl =
-      `https://wiki.playvalorant.com/en-us/images/${encodeURIComponent(agentImageName)}_icon.png`;
-
-    return `
-      <article class="agent-card">
-        <div class="agent-card-top">
-          <img
-            class="agent-portrait"
-            src="${agentImageUrl}"
-            alt="${escapeHtml(name)}"
-            loading="lazy"
-            onerror="this.style.display='none'"
-          />
-
-          <div class="agent-card-title">
-            <span class="agent-eyebrow">AGENT</span>
-            <h4>${escapeHtml(name)}</h4>
-          </div>
-
-          <span class="agent-match-count">${agentMatches} matches</span>
-        </div>
-
-        <div class="agent-stats">
-          <div>
-            <span>K/D</span>
-            <strong>${modalNumber(kd, 2)}</strong>
-          </div>
-          <div>
-            <span>Kills</span>
-            <strong>${modalNumber(agent.kills, 0)}</strong>
-          </div>
-          <div>
-            <span>Assists</span>
-            <strong>${modalNumber(agent.assists, 0)}</strong>
-          </div>
-          <div>
-            <span>HS%</span>
-            <strong>${agent.headshot_percentage == null
-              ? "N/A"
-              : `${modalNumber(agent.headshot_percentage, 1)}%`}</strong>
-          </div>
-          <div>
-            <span>Performance</span>
-            <strong>${agent.average_performance_score == null
-              ? "N/A"
-              : modalNumber(agent.average_performance_score, 1)}</strong>
-          </div>
-        </div>
-
-        <div class="agent-time">
-          ${formatTime(Number(agent.time_played_ms) || 0)} played
-        </div>
-      </article>
-    `;
-  }).join("");
-
+  const agentMatchesTotal = summary?.matches ?? trackedMatches(player);
 
   const rankEnemy = player.enemy_rank_average_value;
   const rankLobby = player.lobby_rank_average_value;
@@ -441,7 +866,7 @@ function openCardModal(player) {
     ["Aces", "✹", ["aces", "ace"]],
     ["Clutches", "◈", ["clutches"]],
     ["Kills", "☠", ["kills"]],
-    ["Headshots", "◎", ["headshots", "head_shots", "head_shot", "headshot"]],
+    ["Headshots", "◎", ["headshot_percentage", "headshots"]],
     ["First Bloods", "⚡", ["first_blood"]],
   ];
 
@@ -453,6 +878,35 @@ function openCardModal(player) {
     ["Spike Plants", "⬡", ["plants"]],
   ];
 
+  const multikills = summary?.multikills || {};
+  const casts = summary?.ability_casts_per_round || {};
+
+  const impactSection = summary ? `
+    <div class="modal-mini-grid">
+      ${modalMiniCard("Opening duels won", modalPercent(summary.opening_duel_winrate, 0), `${num(summary.first_bloods)} first bloods · ${num(summary.first_deaths)} first deaths`)}
+      ${modalMiniCard("Trade kills", modalNumber(summary.trade_kills, 0), "Avenged a teammate within 5s")}
+      ${modalMiniCard("Deaths traded", modalNumber(summary.traded_deaths, 0), `of ${modalNumber(player.deaths_total, 0)} deaths`)}
+      ${modalMiniCard("Multi-kills", `${num(multikills["2k"])} / ${num(multikills["3k"])} / ${num(multikills["4k"])}`, "2K / 3K / 4K rounds")}
+      ${modalMiniCard("Aces", modalNumber(multikills["5k"], 0), "5+ kills in a round")}
+      ${modalMiniCard("Clutches", modalNumber(summary.clutches, 0), "Last player alive, round won")}
+      ${modalMiniCard("Match MVPs", modalNumber(summary.match_mvps, 0), `${num(summary.team_mvps)} team MVPs`)}
+      ${modalMiniCard("Spike plants", modalNumber(summary.plants, 0), `${num(summary.defuses)} defuses`)}
+      ${modalMiniCard("Round win rate", modalPercent(summary.round_winrate), `${modalNumber(summary.rounds, 0)} rounds`)}
+    </div>
+  ` : notRecorded;
+
+  const utilitySection = summary ? `
+    <div class="modal-mini-grid">
+      ${modalMiniCard("Grenade slot", modalNumber(casts.grenade, 2), "Casts per round")}
+      ${modalMiniCard("Ability 1 slot", modalNumber(casts.ability_1, 2), "Casts per round")}
+      ${modalMiniCard("Ability 2 slot", modalNumber(casts.ability_2, 2), "Casts per round")}
+      ${modalMiniCard("Ultimates", modalNumber(summary.ultimates_per_match, 1), "Per match")}
+      ${modalMiniCard("Avg spend", modalNumber(summary.avg_spent_per_round, 0), "Credits per round")}
+      ${modalMiniCard("Avg loadout", modalNumber(summary.avg_loadout_per_round, 0), "Credits per round")}
+    </div>
+  ` : notRecorded;
+
+  const scoreProgress = score == null ? 0 : Math.max(0, Math.min(100, Number(score) / 10));
 
   body.innerHTML = `
     <section class="modal-hero">
@@ -473,13 +927,13 @@ function openCardModal(player) {
         <span class="modal-score-label">VALOSTAT SCORE</span>
         <div
           class="modal-score-ring"
-          style="--score-progress: ${Math.max(0, Math.min(100, Number(score) / 10))}%"
+          style="--score-progress: ${scoreProgress}%"
         >
           <div class="modal-score-ring-inner">
-            <strong>${modalNumber(score, 0)}<small>/1000</small></strong>
+            <strong>${formatScore(score)}<small>/1000</small></strong>
           </div>
         </div>
-        <span class="modal-score-sub">${escapeHtml(currentActLabel)}</span>
+        <span class="modal-score-sub">${escapeHtml(isOverall ? "Average of act scores" : currentActLabel)}</span>
       </div>
 
     </section>
@@ -496,22 +950,31 @@ function openCardModal(player) {
       <div class="modal-stats-grid">
         ${modalStat("Win rate", `${modalNumber(winRate, 1)}%`, `${wins} wins · ${losses} losses`)}
         ${modalStat("Avg ACS", modalNumber(player.avg_acs), `${modalNumber(player.rounds_total, 0)} rounds`)}
+        ${modalStat("ADR", summary ? modalNumber(summary.adr) : "N/A", "Damage per round")}
         ${modalStat("K/D", modalNumber(player.kd, 2), `${modalNumber(player.kills_total, 0)} kills / ${modalNumber(player.deaths_total, 0)} deaths`)}
         ${modalStat("KA/D", modalNumber(player.kad, 2), `${modalNumber(player.assists_total, 0)} assists`)}
         ${modalStat("KAST", `${modalNumber(player.kast)}%`, "Rounds with kill, assist, survival or trade")}
         ${modalStat("Damage delta", modalNumber(player.dd_delta), "Per round")}
         ${modalStat("Avg performance", averagePerformance, `${performanceMatches} rated matches`)}
-        ${modalStat("Playtime", formatTime(player.time_total), `${player.actCount || 1} acts counted`)}
       </div>
 
       ${modalSection("Career snapshot", "Aggregated statistics for the selected period", `
         <div class="modal-detail-grid">
           <div><span>Matches</span><strong>${modalNumber(matches, 0)}</strong></div>
           <div><span>Wins</span><strong>${modalNumber(wins, 0)}</strong></div>
-          <div><span>Acts played</span><strong>${escapeHtml(player.actsPlayed || currentActLabel)}</strong></div>
+          <div><span>Playtime</span><strong>${escapeHtml(formatTime(player.time_total))}</strong></div>
           <div><span>Rounds</span><strong>${modalNumber(player.rounds_total, 0)}</strong></div>
+          <div><span>Kills / match</span><strong>${modalNumber(perMatch(player, player.kills_total), 1)}</strong></div>
+          <div><span>Deaths / match</span><strong>${modalNumber(perMatch(player, player.deaths_total), 1)}</strong></div>
+          <div><span>Assists / match</span><strong>${modalNumber(perMatch(player, player.assists_total), 1)}</strong></div>
+          <div><span>Acts played</span><strong>${escapeHtml(player.actsPlayed || currentActLabel)}</strong></div>
         </div>
+        ${trackedMatches(player) < matches
+          ? `<p class="modal-footnote">Per-match averages use the ${trackedMatches(player)} matches with full data, out of ${matches} played.</p>`
+          : ""}
       `)}
+
+      ${modalSection("Maps", coverage || "Results by map", summary ? renderMapsTable(summary.maps) : notRecorded)}
     </div>
 
     <div class="modal-tab-panel" data-panel="performance" role="tabpanel" hidden>
@@ -522,23 +985,25 @@ function openCardModal(player) {
         ${modalStat("Headshot rate", player.hs_percent == null ? "N/A" : `${modalNumber(player.hs_percent)}%`, "Across recorded shots")}
       </div>
 
-      ${modalSection("Performance breakdown", "Average values reported by the match API", `
+      ${modalSection("Impact", coverage || "Opening duels, trades and round-winning plays", impactSection)}
+
+      ${modalSection("Performance breakdown", "Per-round values reported by the match API, averaged across matches", `
         ${breakdownCards
           ? `<div class="modal-mini-grid">${breakdownCards}</div>`
-          : `<p class="modal-empty">No performance breakdown is available for this act.</p>`}
+          : `<p class="modal-empty">No performance breakdown is available for this period.</p>`}
       `)}
 
-      ${modalSection("Combat ratings", "Distribution of reported combat and utility ratings", `
+      ${modalSection("Match grades", "How often each grade was given by the API", modalGradeCards(player.performance_grades))}
+
+      ${modalSection("Combat ratings", "Most common rating for each metric", `
         ${modalRatingCards(player.performance_ratings)}
       `)}
+
+      ${modalSection("Utility & economy", coverage || "Ability usage and spending", utilitySection)}
     </div>
 
     <div class="modal-tab-panel" data-panel="agents" role="tabpanel" hidden>
-      ${modalSection("Agent pool", `${agents.length} agents with recorded stats`, `
-        ${agentCards
-          ? `<div class="agent-grid">${agentCards}</div>`
-          : `<p class="modal-empty">Agent-specific stats are not available for this act.</p>`}
-      `)}
+      ${modalSection("Agent pool", coverage || `${agents.length} agents with recorded stats`, renderAgentPool(agents, agentMatchesTotal))}
     </div>
 
     <div class="modal-tab-panel" data-panel="matchmaking" role="tabpanel" hidden>
@@ -556,7 +1021,7 @@ function openCardModal(player) {
     <div class="modal-tab-panel" data-panel="accolades" role="tabpanel" hidden>
       ${renderAccoladeGroup("Core", "Standout match achievements", coreAccolades, accoladesSource)}
       ${renderAccoladeGroup("Performance", "Combat and team-play achievements", performanceAccolades, accoladesSource)}
-      <p class="modal-footnote">A dash means the accolade count was not found in the saved API response; it does not mean zero.</p>
+      <p class="modal-footnote">A dash means the accolade count was not found in the saved API response; it does not mean zero.${isOverall ? " Overall adds up counts across acts and keeps the best value." : ""}</p>
     </div>
   `;
 
@@ -632,8 +1097,11 @@ function sigmoidNormalize(value, midpoint, steepness) {
   return 1 / (1 + Math.exp(-(v - midpoint) / steepness));
 }
 
-
+// Score for a single act. Returns null when the player has no matches, so it
+// can be skipped when averaging and shown as a dash.
 function valoStatScore(player) {
+  if (!player || !(Number(player.matches) > 0)) return null;
+
   const hasPerformanceScore =
     (player.performance_score_matches || 0) > 0 &&
     player.avg_performance_score != null;
@@ -642,9 +1110,7 @@ function valoStatScore(player) {
   const kast = clamp((player.kast || 0) / 100, 0, 1);
   const kad = sigmoidNormalize(player.kad, 1.2, 0.28);
   const dd = sigmoidNormalize(player.dd_delta, 0, 30);
-  const win = (player.matches || 0) > 0
-    ? clamp((player.wins || 0) / player.matches, 0, 1)
-    : 0;
+  const win = clamp((player.wins || 0) / player.matches, 0, 1);
 
   let score;
 
@@ -671,10 +1137,22 @@ function valoStatScore(player) {
       0.25 * dd +
       0.10 * win;
   }
-  if (player.matches == 0) return "NA";
+
   return clamp(Math.round(score * 1000), 10, 1000);
 }
 
+function formatScore(score) {
+  return score == null ? "—" : String(score);
+}
+
+// The one score used by cards, sorting, the modal and comparisons.
+function getDisplayedValoStatScore(player, act) {
+  if (act === "overall") {
+    return Number.isFinite(player.valostat_score) ? player.valostat_score : null;
+  }
+
+  return valoStatScore(player);
+}
 
 
 function formatTime(ms) {
@@ -706,10 +1184,14 @@ async function loadStats() {
   players = await current.json();
   cache = [...players];
 
-  prev = computeDiff(
-    cache,
-    previousResponse ? await previousResponse.json() : []
-  );
+  let previous = [];
+  try {
+    previous = previousResponse && previousResponse.ok ? await previousResponse.json() : [];
+  } catch (error) {
+    console.warn("Unable to read stats_prev.json", error);
+  }
+
+  prev = computeDiff(cache, previous);
 
   await renderCards();
   populateDropdowns(players);
@@ -735,7 +1217,9 @@ function computeDiff(curr, previous) {
 
     if (!old) return;
 
-    const scoreChanged = valoStatScore(player) !== valoStatScore(old);
+    const newScore = valoStatScore(player);
+    const oldScore = valoStatScore(old);
+    const scoreChanged = newScore !== oldScore;
 
     const diff = {
       id: player.id,
@@ -782,8 +1266,8 @@ function computeDiff(curr, previous) {
         : formatTime(player.time_total),
 
       score: scoreChanged
-        ? `${valoStatScore(old)} → ${valoStatScore(player)}`
-        : valoStatScore(player),
+        ? `${formatScore(oldScore)} → ${formatScore(newScore)}`
+        : formatScore(newScore),
     };
 
     diffs.push(diff);
@@ -822,6 +1306,136 @@ function showLoading(message = "Calculating scores for overall stats, please wai
   `;
 }
 
+/* ---------- Overall: combine acts ---------- */
+
+// Totals that are simply summed across acts.
+const OVERALL_SUM_KEYS = [
+  "matches", "wins", "rounds_total", "acs_total",
+  "kills_total", "deaths_total", "assists_total",
+  "kast_rounds_total", "damage_delta_total", "time_total",
+  "performance_score_total", "performance_score_matches",
+  "enemy_rank_sum", "enemy_rank_matches",
+  "lobby_rank_sum", "lobby_rank_matches",
+  "headshots_total", "bodyshots_total", "legshots_total",
+];
+
+// entries: [{ player, label }] for one player, newest act first.
+function combinePlayerActs(entries) {
+  const base = entries[0].player;
+  const sums = {};
+  OVERALL_SUM_KEYS.forEach((key) => {
+    sums[key] = entries.reduce((total, entry) => total + num(entry.player[key]), 0);
+  });
+
+  const rounds = sums.rounds_total;
+  const deaths = sums.deaths_total;
+  const shots = sums.headshots_total + sums.bodyshots_total + sums.legshots_total;
+
+  // Per-act scores, each with the formula that suits that act's data.
+  const actScores = entries.map((entry) => ({
+    label: entry.label,
+    score: valoStatScore(entry.player),
+  }));
+  const scored = actScores.filter((item) => item.score != null);
+
+  // Detailed stats only exist for acts fetched with the newer script.
+  const detailed = entries.filter((entry) => entry.player.totals);
+  let totals = null;
+  let summary = null;
+  const agentTotals = {};
+
+  if (detailed.length) {
+    totals = emptyTotals();
+    detailed.forEach((entry) => {
+      mergeTotals(totals, entry.player.totals);
+      Object.entries(entry.player.agents || {}).forEach(([name, agent]) => {
+        if (!agent?.totals) return;
+        mergeTotals(agentTotals[name] || (agentTotals[name] = emptyTotals()), agent.totals);
+      });
+    });
+    summary = deriveSummary(totals);
+  }
+
+  const agents = {};
+  Object.entries(agentTotals)
+    .sort((a, b) => b[1].matches - a[1].matches)
+    .forEach(([name, agentTotal]) => { agents[name] = buildAgentEntry(agentTotal); });
+
+  const breakdownTotals = {};
+  PERFORMANCE_BREAKDOWN_KEYS.forEach((key) => {
+    breakdownTotals[key] = entries.reduce(
+      (total, entry) => total + num(entry.player.performance_breakdown_totals?.[key]),
+      0
+    );
+  });
+  const breakdownAverages = {};
+  PERFORMANCE_BREAKDOWN_KEYS.forEach((key) => {
+    breakdownAverages[key] = ratio(breakdownTotals[key], sums.performance_score_matches, 3);
+  });
+
+  const grades = {};
+  const ratings = {};
+  entries.forEach((entry) => {
+    mergeCounts(grades, entry.player.performance_grades);
+    mergeRatings(ratings, entry.player.performance_ratings);
+  });
+
+  const accoladeLists = entries
+    .map((entry) => entry.player.accolades_seasonal)
+    .filter(Array.isArray);
+
+  return {
+    // Identity, rank and level come from the newest act the player appears in.
+    id: base.id,
+    riot_id: base.riot_id,
+    name: base.name,
+    puuid: base.puuid,
+    banner: base.banner,
+    level: base.level,
+    rank: base.rank,
+    rr: base.rr,
+    elo: base.elo,
+
+    ...sums,
+    matches_tracked: entries.reduce((total, entry) => total + trackedMatches(entry.player), 0),
+    winrate: sums.matches ? roundTo((sums.wins / sums.matches) * 100, 1) : 0,
+    avg_acs: rounds ? sums.acs_total / rounds : 0,
+    kd: deaths ? sums.kills_total / deaths : sums.kills_total,
+    kad: deaths ? (sums.kills_total + sums.assists_total) / deaths : sums.kills_total + sums.assists_total,
+    kast: rounds ? (sums.kast_rounds_total / rounds) * 100 : 0,
+    dd_delta: rounds ? sums.damage_delta_total / rounds : 0,
+    hs_percent: shots ? roundTo((sums.headshots_total / shots) * 100, 1) : null,
+    avg_performance_score: sums.performance_score_matches
+      ? sums.performance_score_total / sums.performance_score_matches
+      : null,
+    enemy_rank_average_value: sums.enemy_rank_matches
+      ? sums.enemy_rank_sum / sums.enemy_rank_matches
+      : null,
+    lobby_rank_average_value: sums.lobby_rank_matches
+      ? sums.lobby_rank_sum / sums.lobby_rank_matches
+      : null,
+
+    performance_breakdown_totals: breakdownTotals,
+    performance_breakdown_averages: breakdownAverages,
+    performance_grades: grades,
+    performance_ratings: ratings,
+    accolades_seasonal: accoladeLists.length ? mergeAccolades(accoladeLists) : [],
+
+    totals,
+    summary,
+    agents,
+
+    actCount: entries.length,
+    actsPlayed: entries.map((entry) => entry.label).join(", "),
+    detailedActs: detailed.map((entry) => entry.label),
+    actScores,
+    // Equal-weighted mean of per-act scores; acts with no matches are skipped.
+    valostat_score: scored.length
+      ? Math.round(scored.reduce((total, item) => total + item.score, 0) / scored.length)
+      : null,
+  };
+}
+
 /* ---------- Load Act Data ---------- */
 
 async function loadActData(act) {
@@ -830,160 +1444,32 @@ async function loadActData(act) {
   }
 
   if (act === "overall") {
-    const combinedData = [...cache];
-    const actCount = {};
-    const actNames = {};
-    const actScoreTotals = {};
-    const actScoreCounts = {};
+    const entriesById = new Map();
 
-    combinedData.forEach((player) => {
-      actCount[player.id] = 1;
-      actNames[player.id] = ["V26: A6"];
-      actScoreTotals[player.id] = valoStatScore(player);
-      actScoreCounts[player.id] = 1;      
-    });
+    const addEntry = (player, label) => {
+      if (!player?.id) return;
+      if (!entriesById.has(player.id)) entriesById.set(player.id, []);
+      entriesById.get(player.id).push({ player, label });
+    };
+
+    cache.forEach((player) => addEntry(player, getActLabel(defaultAct)));
 
     try {
+      // actMap is ordered newest act first.
       for (const [displayName, actCode] of Object.entries(actMap)) {
-        if (displayName === "overall" || actCode === "e11a6") continue;
+        if (displayName === "overall" || isDefaultActCode(displayName)) continue;
 
         const response = await fetch(`data/${actCode}.json?ts=${Date.now()}`);
         if (!response.ok) continue;
 
         const actData = await response.json();
-
-        actData.forEach((actPlayer) => {
-          const existingIndex = combinedData.findIndex(
-            (player) => player.id === actPlayer.id
-          );
-          const actScore = valoStatScore(actPlayer);
-          actScoreTotals[actPlayer.id] = (actScoreTotals[actPlayer.id] || 0) + actScore;
-          actScoreCounts[actPlayer.id] = (actScoreCounts[actPlayer.id] || 0) + 1;
-
-          if (existingIndex !== -1) {
-            const player = combinedData[existingIndex];
-
-            const combinedMatches =
-              (player.matches || 0) + (actPlayer.matches || 0);
-            const combinedWins =
-              (player.wins || 0) + (actPlayer.wins || 0);
-            const combinedRounds =
-              (player.rounds_total || 0) + (actPlayer.rounds_total || 0);
-
-            const combinedAcs =
-              (player.acs_total || 0) + (actPlayer.acs_total || 0);
-            const combinedKills =
-              (player.kills_total || 0) + (actPlayer.kills_total || 0);
-            const combinedDeaths =
-              (player.deaths_total || 0) + (actPlayer.deaths_total || 0);
-            const combinedAssists =
-              (player.assists_total || 0) + (actPlayer.assists_total || 0);
-            const combinedKastRounds =
-              (player.kast_rounds_total || 0) + (actPlayer.kast_rounds_total || 0);
-            const combinedDamageDelta =
-              (player.damage_delta_total || 0) + (actPlayer.damage_delta_total || 0);
-
-            const combinedPerformanceTotal =
-              (player.performance_score_total || 0) +
-              (actPlayer.performance_score_total || 0);
-
-            const combinedPerformanceMatches =
-              (player.performance_score_matches || 0) +
-              (actPlayer.performance_score_matches || 0);
-
-            const combinedEnemyRankSum =
-              (player.enemy_rank_sum || 0) + (actPlayer.enemy_rank_sum || 0);
-            const combinedEnemyRankMatches =
-              (player.enemy_rank_matches || 0) +
-              (actPlayer.enemy_rank_matches || 0);
-
-            const combinedLobbyRankSum =
-              (player.lobby_rank_sum || 0) + (actPlayer.lobby_rank_sum || 0);
-            const combinedLobbyRankMatches =
-              (player.lobby_rank_matches || 0) +
-              (actPlayer.lobby_rank_matches || 0);
-
-            combinedData[existingIndex] = {
-              ...player,
-              matches: combinedMatches,
-              wins: combinedWins,
-              kills_total: combinedKills,
-              deaths_total: combinedDeaths,
-              assists_total: combinedAssists,
-              time_total: (player.time_total || 0) + (actPlayer.time_total || 0),
-              acs_total: combinedAcs,
-              damage_delta_total: combinedDamageDelta,
-              kast_rounds_total: combinedKastRounds,
-              rounds_total: combinedRounds,
-
-              performance_score_total: combinedPerformanceTotal,
-              performance_score_matches: combinedPerformanceMatches,
-
-              enemy_rank_sum: combinedEnemyRankSum,
-              enemy_rank_matches: combinedEnemyRankMatches,
-              lobby_rank_sum: combinedLobbyRankSum,
-              lobby_rank_matches: combinedLobbyRankMatches,
-
-              avg_performance_score: combinedPerformanceMatches
-                ? combinedPerformanceTotal / combinedPerformanceMatches
-                : null,
-
-              enemy_rank_average_value: combinedEnemyRankMatches
-                ? combinedEnemyRankSum / combinedEnemyRankMatches
-                : null,
-
-              lobby_rank_average_value: combinedLobbyRankMatches
-                ? combinedLobbyRankSum / combinedLobbyRankMatches
-                : null,
-
-              avg_acs: combinedRounds ? combinedAcs / combinedRounds : 0,
-
-              kd: combinedDeaths ? combinedKills / combinedDeaths : combinedKills,
-
-              kad: combinedDeaths
-                ? (combinedKills + combinedAssists) / combinedDeaths
-                : combinedKills + combinedAssists,
-
-              kast: combinedRounds
-                ? (combinedKastRounds / combinedRounds) * 100
-                : 0,
-
-              dd_delta: combinedRounds
-                ? combinedDamageDelta / combinedRounds
-                : 0,
-            };
-
-            actCount[player.id] = (actCount[player.id] || 1) + 1;
-            actNames[player.id].push(displayName);
-
-            if (combinedData[existingIndex].matches > 0) {
-              combinedData[existingIndex].winrate = Math.round(
-                combinedWins / combinedMatches * 100
-              );
-            }
-          } else {
-            combinedData.push(actPlayer);
-            actCount[actPlayer.id] = 1;
-            actNames[actPlayer.id] = [displayName];
-          }
-        });
+        actData.forEach((player) => addEntry(player, getActLabel(actCode)));
       }
-
-      combinedData.forEach((player) => {
-        player.actCount = actCount[player.id] || 1;
-        player.actsPlayed = actNames[player.id]
-          ? actNames[player.id].join(", ")
-          : "";
-        player.valostat_score = Math.round(
-          (actScoreTotals[player.id] || valoStatScore(player)) /
-          (actScoreCounts[player.id] || 1)
-        );          
-      });
     } catch (error) {
       console.error("Error loading act data:", error);
     }
 
-    return combinedData;
+    return [...entriesById.values()].map(combinePlayerActs);
   }
 
   try {
@@ -994,15 +1480,6 @@ async function loadActData(act) {
   }
 
   return cache;
-}
-
-
-function getDisplayedValoStatScore(player, act) {
-  if (act === "overall" && Number.isFinite(player.valostat_score)) {
-    return player.valostat_score;
-  }
-
-  return valoStatScore(player);
 }
 
 
@@ -1033,46 +1510,39 @@ async function renderCards(act = currentAct) {
 
   const sortType = document.getElementById("sortSelect").value;
 
-  if (sortType !== "default") {
-    displayData.sort((a, b) => {
-      switch (sortType) {
-        case "score":
-          return getDisplayedValoStatScore(b, act) - getDisplayedValoStatScore(a, act);
-        case "rank":
-          return (b.elo || 0) - (a.elo || 0);
-        case "level":
-          return (b.level || 0) - (a.level || 0);
-        case "winPercentage":
-          return (b.winrate || 0) - (a.winrate || 0);
-        case "matchesPlayed":
-          return (b.matches || 0) - (a.matches || 0);
-        case "kills":
-          return ((b.kills_total / b.matches) || 0) -
-            ((a.kills_total / a.matches) || 0);
-        case "deaths":
-          return -1 * (
-            ((b.deaths_total / b.matches) || 0) -
-            ((a.deaths_total / a.matches) || 0)
-          );
-        case "assists":
-          return ((b.assists_total / b.matches) || 0) -
-            ((a.assists_total / a.matches) || 0);
-        case "acs":
-          return (b.avg_acs || 0) - (a.avg_acs || 0);
-        case "kd":
-          return (b.kd || 0) - (a.kd || 0);
-        case "kad":
-          return (b.kad || 0) - (a.kad || 0);
-        case "kast":
-          return (b.kast || 0) - (a.kast || 0);
-        case "dd":
-          return (b.dd_delta || 0) - (a.dd_delta || 0);
-        case "time":
-          return (b.time_total || 0) - (a.time_total || 0);
-        default:
-          return 0;
-      }
-    });
+  // Higher first; players without a value always go last.
+  const byValue = (getValue) => (a, b) => {
+    const va = getValue(a);
+    const vb = getValue(b);
+    const aMissing = va == null || !Number.isFinite(va);
+    const bMissing = vb == null || !Number.isFinite(vb);
+    if (aMissing || bMissing) return aMissing - bMissing;
+    return vb - va;
+  };
+
+  const comparators = {
+    score: byValue((p) => getDisplayedValoStatScore(p, act)),
+    rank: byValue((p) => p.elo || 0),
+    level: byValue((p) => p.level || 0),
+    winPercentage: byValue((p) => p.winrate || 0),
+    matchesPlayed: byValue((p) => p.matches || 0),
+    kills: byValue((p) => perMatch(p, p.kills_total)),
+    // Fewer deaths per game ranks higher.
+    deaths: byValue((p) => {
+      const value = perMatch(p, p.deaths_total);
+      return value == null ? null : -value;
+    }),
+    assists: byValue((p) => perMatch(p, p.assists_total)),
+    acs: byValue((p) => p.avg_acs || 0),
+    kd: byValue((p) => p.kd || 0),
+    kad: byValue((p) => p.kad || 0),
+    kast: byValue((p) => p.kast || 0),
+    dd: byValue((p) => p.dd_delta || 0),
+    time: byValue((p) => p.time_total || 0),
+  };
+
+  if (comparators[sortType]) {
+    displayData.sort(comparators[sortType]);
   }
 
   profiles.innerHTML = "";
@@ -1086,19 +1556,24 @@ async function renderCards(act = currentAct) {
     }
   }
 
+  const perMatchText = (player, total) => {
+    const value = perMatch(player, total);
+    return value == null ? "N/A" : Math.trunc(value * 100) / 100;
+  };
+
   displayData.forEach((player) => {
     const score = getDisplayedValoStatScore(player, act);
     let extraStat = "";
 
     switch (sortType) {
       case "kills":
-        extraStat = `<p><strong>Kills:</strong> ${Math.trunc((player.kills_total / player.matches) * 100) / 100 || 0}</p>`;
+        extraStat = `<p><strong>Kills:</strong> ${perMatchText(player, player.kills_total)}</p>`;
         break;
       case "deaths":
-        extraStat = `<p><strong>Deaths:</strong> ${Math.trunc((player.deaths_total / player.matches) * 100) / 100 || 0}</p>`;
+        extraStat = `<p><strong>Deaths:</strong> ${perMatchText(player, player.deaths_total)}</p>`;
         break;
       case "assists":
-        extraStat = `<p><strong>Assists:</strong> ${Math.trunc((player.assists_total / player.matches) * 100) / 100 || 0}</p>`;
+        extraStat = `<p><strong>Assists:</strong> ${perMatchText(player, player.assists_total)}</p>`;
         break;
       case "acs":
         extraStat = `<p><strong>Avg ACS:</strong> ${player.avg_acs || 0}</p>`;
@@ -1169,7 +1644,7 @@ async function renderCards(act = currentAct) {
         ${player.actCount ? `<p><strong>Acts Counted:</strong> ${player.actCount}</p>` : ""}
         ${extraStat}
         <div class="score">
-          ValoStat Score: <span>${score}</span>
+          ValoStat Score: <span>${formatScore(score)}</span>
         </div>
       </div>
     `;
@@ -1273,6 +1748,11 @@ function statRow(a, b, higherBetter = true, rank = false, isTime = false) {
     displayB = formatStat(b);
   }
 
+  // Nothing to compare against when one side has no value.
+  if (compareA == null || compareB == null) {
+    return `<td>${displayA}</td><td>${displayB}</td>`;
+  }
+
   if (compareA === compareB) {
     return `<td class="equal-stat">${displayA}</td><td class="equal-stat">${displayB}</td>`;
   }
@@ -1307,7 +1787,7 @@ function renderComparison(a, b) {
 
       <tr>
         <td>ValoStat Score</td>
-        ${statRow(valoStatScore(a), valoStatScore(b))}
+        ${statRow(getDisplayedValoStatScore(a, currentAct), getDisplayedValoStatScore(b, currentAct))}
       </tr>
 
       ${a.actCount || b.actCount ? `
