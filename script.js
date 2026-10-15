@@ -436,7 +436,7 @@ function modalRatingCards(ratings) {
         <article class="modal-mini-card">
           <span>${escapeHtml(metric.replace(/_/g, " "))}</span>
           <strong>${escapeHtml(String(displayValue ?? "N/A").replace(/_/g, " "))}</strong>
-          <small>${escapeHtml(group)} · most common</small>
+          <small>Most common ${escapeHtml(group)} rating</small>
         </article>
       `;
     });
@@ -536,7 +536,7 @@ function formatAccoladeBest(type, value) {
 }
 
 function renderAccoladeGroup(title, subtitle, definitions, source) {
-  const items = definitions.map(([label, icon, aliases]) => {
+  const items = definitions.map(([label, , aliases]) => {
     const accolade = findAccolade(source, aliases);
     const count = accolade ? Number(accolade.count) : null;
     const best = accolade ? formatAccoladeBest(accolade.type, accolade.best_value) : null;
@@ -546,7 +546,6 @@ function renderAccoladeGroup(title, subtitle, definitions, source) {
 
     return `
       <article class="accolade-card ${earned ? "earned" : ""}">
-        <div class="accolade-icon">${icon}</div>
 
         <div class="accolade-copy">
           <span class="accolade-name">${escapeHtml(label)}</span>
@@ -662,7 +661,7 @@ function renderAgentCard(name, agent, totalMatches) {
   const map = s.legacy ? null : bestMap(s.maps);
   const footer = s.legacy
     ? "Detailed agent stats appear after the next data refresh"
-    : `${formatTime(s.time_played_ms)} played${map ? ` · Most played map: ${escapeHtml(map)}` : ""}`;
+    : `<span>${formatTime(s.time_played_ms)} played</span>${map ? `<span>Most played map: ${escapeHtml(map)}</span>` : ""}`;
 
   return `
     <article class="agent-card">
@@ -672,16 +671,16 @@ function renderAgentCard(name, agent, totalMatches) {
           src="${escapeHtml(agentImageUrl(name))}"
           alt="${escapeHtml(name)}"
           loading="lazy"
-          onerror="this.style.display='none'"
+          onerror="this.style.visibility='hidden'"
         />
 
         <div class="agent-card-title">
-          <span class="agent-eyebrow">AGENT</span>
           <h4>${escapeHtml(name)}</h4>
         </div>
 
         <span class="agent-match-count">
-          ${matches} ${matches === 1 ? "match" : "matches"}${s.legacy ? "" : ` · ${formatRecord(s.wins, s.losses, s.draws)}`}
+          ${s.legacy ? "" : `<b>${formatRecord(s.wins, s.losses, s.draws)}</b>`}
+          ${matches} ${matches === 1 ? "match" : "matches"}
         </span>
       </div>
 
@@ -698,7 +697,7 @@ function renderAgentCard(name, agent, totalMatches) {
       <div class="agent-stats">${primary}</div>
       ${secondary}
 
-      <div class="agent-time">${footer}</div>
+      <div class="agent-time">${s.legacy ? `<span>${footer}</span>` : footer}</div>
     </article>
   `;
 }
@@ -726,9 +725,9 @@ function renderAgentPool(agents, totalMatches) {
   const leaders = withSummary.length ? `
     <div class="modal-stats-grid">
       ${modalStat("Most played", mostPlayed[0], `${num(agentSummary(mostPlayed[1]).matches)} matches`)}
-      ${modalStat("Best ACS", bestAcs ? bestAcs.name : "N/A", bestAcs ? `${modalNumber(bestAcs.s.acs, 0)} ACS · min 2 matches` : "Needs 2+ matches on an agent")}
-      ${modalStat("Best win rate", bestWin ? bestWin.name : "N/A", bestWin ? `${modalPercent(bestWin.s.winrate, 0)} · ${formatRecord(bestWin.s.wins, bestWin.s.losses, bestWin.s.draws)}` : "Needs 2+ matches on an agent")}
-      ${modalStat("Best KAST", bestKast ? bestKast.name : "N/A", bestKast ? `${modalPercent(bestKast.s.kast, 0)} · min 2 matches` : "Needs 2+ matches on an agent")}
+      ${modalStat("Best ACS", bestAcs ? bestAcs.name : "N/A", bestAcs ? `${modalNumber(bestAcs.s.acs, 0)} ACS, min 2 matches` : "Needs 2+ matches on an agent")}
+      ${modalStat("Best win rate", bestWin ? bestWin.name : "N/A", bestWin ? `${modalPercent(bestWin.s.winrate, 0)}, ${formatRecord(bestWin.s.wins, bestWin.s.losses, bestWin.s.draws)}` : "Needs 2+ matches on an agent")}
+      ${modalStat("Best KAST", bestKast ? bestKast.name : "N/A", bestKast ? `${modalPercent(bestKast.s.kast, 0)}, min 2 matches` : "Needs 2+ matches on an agent")}
     </div>
   ` : "";
 
@@ -751,7 +750,7 @@ function ensureCardModal() {
   modal.className = "card-modal";
 
   modal.innerHTML = `
-    <div class="card-modal-content" role="dialog" aria-modal="true" aria-labelledby="cardModalTitle">
+    <div class="card-modal-content" role="dialog" aria-modal="true" aria-labelledby="cardModalName">
       <div class="card-modal-header">
         <h2 id="cardModalTitle" class="card-modal-title">Player</h2>
         <div class="card-modal-actions">
@@ -827,7 +826,7 @@ function openCardModal(player) {
     console.error("Unable to store player payload for player page:", error);
   }
 
-  title.textContent = `${player.id} · ${currentActLabel}`;
+  title.textContent = isOverall ? "Overall, all acts combined" : currentActLabel;
 
   // The API's breakdown values are already per-round rates for each match;
   // these are their averages across matches.
@@ -883,7 +882,7 @@ function openCardModal(player) {
 
   const impactSection = summary ? `
     <div class="modal-mini-grid">
-      ${modalMiniCard("Opening duels won", modalPercent(summary.opening_duel_winrate, 0), `${num(summary.first_bloods)} first bloods · ${num(summary.first_deaths)} first deaths`)}
+      ${modalMiniCard("Opening duels won", modalPercent(summary.opening_duel_winrate, 0), `${num(summary.first_bloods)} first bloods, ${num(summary.first_deaths)} first deaths`)}
       ${modalMiniCard("Trade kills", modalNumber(summary.trade_kills, 0), "Avenged a teammate within 5s")}
       ${modalMiniCard("Deaths traded", modalNumber(summary.traded_deaths, 0), `of ${modalNumber(player.deaths_total, 0)} deaths`)}
       ${modalMiniCard("Multi-kills", `${num(multikills["2k"])} / ${num(multikills["3k"])} / ${num(multikills["4k"])}`, "2K / 3K / 4K rounds")}
@@ -906,17 +905,22 @@ function openCardModal(player) {
     </div>
   ` : notRecorded;
 
-  const scoreProgress = score == null ? 0 : Math.max(0, Math.min(100, Number(score) / 10));
-
   body.innerHTML = `
     <section class="modal-hero">
       <div class="modal-hero-art">
-        <img src="${escapeHtml(player.banner || "")}" alt="${escapeHtml(player.id)} banner" />
+        <img src="${escapeHtml(player.banner || "")}" alt="" />
       </div>
+
       <div class="modal-hero-copy">
-        <p class="modal-kicker">PLAYER PROFILE / ${escapeHtml(currentActLabel)}</p>
-        <h3>${escapeHtml(player.rank || "Unrated")} <span class="modal-level">LEVEL ${escapeHtml(player.level ?? "—")}</span></h3>
+        <h3 id="cardModalName" class="modal-name">${escapeHtml(player.id)}</h3>
         <p class="modal-identity">${escapeHtml(player.riot_id || player.id)}</p>
+
+        <dl class="modal-hero-facts">
+          <div><dt>Rank</dt><dd>${escapeHtml(player.rank || "Unrated")}<small>${modalNumber(player.rr, 0)} RR</small></dd></div>
+          <div><dt>Level</dt><dd>${escapeHtml(player.level ?? "—")}</dd></div>
+          <div><dt>Record</dt><dd>${wins}W ${losses}L</dd></div>
+        </dl>
+
         <div class="modal-hero-winbar">
           <div><span>Win rate</span><strong>${modalNumber(winRate, 1)}%</strong></div>
           ${modalProgress(winRate)}
@@ -924,18 +928,11 @@ function openCardModal(player) {
       </div>
 
       <div class="modal-score-panel">
-        <span class="modal-score-label">VALOSTAT SCORE</span>
-        <div
-          class="modal-score-ring"
-          style="--score-progress: ${scoreProgress}%"
-        >
-          <div class="modal-score-ring-inner">
-            <strong>${formatScore(score)}<small>/1000</small></strong>
-          </div>
-        </div>
-        <span class="modal-score-sub">${escapeHtml(isOverall ? "Average of act scores" : currentActLabel)}</span>
+        <span class="modal-score-label">ValoStat score</span>
+        <strong class="modal-score-value">${formatScore(score)}<small>/1000</small></strong>
+        ${scoreMeter(score)}
+        <span class="modal-score-sub">${escapeHtml(isOverall ? "Average of each act's score" : currentActLabel)}</span>
       </div>
-
     </section>
 
     <nav class="modal-tabs" role="tablist" aria-label="Player statistics">
@@ -948,7 +945,7 @@ function openCardModal(player) {
 
     <div class="modal-tab-panel active" data-panel="overview" role="tabpanel">
       <div class="modal-stats-grid">
-        ${modalStat("Win rate", `${modalNumber(winRate, 1)}%`, `${wins} wins · ${losses} losses`)}
+        ${modalStat("Win rate", `${modalNumber(winRate, 1)}%`, `${wins} wins, ${losses} losses`)}
         ${modalStat("Avg ACS", modalNumber(player.avg_acs), `${modalNumber(player.rounds_total, 0)} rounds`)}
         ${modalStat("ADR", summary ? modalNumber(summary.adr) : "N/A", "Damage per round")}
         ${modalStat("K/D", modalNumber(player.kd, 2), `${modalNumber(player.kills_total, 0)} kills / ${modalNumber(player.deaths_total, 0)} deaths`)}
@@ -1145,6 +1142,17 @@ function formatScore(score) {
   return score == null ? "—" : String(score);
 }
 
+// Ten slanted segments of 100 points each; partially filled segments show the remainder.
+function scoreMeter(score) {
+  const value = score == null ? 0 : Number(score) || 0;
+  const pips = Array.from({ length: 10 }, (_, index) => {
+    const fill = clamp((value - index * 100) / 100, 0, 1);
+    return `<span class="pip" style="--fill:${roundTo(fill, 3)}"></span>`;
+  }).join("");
+
+  return `<span class="score-pips" aria-hidden="true">${pips}</span>`;
+}
+
 // The one score used by cards, sorting, the modal and comparisons.
 function getDisplayedValoStatScore(player, act) {
   if (act === "overall") {
@@ -1165,9 +1173,10 @@ function formatTime(ms) {
 
   if (hours > 0) result += `${hours}h `;
   if (minutes > 0) result += `${minutes}m `;
-  if (seconds > 0 || result === "") result += `${seconds}s`;
+  // Seconds only matter for short durations.
+  if (hours === 0 && (seconds > 0 || result === "")) result += `${seconds}s`;
 
-  return result.trim();
+  return result.trim() || "0m";
 }
 
 function getPlayerMatchKey(player) {
@@ -1483,6 +1492,53 @@ async function loadActData(act) {
 }
 
 
+function cardStat(label, value, className = "") {
+  return `
+    <div${className ? ` class="${className}"` : ""}>
+      <dt>${escapeHtml(label)}</dt>
+      <dd>${escapeHtml(value)}</dd>
+    </div>
+  `;
+}
+
+function renderPlayerCard(player, view) {
+  return `
+    <article class="card${view.isDiff ? " diff-highlight" : ""}" data-player-id="${escapeHtml(player.id)}" tabindex="0" aria-label="${escapeHtml(player.id)}, open full stats">
+      <div class="card-head">
+        <img src="${escapeHtml(player.banner || "")}" class="banner" alt="" loading="lazy" />
+        <div class="card-identity">
+          <h3>
+            <a href="${trackerProfileUrl(player.riot_id)}" target="_blank" rel="noopener noreferrer" class="player-link" tabindex="-1">
+              ${escapeHtml(player.id)}
+            </a>
+          </h3>
+          <p class="riot-id">${escapeHtml(player.riot_id)}</p>
+        </div>
+      </div>
+
+      <div class="card-rank">
+        <strong>${escapeHtml(view.rank || "Unrated")}</strong>
+        <span>${escapeHtml(view.rr ?? 0)} RR</span>
+      </div>
+
+      <dl class="card-stats">
+        ${cardStat("Level", view.level ?? "—")}
+        ${cardStat("Wins", view.wins)}
+        ${cardStat("Win rate", view.winrate)}
+        ${cardStat("Playtime", view.time)}
+        ${player.actCount ? cardStat("Acts counted", player.actCount) : ""}
+        ${view.focus ? cardStat(view.focus[0], view.focus[1], "card-stat-focus") : ""}
+      </dl>
+
+      <div class="score">
+        <span class="score-value">${escapeHtml(view.scoreText)}</span>
+        ${scoreMeter(view.score)}
+        <span class="score-label">ValoStat score</span>
+      </div>
+    </article>
+  `;
+}
+
 async function renderCards(act = currentAct) {
   const toggleControl = document.querySelector(".toggle-control");
 
@@ -1561,94 +1617,49 @@ async function renderCards(act = currentAct) {
     return value == null ? "N/A" : Math.trunc(value * 100) / 100;
   };
 
-  displayData.forEach((player) => {
-    const score = getDisplayedValoStatScore(player, act);
-    let extraStat = "";
-
+  // The extra stat shown on each card follows the sort choice.
+  const focusStat = (player) => {
     switch (sortType) {
-      case "kills":
-        extraStat = `<p><strong>Kills:</strong> ${perMatchText(player, player.kills_total)}</p>`;
-        break;
-      case "deaths":
-        extraStat = `<p><strong>Deaths:</strong> ${perMatchText(player, player.deaths_total)}</p>`;
-        break;
-      case "assists":
-        extraStat = `<p><strong>Assists:</strong> ${perMatchText(player, player.assists_total)}</p>`;
-        break;
-      case "acs":
-        extraStat = `<p><strong>Avg ACS:</strong> ${player.avg_acs || 0}</p>`;
-        break;
-      case "kd":
-        extraStat = `<p><strong>K/D:</strong> ${player.kd || 0}</p>`;
-        break;
-      case "kad":
-        extraStat = `<p><strong>KA/D:</strong> ${player.kad || 0}</p>`;
-        break;
-      case "kast":
-        extraStat = `<p><strong>KAST %:</strong> ${player.kast || 0}%</p>`;
-        break;
-      case "dd":
-        extraStat = `<p><strong>DDΔ / round:</strong> ${player.dd_delta || 0}</p>`;
-        break;
-      default:
-        break;
+      case "kills": return ["Kills per match", perMatchText(player, player.kills_total)];
+      case "deaths": return ["Deaths per match", perMatchText(player, player.deaths_total)];
+      case "assists": return ["Assists per match", perMatchText(player, player.assists_total)];
+      case "acs": return ["Average ACS", formatStat(player.avg_acs || 0)];
+      case "kd": return ["K/D", formatStat(player.kd || 0)];
+      case "kad": return ["KA/D", formatStat(player.kad || 0)];
+      case "kast": return ["KAST", `${formatStat(player.kast || 0)}%`];
+      case "dd": return ["Damage delta per round", formatStat(player.dd_delta || 0)];
+      default: return null;
     }
+  };
 
+  const cards = [];
+
+  displayData.forEach((player) => {
     const playerKey = getPlayerMatchKey(player);
     const playerDiff = prev.find(
       (item) => getPlayerMatchKey(item) === playerKey
     );
 
-    if (showDiff && playerDiff && playerDiff.diff) {
-      profiles.innerHTML += `
-        <div class="card diff-highlight" data-player-id="${escapeHtml(player.id)}">
-          <img src="${escapeHtml(player.banner || "")}" class="banner" />
-          <h3>
-            <a href="${trackerProfileUrl(player.riot_id)}" target="_blank" class="player-link">
-              ${escapeHtml(player.id)}
-            </a>
-          </h3>
-          <p class="riot-id">${escapeHtml(player.riot_id)}</p>
-          <p><strong>Rank:</strong> ${escapeHtml(playerDiff.rank)} (${escapeHtml(playerDiff.rr)} RR)</p>
-          <p><strong>Level:</strong> ${escapeHtml(playerDiff.level)}</p>
-          <p><strong>Wins:</strong> ${escapeHtml(playerDiff.wins)}/${escapeHtml(playerDiff.matches)}</p>
-          <p><strong>Win Rate:</strong> ${escapeHtml(playerDiff.winrate)}</p>
-          <p><strong>Playtime:</strong> ${escapeHtml(playerDiff.time_total)}</p>
-          ${extraStat}
-          <div class="score">
-            ValoStat Score: <span>${escapeHtml(playerDiff.score)}</span>
-          </div>
-        </div>
-      `;
-      return;
-    } else if (showDiff && playerDiff && !playerDiff.diff) {
-      return;
-    }
+    if (showDiff && playerDiff && !playerDiff.diff) return;
 
-    profiles.innerHTML += `
-      <div class="card" data-player-id="${escapeHtml(player.id)}">
-        <img src="${escapeHtml(player.banner || "")}" class="banner" />
-        <h3>
-          <a href="${trackerProfileUrl(player.riot_id)}" target="_blank" class="player-link">
-            ${escapeHtml(player.id)}
-          </a>
-        </h3>
+    const useDiff = Boolean(showDiff && playerDiff && playerDiff.diff);
+    const score = getDisplayedValoStatScore(player, act);
 
-        <p class="riot-id">${escapeHtml(player.riot_id)}</p>
-
-        <p><strong>Rank:</strong> ${escapeHtml(player.rank)} (${escapeHtml(player.rr)} RR)</p>
-        <p><strong>Level:</strong> ${escapeHtml(player.level)}</p>
-        <p><strong>Wins:</strong> ${escapeHtml(player.wins)}/${escapeHtml(player.matches)}</p>
-        <p><strong>Win Rate:</strong> ${escapeHtml(player.winrate)}%</p>
-        <p><strong>Playtime:</strong> ${formatTime(player.time_total)}</p>
-        ${player.actCount ? `<p><strong>Acts Counted:</strong> ${player.actCount}</p>` : ""}
-        ${extraStat}
-        <div class="score">
-          ValoStat Score: <span>${formatScore(score)}</span>
-        </div>
-      </div>
-    `;
+    cards.push(renderPlayerCard(player, {
+      isDiff: useDiff,
+      rank: useDiff ? playerDiff.rank : player.rank,
+      rr: useDiff ? playerDiff.rr : player.rr,
+      level: useDiff ? playerDiff.level : player.level,
+      wins: useDiff ? `${playerDiff.wins}/${playerDiff.matches}` : `${player.wins}/${player.matches}`,
+      winrate: useDiff ? playerDiff.winrate : `${player.winrate}%`,
+      time: useDiff ? playerDiff.time_total : formatTime(player.time_total),
+      scoreText: useDiff ? playerDiff.score : formatScore(score),
+      score,
+      focus: focusStat(player),
+    }));
   });
+
+  profiles.innerHTML = cards.join("");
 
   return displayData;
 }
@@ -1872,4 +1883,14 @@ profiles.addEventListener("click", (event) => {
   if (!player) return;
 
   openCardModal(player);
+});
+
+// Cards are focusable; Enter or Space opens the same popup as a click.
+profiles.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const card = event.target.closest(".card");
+  if (!card || event.target !== card) return;
+
+  event.preventDefault();
+  card.click();
 });
