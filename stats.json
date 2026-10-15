@@ -3027,175 +3027,187 @@
     "rr": 58,
     "elo": 1858,
     "season": "e11a6",
-    "matches": 5,
+    "matches": 6,
     "wins": 4,
-    "winrate": 80.0,
-    "avg_acs": 179.1,
-    "kd": 0.86,
-    "kad": 1.34,
-    "kast": 64.5,
-    "dd_delta": -3.6,
-    "acs_total": 19167,
-    "rounds_total": 107,
-    "kills_total": 63,
-    "deaths_total": 73,
-    "assists_total": 35,
-    "kast_rounds_total": 69,
-    "damage_delta_total": -386,
-    "time_total": 9886326,
+    "winrate": 66.7,
+    "avg_acs": 192.8,
+    "kd": 0.95,
+    "kad": 1.38,
+    "kast": 64.4,
+    "dd_delta": 0.1,
+    "acs_total": 26023,
+    "rounds_total": 135,
+    "kills_total": 87,
+    "deaths_total": 92,
+    "assists_total": 40,
+    "kast_rounds_total": 87,
+    "damage_delta_total": 17,
+    "time_total": 12765572,
     "processed_matches": [
       "0b96eddc-8ee1-4d1d-8cfe-1552a4b716b8",
       "120abf01-56c3-45f2-bb88-93038d5f7430",
       "5f5e53c0-9747-461f-84a8-849537651e2f",
+      "60817553-816f-45a0-9ce7-471d2c4d5483",
       "7a732599-0012-45c1-b715-8261ee580283",
       "fe6ab094-f6fb-400d-9015-7834db37fbd9"
     ],
-    "headshots_total": 42,
-    "bodyshots_total": 185,
-    "legshots_total": 11,
-    "hs_percent": 17.6,
-    "performance_score_total": 1175.062,
-    "performance_score_matches": 5,
-    "avg_performance_score": 235.01,
+    "headshots_total": 62,
+    "bodyshots_total": 233,
+    "legshots_total": 12,
+    "hs_percent": 20.2,
+    "performance_score_total": 1450.81,
+    "performance_score_matches": 6,
+    "avg_performance_score": 241.8,
     "enemy_rank_average_value": 17.37,
-    "enemy_rank_matches": 5,
-    "lobby_rank_average_value": 17.36,
-    "lobby_rank_matches": 5,
-    "enemy_rank_sum": 86.83333333333333,
-    "lobby_rank_sum": 86.80357142857143,
+    "enemy_rank_matches": 6,
+    "lobby_rank_average_value": 17.43,
+    "lobby_rank_matches": 6,
+    "enemy_rank_sum": 104.23333333333332,
+    "lobby_rank_sum": 104.60357142857143,
     "performance_breakdown_totals": {
-      "damage": 620.0217391304348,
-      "trades": 0.8821640316205533,
-      "assists": 1.6959815546772068,
-      "utility_usage": 10.851861001317523,
+      "damage": 784.9860248447205,
+      "trades": 0.9535926030491247,
+      "assists": 1.8745529832486354,
+      "utility_usage": 12.780432429888952,
       "plants": 0.4961297760210804,
       "defuses": 0.0,
-      "adjusted_kills": 2.914708292160738,
-      "adjusted_deaths": -3.5594167901844536
+      "adjusted_kills": 3.765261863589309,
+      "adjusted_deaths": -4.2501132187558825
     },
     "performance_breakdown_averages": {
-      "damage": 124.004,
-      "trades": 0.176,
-      "assists": 0.339,
-      "utility_usage": 2.17,
-      "plants": 0.099,
+      "damage": 130.831,
+      "trades": 0.159,
+      "assists": 0.312,
+      "utility_usage": 2.13,
+      "plants": 0.083,
       "defuses": 0.0,
-      "adjusted_kills": 0.583,
-      "adjusted_deaths": -0.712
+      "adjusted_kills": 0.628,
+      "adjusted_deaths": -0.708
     },
     "performance_grades": {
-      "pass": 5
+      "pass": 6
     },
     "performance_ratings": {
       "combat": {
         "damage": {
           "neutral": 3,
-          "down": 2
+          "down": 2,
+          "up": 1
         },
         "death_impact": {
-          "neutral": 1,
+          "neutral": 2,
           "double_up": 2,
           "double_down": 1,
           "down": 1
         },
         "kill_impact": {
           "neutral": 3,
-          "down": 2
+          "down": 2,
+          "up": 1
         },
         "trades": {
           "down": 1,
           "up": 3,
-          "neutral": 1
+          "neutral": 1,
+          "double_down": 1
         }
       },
       "utility": {
         "assists": {
           "double_up": 3,
           "double_down": 1,
-          "neutral": 1
+          "neutral": 1,
+          "down": 1
         },
         "defuses": {
-          "neutral": 5
+          "neutral": 6
         },
         "plants": {
           "up": 4,
-          "double_up": 1
+          "double_up": 1,
+          "neutral": 1
         },
         "utility_usage": {
           "neutral": 2,
           "double_up": 1,
-          "up": 2
+          "up": 3
         }
       }
     },
     "agents": {
       "Phoenix": {
-        "matches": 1,
-        "time_played_ms": 2460000,
-        "kills": 12,
-        "deaths": 16,
-        "assists": 9,
-        "headshots": 10,
-        "bodyshots": 53,
-        "legshots": 2,
-        "damage_dealt": 3016,
-        "damage_received": 2965,
-        "performance_score_total": 237.04206484423807,
-        "performance_score_matches": 1,
+        "matches": 2,
+        "time_played_ms": 2520000,
+        "kills": 36,
+        "deaths": 35,
+        "assists": 14,
+        "headshots": 30,
+        "bodyshots": 101,
+        "legshots": 3,
+        "damage_dealt": 7651,
+        "damage_received": 7197,
+        "performance_score_total": 512.7904530388598,
+        "performance_score_matches": 2,
         "performance_breakdown_totals": {
-          "damage": 136.77272727272728,
-          "trades": 0.09090909090909093,
-          "assists": 0.4090909090909091,
-          "utility_usage": 1.7727272727272727,
+          "damage": 301.73701298701303,
+          "trades": 0.16233766233766234,
+          "assists": 0.5876623376623377,
+          "utility_usage": 3.7012987012987013,
           "plants": 0.09090909090909093,
           "defuses": 0.0,
-          "adjusted_kills": 0.6124772727272728,
-          "adjusted_deaths": -0.7195
+          "adjusted_kills": 1.4630308441558442,
+          "adjusted_deaths": -1.4101964285714286
         },
         "performance_grades": {
-          "pass": 1
+          "pass": 2
         },
         "performance_ratings": {
           "combat": {
             "damage": {
-              "neutral": 1
+              "neutral": 1,
+              "up": 1
             },
             "death_impact": {
-              "neutral": 1
+              "neutral": 2
             },
             "kill_impact": {
-              "neutral": 1
+              "neutral": 1,
+              "up": 1
             },
             "trades": {
-              "down": 1
+              "down": 1,
+              "double_down": 1
             }
           },
           "utility": {
             "assists": {
-              "double_up": 1
+              "double_up": 1,
+              "down": 1
             },
             "defuses": {
-              "neutral": 1
+              "neutral": 2
             },
             "plants": {
-              "up": 1
+              "up": 1,
+              "neutral": 1
             },
             "utility_usage": {
-              "neutral": 1
+              "neutral": 1,
+              "up": 1
             }
           }
         },
-        "headshot_percentage": 15.4,
-        "average_performance_score": 237.04,
+        "headshot_percentage": 22.4,
+        "average_performance_score": 256.4,
         "performance_breakdown_averages": {
-          "damage": 136.773,
-          "trades": 0.091,
-          "assists": 0.409,
-          "utility_usage": 1.773,
-          "plants": 0.091,
+          "damage": 150.869,
+          "trades": 0.081,
+          "assists": 0.294,
+          "utility_usage": 1.851,
+          "plants": 0.045,
           "defuses": 0.0,
-          "adjusted_kills": 0.612,
-          "adjusted_deaths": -0.72
+          "adjusted_kills": 0.732,
+          "adjusted_deaths": -0.705
         }
       },
       "Fade": {
