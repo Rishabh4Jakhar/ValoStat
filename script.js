@@ -86,6 +86,181 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+
+function modalNumber(value, digits = 1) {
+  const number = Number(value);
+  return value == null || value === "" || !Number.isFinite(number)
+    ? "N/A"
+    : number.toLocaleString(undefined, {
+        maximumFractionDigits: digits,
+      });
+}
+
+function modalStat(label, value, note = "") {
+  return `
+    <article class="modal-stat-card">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      ${note ? `<small>${escapeHtml(note)}</small>` : ""}
+    </article>
+  `;
+}
+
+function modalSection(title, subtitle, content, className = "") {
+  return `
+    <section class="modal-section ${className}">
+      <div class="modal-section-heading">
+        <div>
+          <h3>${escapeHtml(title)}</h3>
+          ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ""}
+        </div>
+      </div>
+      ${content}
+    </section>
+  `;
+}
+
+function modalRank(value) {
+  const ranks = [
+    "Unrated",
+    "Iron 1", "Iron 2", "Iron 3",
+    "Bronze 1", "Bronze 2", "Bronze 3",
+    "Silver 1", "Silver 2", "Silver 3",
+    "Gold 1", "Gold 2", "Gold 3",
+    "Platinum 1", "Platinum 2", "Platinum 3",
+    "Diamond 1", "Diamond 2", "Diamond 3",
+    "Ascendant 1", "Ascendant 2", "Ascendant 3",
+    "Immortal 1", "Immortal 2", "Immortal 3",
+    "Radiant",
+  ];
+
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 1 && number <= 25
+    ? ranks[number]
+    : "N/A";
+}
+
+function modalProgress(value, max = 100) {
+  const number = Number(value);
+  const percentage = Number.isFinite(number) && max > 0
+    ? Math.max(0, Math.min(100, (number / max) * 100))
+    : 0;
+
+  return `
+    <div class="modal-progress">
+      <span style="width:${percentage}%"></span>
+    </div>
+  `;
+}
+
+// Convert nested performance rating data into readable metric cards.
+function modalRatingCards(ratings) {
+  if (!ratings || typeof ratings !== "object") {
+    return `<p class="modal-empty">No rating data available for this act.</p>`;
+  }
+
+  const cards = Object.entries(ratings).flatMap(([group, metrics]) => {
+    if (!metrics || typeof metrics !== "object") return [];
+
+    return Object.entries(metrics).map(([metric, value]) => {
+      let displayValue = value;
+
+      // Ratings may be stored as a value -> occurrence-count map.
+      if (value && typeof value === "object") {
+        const entries = Object.entries(value);
+        if (!entries.length) return "";
+
+        const best = entries.sort((a, b) => Number(b[1]) - Number(a[1]))[0];
+        displayValue = best[0];
+      }
+
+      return `
+        <article class="modal-mini-card">
+          <span>${escapeHtml(metric.replace(/_/g, " "))}</span>
+          <strong>${escapeHtml(displayValue ?? "N/A")}</strong>
+          <small>${escapeHtml(group)}</small>
+        </article>
+      `;
+    });
+  }).filter(Boolean);
+
+  return cards.length
+    ? `<div class="modal-mini-grid">${cards.join("")}</div>`
+    : `<p class="modal-empty">No rating data available for this act.</p>`;
+}
+
+// Supports numeric counts and nested accolade objects from the API.
+
+function findAccolade(source, aliases) {
+  if (!Array.isArray(source)) return null;
+
+  const targets = new Set(
+    aliases.map((key) => key.toLowerCase().replace(/[^a-z0-9]/g, ""))
+  );
+
+  return source.find((item) => {
+    const type = String(item?.type || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+
+    return targets.has(type);
+  }) || null;
+}
+
+
+function renderAccoladeGroup(title, subtitle, definitions, source) {
+  const items = definitions.map(([label, icon, aliases]) => {
+    const accolade = findAccolade(source, aliases);
+    const count = accolade ? Number(accolade.count) : null;
+    const bestValue = accolade?.best_value;
+
+    const hasCount = Number.isFinite(count);
+    const earned = hasCount && count > 0;
+
+    return `
+      <article class="accolade-card ${earned ? "earned" : ""}">
+        <div class="accolade-icon">${icon}</div>
+
+        <div class="accolade-copy">
+          <span class="accolade-name">${escapeHtml(label)}</span>
+
+          <strong>${hasCount ? modalNumber(count, 0) : "—"}</strong>
+
+          <small>
+            ${
+              !hasCount
+                ? "No data"
+                : earned
+                  ? "Times earned"
+                  : "Not yet earned"
+            }
+          </small>
+
+          ${
+            bestValue != null && Number.isFinite(Number(bestValue))
+              ? `<div class="accolade-best">Best: ${modalNumber(bestValue, 2)}</div>`
+              : ""
+          }
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  return `
+    <section class="modal-section">
+      <div class="modal-section-heading">
+        <div>
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(subtitle)}</p>
+        </div>
+      </div>
+
+      <div class="accolade-grid">${items}</div>
+    </section>
+  `;
+}
+
+
 function ensureCardModal() {
   let modal = document.getElementById("cardModal");
   if (modal) return modal;
@@ -129,6 +304,7 @@ function ensureCardModal() {
   return modal;
 }
 
+
 function openCardModal(player) {
   const modal = ensureCardModal();
   const title = modal.querySelector("#cardModalTitle");
@@ -137,14 +313,21 @@ function openCardModal(player) {
   const pageLink = modal.querySelector("#cardModalPageLink");
 
   const currentActLabel = getActLabel(currentAct);
-  const winRateValue = Number(player.winrate) || 0;
+  const score = currentAct === "overall" &&
+    Number.isFinite(player.valostat_score)
+      ? player.valostat_score
+      : valoStatScore(player);
 
-  const playerPayload = {
-    player,
-    currentAct,
-    currentActLabel,
-  };
+  const wins = Number(player.wins) || 0;
+  const matches = Number(player.matches) || 0;
+  const losses = Math.max(0, matches - wins);
+  const winRate = matches ? (wins / matches) * 100 : 0;
+  const performanceMatches = Number(player.performance_score_matches) || 0;
+  const averagePerformance = performanceMatches
+    ? modalNumber(player.avg_performance_score, 1)
+    : "N/A";
 
+  const playerPayload = { player, currentAct, currentActLabel };
   const playerPageUrl =
     `player.html?payload=${encodeURIComponent(JSON.stringify(playerPayload))}`;
 
@@ -156,107 +339,251 @@ function openCardModal(player) {
 
   title.textContent = `${player.id} · ${currentActLabel}`;
 
-  const wins = Number(player.wins) || 0;
-  const matches = Number(player.matches) || 0;
-  const losses = Math.max(0, matches - wins);
+  const performanceBreakdown = player.performance_breakdown_averages || {};
+  const performanceBreakdownLabels = {
+    damage: "Damage",
+    trades: "Trades",
+    assists: "Assists",
+    utility_usage: "Utility usage",
+    plants: "Spike plants",
+    defuses: "Defuses",
+    adjusted_kills: "Adjusted kills",
+    adjusted_deaths: "Adjusted deaths",
+  };
 
-  const averagePerformance = player.avg_performance_score == null
-    ? "N/A"
-    : formatStat(player.avg_performance_score);
+  const breakdownCards = Object.entries(performanceBreakdown)
+    .filter(([, value]) => value != null)
+    .map(([key, value]) => `
+      <article class="modal-mini-card">
+        <span>${escapeHtml(performanceBreakdownLabels[key] || key.replace(/_/g, " "))}</span>
+        <strong>${modalNumber(value, 2)}</strong>
+        <small>Average per match</small>
+      </article>
+    `).join("");
 
-  const performanceMatches = Number(player.performance_score_matches) || 0;
+  const agents = Object.entries(player.agents || {})
+    .sort((a, b) => (b[1].matches || 0) - (a[1].matches || 0));
+
+
+  const agentCards = agents.map(([name, agent]) => {
+    const agentMatches = Number(agent.matches) || 0;
+    const kd = agent.deaths
+      ? (Number(agent.kills) || 0) / Number(agent.deaths)
+      : Number(agent.kills) || 0;
+
+    // Build the wiki image URL from the agent name.
+    const agentImageName = name.trim().replace(/\s+/g, "_");
+    const agentImageUrl =
+      `https://wiki.playvalorant.com/en-us/images/${encodeURIComponent(agentImageName)}_icon.png`;
+
+    return `
+      <article class="agent-card">
+        <div class="agent-card-top">
+          <img
+            class="agent-portrait"
+            src="${agentImageUrl}"
+            alt="${escapeHtml(name)}"
+            loading="lazy"
+            onerror="this.style.display='none'"
+          />
+
+          <div class="agent-card-title">
+            <span class="agent-eyebrow">AGENT</span>
+            <h4>${escapeHtml(name)}</h4>
+          </div>
+
+          <span class="agent-match-count">${agentMatches} matches</span>
+        </div>
+
+        <div class="agent-stats">
+          <div>
+            <span>K/D</span>
+            <strong>${modalNumber(kd, 2)}</strong>
+          </div>
+          <div>
+            <span>Kills</span>
+            <strong>${modalNumber(agent.kills, 0)}</strong>
+          </div>
+          <div>
+            <span>Assists</span>
+            <strong>${modalNumber(agent.assists, 0)}</strong>
+          </div>
+          <div>
+            <span>HS%</span>
+            <strong>${agent.headshot_percentage == null
+              ? "N/A"
+              : `${modalNumber(agent.headshot_percentage, 1)}%`}</strong>
+          </div>
+          <div>
+            <span>Performance</span>
+            <strong>${agent.average_performance_score == null
+              ? "N/A"
+              : modalNumber(agent.average_performance_score, 1)}</strong>
+          </div>
+        </div>
+
+        <div class="agent-time">
+          ${formatTime(Number(agent.time_played_ms) || 0)} played
+        </div>
+      </article>
+    `;
+  }).join("");
+
+
+  const rankEnemy = player.enemy_rank_average_value;
+  const rankLobby = player.lobby_rank_average_value;
+
+  const accoladesSource = player.accolades_seasonal || [];
+
+  const coreAccolades = [
+    ["MVP", "✦", ["mvp"]],
+    ["Top Frag", "★", ["top_frag"]],
+    ["Aces", "✹", ["aces", "ace"]],
+    ["Clutches", "◈", ["clutches"]],
+    ["Kills", "☠", ["kills"]],
+    ["Headshots", "◎", ["headshots", "head_shots", "head_shot", "headshot"]],
+    ["First Bloods", "⚡", ["first_blood"]],
+  ];
+
+  const performanceAccolades = [
+    ["Masterful", "◆", ["distinction"]],
+    ["Damage", "◉", ["damage_per_round"]],
+    ["Trades", "⇄", ["trades"]],
+    ["Assists", "✋", ["assists"]],
+    ["Spike Plants", "⬡", ["plants"]],
+  ];
+
 
   body.innerHTML = `
     <section class="modal-hero">
       <div class="modal-hero-art">
         <img src="${escapeHtml(player.banner || "")}" alt="${escapeHtml(player.id)} banner" />
       </div>
-
       <div class="modal-hero-copy">
-        <div class="modal-hero-info">
-          <div class="modal-hero-text">
-            <p class="modal-kicker">Competitive Overview</p>
-            <h3>${escapeHtml(player.rank)} · ${escapeHtml(player.level)} Level</h3>
-            <p class="modal-identity">${escapeHtml(player.riot_id)}</p>
-          </div>
-
-          <div class="modal-ring" style="--win-percent: ${winRateValue};">
-            <div class="modal-ring-text">
-              <span>${wins}W</span>
-              <span>${losses}L</span>
-            </div>
-          </div>
+        <p class="modal-kicker">PLAYER PROFILE / ${escapeHtml(currentActLabel)}</p>
+        <h3>${escapeHtml(player.rank || "Unrated")} <span class="modal-level">LEVEL ${escapeHtml(player.level ?? "—")}</span></h3>
+        <p class="modal-identity">${escapeHtml(player.riot_id || player.id)}</p>
+        <div class="modal-hero-winbar">
+          <div><span>Win rate</span><strong>${modalNumber(winRate, 1)}%</strong></div>
+          ${modalProgress(winRate)}
         </div>
       </div>
 
       <div class="modal-score-panel">
-        <span class="modal-score-label">ValoStat Score</span>
-        <strong>${valoStatScore(player)}<small>/1000</small></strong>
+        <span class="modal-score-label">VALOSTAT SCORE</span>
+        <div
+          class="modal-score-ring"
+          style="--score-progress: ${Math.max(0, Math.min(100, Number(score) / 10))}%"
+        >
+          <div class="modal-score-ring-inner">
+            <strong>${modalNumber(score, 0)}<small>/1000</small></strong>
+          </div>
+        </div>
         <span class="modal-score-sub">${escapeHtml(currentActLabel)}</span>
       </div>
+
     </section>
 
-    <section class="modal-stats-grid">
-      <article class="modal-stat-card">
-        <span>Win %</span>
-        <strong>${formatStat(player.winrate)}%</strong>
-        <small>${wins}/${matches} matches</small>
-      </article>
+    <nav class="modal-tabs" role="tablist" aria-label="Player statistics">
+      <button class="modal-tab active" type="button" role="tab" aria-selected="true" data-tab="overview">Overview</button>
+      <button class="modal-tab" type="button" role="tab" aria-selected="false" data-tab="performance">Performance</button>
+      <button class="modal-tab" type="button" role="tab" aria-selected="false" data-tab="agents">Agents</button>
+      <button class="modal-tab" type="button" role="tab" aria-selected="false" data-tab="matchmaking">Matchmaking</button>
+      <button class="modal-tab" type="button" role="tab" aria-selected="false" data-tab="accolades">Accolades</button>
+    </nav>
 
-      <article class="modal-stat-card">
-        <span>Avg Performance</span>
-        <strong>${averagePerformance}</strong>
-        <small>Average ACS: ${formatStat(player.avg_acs)}</small>
-      </article>
-
-      <article class="modal-stat-card">
-        <span>K/D</span>
-        <strong>${formatStat(player.kd)}</strong>
-        <small>KA/D: ${formatStat(player.kad)}</small>
-      </article>
-
-      <article class="modal-stat-card">
-        <span>KAST</span>
-        <strong>${formatStat(player.kast)}%</strong>
-        <small>DDΔ/round: ${formatStat(player.dd_delta)}</small>
-      </article>
-    </section>
-
-    <section class="modal-detail-grid">
-      <div>
-        <p><strong>Playtime</strong></p>
-        <p>${formatTime(player.time_total)}</p>
+    <div class="modal-tab-panel active" data-panel="overview" role="tabpanel">
+      <div class="modal-stats-grid">
+        ${modalStat("Win rate", `${modalNumber(winRate, 1)}%`, `${wins} wins · ${losses} losses`)}
+        ${modalStat("Avg ACS", modalNumber(player.avg_acs), `${modalNumber(player.rounds_total, 0)} rounds`)}
+        ${modalStat("K/D", modalNumber(player.kd, 2), `${modalNumber(player.kills_total, 0)} kills / ${modalNumber(player.deaths_total, 0)} deaths`)}
+        ${modalStat("KA/D", modalNumber(player.kad, 2), `${modalNumber(player.assists_total, 0)} assists`)}
+        ${modalStat("KAST", `${modalNumber(player.kast)}%`, "Rounds with kill, assist, survival or trade")}
+        ${modalStat("Damage delta", modalNumber(player.dd_delta), "Per round")}
+        ${modalStat("Avg performance", averagePerformance, `${performanceMatches} rated matches`)}
+        ${modalStat("Playtime", formatTime(player.time_total), `${player.actCount || 1} acts counted`)}
       </div>
 
-      <div>
-        <p><strong>Kills / Deaths / Assists</strong></p>
-        <p>${formatStat(player.kills_total)} / ${formatStat(player.deaths_total)} / ${formatStat(player.assists_total)}</p>
+      ${modalSection("Career snapshot", "Aggregated statistics for the selected period", `
+        <div class="modal-detail-grid">
+          <div><span>Matches</span><strong>${modalNumber(matches, 0)}</strong></div>
+          <div><span>Wins</span><strong>${modalNumber(wins, 0)}</strong></div>
+          <div><span>Acts played</span><strong>${escapeHtml(player.actsPlayed || currentActLabel)}</strong></div>
+          <div><span>Rounds</span><strong>${modalNumber(player.rounds_total, 0)}</strong></div>
+        </div>
+      `)}
+    </div>
+
+    <div class="modal-tab-panel" data-panel="performance" role="tabpanel" hidden>
+      <div class="modal-stats-grid">
+        ${modalStat("Avg performance score", averagePerformance, `${performanceMatches} matches with a score`)}
+        ${modalStat("Avg ACS", modalNumber(player.avg_acs), "Average combat score")}
+        ${modalStat("Damage delta / round", modalNumber(player.dd_delta), "Damage dealt minus received")}
+        ${modalStat("Headshot rate", player.hs_percent == null ? "N/A" : `${modalNumber(player.hs_percent)}%`, "Across recorded shots")}
       </div>
 
-      <div>
-        <p><strong>Acts Counted</strong></p>
-        <p>${player.actCount || 1}</p>
-      </div>
+      ${modalSection("Performance breakdown", "Average values reported by the match API", `
+        ${breakdownCards
+          ? `<div class="modal-mini-grid">${breakdownCards}</div>`
+          : `<p class="modal-empty">No performance breakdown is available for this act.</p>`}
+      `)}
 
-      <div>
-        <p><strong>Acts Played</strong></p>
-        <p>${player.actsPlayed ? escapeHtml(player.actsPlayed.toUpperCase()) : escapeHtml(currentActLabel.toUpperCase())}</p>
-      </div>
-    </section>
+      ${modalSection("Combat ratings", "Distribution of reported combat and utility ratings", `
+        ${modalRatingCards(player.performance_ratings)}
+      `)}
+    </div>
 
-    <section class="modal-implemented">
-      <p><strong>Extra Stats</strong></p>
-      <div class="modal-extra-grid">
-        ${buildPlayerExtras(player)}
+    <div class="modal-tab-panel" data-panel="agents" role="tabpanel" hidden>
+      ${modalSection("Agent pool", `${agents.length} agents with recorded stats`, `
+        ${agentCards
+          ? `<div class="agent-grid">${agentCards}</div>`
+          : `<p class="modal-empty">Agent-specific stats are not available for this act.</p>`}
+      `)}
+    </div>
+
+    <div class="modal-tab-panel" data-panel="matchmaking" role="tabpanel" hidden>
+      <div class="modal-stats-grid">
+        ${modalStat("Current rank", player.rank || "Unrated", `${modalNumber(player.rr, 0)} RR`)}
+        ${modalStat("Average enemy rank", modalRank(rankEnemy == null ? null : Math.round(rankEnemy)), rankEnemy == null ? "Not enough rank data" : `Rank value ${modalNumber(rankEnemy, 2)} / 25`)}
+        ${modalStat("Average lobby rank", modalRank(rankLobby == null ? null : Math.round(rankLobby)), rankLobby == null ? "Not enough rank data" : `Rank value ${modalNumber(rankLobby, 2)} / 25`)}
+        ${modalStat("Matches counted", modalNumber(player.enemy_rank_matches, 0), "For enemy rank average")}
       </div>
-    </section>
+      ${modalSection("How to read this", "Rank values use an ordered scale from Iron 1 to Radiant", `
+        <p class="modal-description">Average enemy rank estimates the average rank of opponents in matches where rank data was available. Average lobby rank includes all players with a known tier. These are averages across matches, not your current rank.</p>
+      `)}
+    </div>
+
+    <div class="modal-tab-panel" data-panel="accolades" role="tabpanel" hidden>
+      ${renderAccoladeGroup("Core", "Standout match achievements", coreAccolades, accoladesSource)}
+      ${renderAccoladeGroup("Performance", "Combat and team-play achievements", performanceAccolades, accoladesSource)}
+      <p class="modal-footnote">A dash means the accolade count was not found in the saved API response; it does not mean zero.</p>
+    </div>
   `;
+
+  // Switch tabs within this player's modal.
+  body.querySelectorAll(".modal-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const selected = tab.dataset.tab;
+
+      body.querySelectorAll(".modal-tab").forEach((item) => {
+        const active = item === tab;
+        item.classList.toggle("active", active);
+        item.setAttribute("aria-selected", String(active));
+      });
+
+      body.querySelectorAll(".modal-tab-panel").forEach((panel) => {
+        const active = panel.dataset.panel === selected;
+        panel.classList.toggle("active", active);
+        panel.hidden = !active;
+      });
+    });
+  });
 
   openLink.href = trackerProfileUrl(player.riot_id || player.id);
   pageLink.href = playerPageUrl;
-
   modal.classList.add("open");
 }
+
 
 /* ------------------ Act Navigation ------------------ */
 
