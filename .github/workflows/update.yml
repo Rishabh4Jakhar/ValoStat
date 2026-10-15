@@ -37,11 +37,12 @@ jobs:
           git config user.name "valostat-bot"
           git config user.email "bot@github.com"
 
-          if git diff --quiet -- stats.json; then
-            echo "No changes in stats.json; skipping commit."
+          # acts.json and data/ change when a new act starts and the old one is archived.
+          if [ -z "$(git status --porcelain -- stats.json acts.json data)" ]; then
+            echo "No changes in stats.json, acts.json or data/; skipping commit."
             exit 0
           fi
 
-          git add stats.json stats_prev.json
+          git add stats.json stats_prev.json acts.json data
           git commit -m "Auto-update Valorant stats"
           git push
