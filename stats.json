@@ -5,192 +5,541 @@
     "riot_id": "Rishabh4#Gamer",
     "name": "Rishabh4",
     "level": 516,
-    "banner": "https://media.valorant-api.com/playercards/920957bd-4517-2e67-3402-92a0b782c678/smallart.png",
-    "banner_card_id": null,
+    "banner": "https://media.valorant-api.com/playercards/16b187a2-4345-b5d5-25f6-9e9fede08b40/displayicon.png",
+    "banner_card_id": "16b187a2-4345-b5d5-25f6-9e9fede08b40",
     "puuid": "064faaf4-3db5-53c4-98a2-6ca2a78a1e28",
     "rank": "Diamond 1",
-    "rr": 49,
-    "elo": 1549,
+    "rr": 44,
+    "elo": 1544,
     "season": "e11a6",
-    "matches": 0,
-    "wins": 0,
-    "winrate": 0,
-    "matches_tracked": 0,
-    "avg_acs": 0,
-    "kd": 0,
-    "kad": 0,
-    "kast": 0,
-    "dd_delta": 0,
-    "acs_total": 0,
-    "rounds_total": 0,
-    "kills_total": 0,
-    "deaths_total": 0,
-    "assists_total": 0,
-    "kast_rounds_total": 0,
-    "damage_delta_total": 0,
-    "time_total": 0,
-    "headshots_total": 0,
-    "bodyshots_total": 0,
-    "legshots_total": 0,
-    "hs_percent": 0,
-    "performance_score_total": 0,
-    "performance_score_matches": 0,
-    "avg_performance_score": null,
+    "matches": 2,
+    "wins": 1,
+    "winrate": 50.0,
+    "matches_tracked": 2,
+    "avg_acs": 149.1,
+    "kd": 0.69,
+    "kad": 1.31,
+    "kast": 66.7,
+    "dd_delta": -20.8,
+    "acs_total": 5368,
+    "rounds_total": 36,
+    "kills_total": 18,
+    "deaths_total": 26,
+    "assists_total": 16,
+    "kast_rounds_total": 24,
+    "damage_delta_total": -749,
+    "time_total": 3388572,
+    "headshots_total": 16,
+    "bodyshots_total": 48,
+    "legshots_total": 4,
+    "hs_percent": 23.5,
+    "performance_score_total": 428.317,
+    "performance_score_matches": 2,
+    "avg_performance_score": 214.16,
     "performance_breakdown_totals": {
-      "damage": 0.0,
-      "trades": 0.0,
-      "assists": 0.0,
-      "utility_usage": 0.0,
+      "damage": 208.6594427244582,
+      "trades": 0.38699690402476783,
+      "assists": 0.8854489164086687,
+      "utility_usage": 5.111455108359133,
       "plants": 0.0,
-      "defuses": 0.0,
-      "adjusted_kills": 0.0,
-      "adjusted_deaths": 0.0
+      "defuses": 0.05263157894736842,
+      "adjusted_kills": 1.0593250773993808,
+      "adjusted_deaths": -1.4265990712074301
     },
     "performance_breakdown_averages": {
-      "damage": null,
-      "trades": null,
-      "assists": null,
-      "utility_usage": null,
-      "plants": null,
-      "defuses": null,
-      "adjusted_kills": null,
-      "adjusted_deaths": null
+      "damage": 104.33,
+      "trades": 0.193,
+      "assists": 0.443,
+      "utility_usage": 2.556,
+      "plants": 0.0,
+      "defuses": 0.026,
+      "adjusted_kills": 0.53,
+      "adjusted_deaths": -0.713
     },
-    "performance_grades": {},
+    "performance_grades": {
+      "pass": 2
+    },
     "performance_ratings": {
-      "combat": {},
-      "utility": {}
+      "combat": {
+        "damage": {
+          "down": 2
+        },
+        "death_impact": {
+          "down": 1,
+          "up": 1
+        },
+        "kill_impact": {
+          "down": 2
+        },
+        "trades": {
+          "up": 1,
+          "neutral": 1
+        }
+      },
+      "utility": {
+        "assists": {
+          "double_up": 2
+        },
+        "defuses": {
+          "double_up": 1,
+          "neutral": 1
+        },
+        "plants": {
+          "neutral": 2
+        },
+        "utility_usage": {
+          "neutral": 1,
+          "up": 1
+        }
+      }
     },
-    "enemy_rank_sum": 0,
-    "enemy_rank_matches": 0,
-    "enemy_rank_average_value": null,
-    "lobby_rank_sum": 0,
-    "lobby_rank_matches": 0,
-    "lobby_rank_average_value": null,
+    "enemy_rank_sum": 30.0,
+    "enemy_rank_matches": 2,
+    "enemy_rank_average_value": 15.0,
+    "lobby_rank_sum": 30.555555555555554,
+    "lobby_rank_matches": 2,
+    "lobby_rank_average_value": 15.28,
     "summary": {
-      "matches": 0,
-      "wins": 0,
-      "losses": 0,
+      "matches": 2,
+      "wins": 1,
+      "losses": 1,
       "draws": 0,
-      "winrate": null,
-      "rounds": 0,
-      "round_winrate": null,
-      "time_played_ms": 0,
-      "acs": null,
-      "adr": null,
-      "dd_delta": null,
-      "kd": null,
-      "kad": null,
-      "kast": null,
-      "hs_percent": null,
-      "kills_per_match": null,
-      "deaths_per_match": null,
-      "assists_per_match": null,
-      "kills_per_round": null,
-      "first_bloods": 0,
-      "first_deaths": 0,
-      "opening_duel_winrate": null,
-      "trade_kills": 0,
-      "traded_deaths": 0,
+      "winrate": 50.0,
+      "rounds": 36,
+      "round_winrate": 52.8,
+      "time_played_ms": 3388572,
+      "acs": 149.1,
+      "adr": 104.2,
+      "dd_delta": -20.8,
+      "kd": 0.69,
+      "kad": 1.31,
+      "kast": 66.7,
+      "hs_percent": 23.5,
+      "kills_per_match": 9.0,
+      "deaths_per_match": 13.0,
+      "assists_per_match": 8.0,
+      "kills_per_round": 0.5,
+      "first_bloods": 2,
+      "first_deaths": 2,
+      "opening_duel_winrate": 50.0,
+      "trade_kills": 4,
+      "traded_deaths": 7,
       "multikills": {
-        "2k": 0,
+        "2k": 4,
         "3k": 0,
         "4k": 0,
         "5k": 0
       },
-      "clutches": 0,
+      "clutches": 1,
       "plants": 0,
-      "defuses": 0,
+      "defuses": 1,
       "match_mvps": 0,
       "team_mvps": 0,
       "ability_casts_per_round": {
-        "grenade": null,
-        "ability_1": null,
-        "ability_2": null,
-        "ultimate": null
+        "grenade": 1.08,
+        "ability_1": 0.44,
+        "ability_2": 0.92,
+        "ultimate": 0.08
       },
-      "ultimates_per_match": null,
-      "avg_spent_per_round": null,
-      "avg_loadout_per_round": null,
-      "avg_performance_score": null,
+      "ultimates_per_match": 1.5,
+      "avg_spent_per_round": 2221.0,
+      "avg_loadout_per_round": 3372.0,
+      "avg_performance_score": 214.16,
       "performance_breakdown_averages": {
-        "damage": null,
-        "trades": null,
-        "assists": null,
-        "utility_usage": null,
-        "plants": null,
-        "defuses": null,
-        "adjusted_kills": null,
-        "adjusted_deaths": null
+        "damage": 104.33,
+        "trades": 0.193,
+        "assists": 0.443,
+        "utility_usage": 2.556,
+        "plants": 0.0,
+        "defuses": 0.026,
+        "adjusted_kills": 0.53,
+        "adjusted_deaths": -0.713
       },
-      "enemy_rank_average_value": null,
-      "lobby_rank_average_value": null,
-      "maps": {}
+      "enemy_rank_average_value": 15.0,
+      "lobby_rank_average_value": 15.28,
+      "maps": {
+        "Bind": {
+          "matches": 1,
+          "wins": 0,
+          "losses": 1,
+          "draws": 0,
+          "rounds": 19,
+          "rounds_won": 6,
+          "winrate": 0.0,
+          "round_winrate": 31.6
+        },
+        "Lotus": {
+          "matches": 1,
+          "wins": 1,
+          "losses": 0,
+          "draws": 0,
+          "rounds": 17,
+          "rounds_won": 13,
+          "winrate": 100.0,
+          "round_winrate": 76.5
+        }
+      }
     },
-    "agents": {},
+    "agents": {
+      "Fade": {
+        "matches": 2,
+        "kills": 18,
+        "deaths": 26,
+        "assists": 16,
+        "time_played_ms": 3388572,
+        "headshot_percentage": 23.5,
+        "average_performance_score": 214.16,
+        "summary": {
+          "matches": 2,
+          "wins": 1,
+          "losses": 1,
+          "draws": 0,
+          "winrate": 50.0,
+          "rounds": 36,
+          "round_winrate": 52.8,
+          "time_played_ms": 3388572,
+          "acs": 149.1,
+          "adr": 104.2,
+          "dd_delta": -20.8,
+          "kd": 0.69,
+          "kad": 1.31,
+          "kast": 66.7,
+          "hs_percent": 23.5,
+          "kills_per_match": 9.0,
+          "deaths_per_match": 13.0,
+          "assists_per_match": 8.0,
+          "kills_per_round": 0.5,
+          "first_bloods": 2,
+          "first_deaths": 2,
+          "opening_duel_winrate": 50.0,
+          "trade_kills": 4,
+          "traded_deaths": 7,
+          "multikills": {
+            "2k": 4,
+            "3k": 0,
+            "4k": 0,
+            "5k": 0
+          },
+          "clutches": 1,
+          "plants": 0,
+          "defuses": 1,
+          "match_mvps": 0,
+          "team_mvps": 0,
+          "ability_casts_per_round": {
+            "grenade": 1.08,
+            "ability_1": 0.44,
+            "ability_2": 0.92,
+            "ultimate": 0.08
+          },
+          "ultimates_per_match": 1.5,
+          "avg_spent_per_round": 2221.0,
+          "avg_loadout_per_round": 3372.0,
+          "avg_performance_score": 214.16,
+          "performance_breakdown_averages": {
+            "damage": 104.33,
+            "trades": 0.193,
+            "assists": 0.443,
+            "utility_usage": 2.556,
+            "plants": 0.0,
+            "defuses": 0.026,
+            "adjusted_kills": 0.53,
+            "adjusted_deaths": -0.713
+          },
+          "enemy_rank_average_value": 15.0,
+          "lobby_rank_average_value": 15.28,
+          "maps": {
+            "Bind": {
+              "matches": 1,
+              "wins": 0,
+              "losses": 1,
+              "draws": 0,
+              "rounds": 19,
+              "rounds_won": 6,
+              "winrate": 0.0,
+              "round_winrate": 31.6
+            },
+            "Lotus": {
+              "matches": 1,
+              "wins": 1,
+              "losses": 0,
+              "draws": 0,
+              "rounds": 17,
+              "rounds_won": 13,
+              "winrate": 100.0,
+              "round_winrate": 76.5
+            }
+          }
+        },
+        "totals": {
+          "matches": 2,
+          "wins": 1,
+          "losses": 1,
+          "draws": 0,
+          "rounds": 36,
+          "rounds_won": 19,
+          "time_played_ms": 3388572,
+          "score": 5368,
+          "kills": 18,
+          "deaths": 26,
+          "assists": 16,
+          "headshots": 16,
+          "bodyshots": 48,
+          "legshots": 4,
+          "damage_dealt": 3753,
+          "damage_received": 4502,
+          "kast_rounds": 24,
+          "first_bloods": 2,
+          "first_deaths": 2,
+          "trade_kills": 4,
+          "traded_deaths": 7,
+          "multikills_2k": 4,
+          "multikills_3k": 0,
+          "multikills_4k": 0,
+          "aces": 0,
+          "clutches": 1,
+          "plants": 0,
+          "defuses": 1,
+          "match_mvps": 0,
+          "team_mvps": 0,
+          "ability_grenade": 39,
+          "ability_1": 16,
+          "ability_2": 33,
+          "ability_ultimate": 3,
+          "economy_spent": 79950,
+          "loadout_value": 121400,
+          "afk_rounds": 0.0,
+          "performance_score_total": 428.31675965619314,
+          "performance_score_matches": 2,
+          "enemy_rank_sum": 30.0,
+          "enemy_rank_matches": 2,
+          "lobby_rank_sum": 30.555555555555554,
+          "lobby_rank_matches": 2,
+          "performance_breakdown_totals": {
+            "damage": 208.6594427244582,
+            "trades": 0.38699690402476783,
+            "assists": 0.8854489164086687,
+            "utility_usage": 5.111455108359133,
+            "plants": 0.0,
+            "defuses": 0.05263157894736842,
+            "adjusted_kills": 1.0593250773993808,
+            "adjusted_deaths": -1.4265990712074301
+          },
+          "performance_grades": {
+            "pass": 2
+          },
+          "performance_ratings": {
+            "combat": {
+              "damage": {
+                "down": 2
+              },
+              "death_impact": {
+                "down": 1,
+                "up": 1
+              },
+              "kill_impact": {
+                "down": 2
+              },
+              "trades": {
+                "up": 1,
+                "neutral": 1
+              }
+            },
+            "utility": {
+              "assists": {
+                "double_up": 2
+              },
+              "defuses": {
+                "double_up": 1,
+                "neutral": 1
+              },
+              "plants": {
+                "neutral": 2
+              },
+              "utility_usage": {
+                "neutral": 1,
+                "up": 1
+              }
+            }
+          },
+          "maps": {
+            "Bind": {
+              "matches": 1,
+              "wins": 0,
+              "losses": 1,
+              "draws": 0,
+              "rounds": 19,
+              "rounds_won": 6
+            },
+            "Lotus": {
+              "matches": 1,
+              "wins": 1,
+              "losses": 0,
+              "draws": 0,
+              "rounds": 17,
+              "rounds_won": 13
+            }
+          }
+        }
+      }
+    },
     "totals": {
-      "matches": 0,
-      "wins": 0,
-      "losses": 0,
+      "matches": 2,
+      "wins": 1,
+      "losses": 1,
       "draws": 0,
-      "rounds": 0,
-      "rounds_won": 0,
-      "time_played_ms": 0,
-      "score": 0,
-      "kills": 0,
-      "deaths": 0,
-      "assists": 0,
-      "headshots": 0,
-      "bodyshots": 0,
-      "legshots": 0,
-      "damage_dealt": 0,
-      "damage_received": 0,
-      "kast_rounds": 0,
-      "first_bloods": 0,
-      "first_deaths": 0,
-      "trade_kills": 0,
-      "traded_deaths": 0,
-      "multikills_2k": 0,
+      "rounds": 36,
+      "rounds_won": 19,
+      "time_played_ms": 3388572,
+      "score": 5368,
+      "kills": 18,
+      "deaths": 26,
+      "assists": 16,
+      "headshots": 16,
+      "bodyshots": 48,
+      "legshots": 4,
+      "damage_dealt": 3753,
+      "damage_received": 4502,
+      "kast_rounds": 24,
+      "first_bloods": 2,
+      "first_deaths": 2,
+      "trade_kills": 4,
+      "traded_deaths": 7,
+      "multikills_2k": 4,
       "multikills_3k": 0,
       "multikills_4k": 0,
       "aces": 0,
-      "clutches": 0,
+      "clutches": 1,
       "plants": 0,
-      "defuses": 0,
+      "defuses": 1,
       "match_mvps": 0,
       "team_mvps": 0,
-      "ability_grenade": 0,
-      "ability_1": 0,
-      "ability_2": 0,
-      "ability_ultimate": 0,
-      "economy_spent": 0,
-      "loadout_value": 0,
-      "afk_rounds": 0,
-      "performance_score_total": 0,
-      "performance_score_matches": 0,
-      "enemy_rank_sum": 0,
-      "enemy_rank_matches": 0,
-      "lobby_rank_sum": 0,
-      "lobby_rank_matches": 0,
+      "ability_grenade": 39,
+      "ability_1": 16,
+      "ability_2": 33,
+      "ability_ultimate": 3,
+      "economy_spent": 79950,
+      "loadout_value": 121400,
+      "afk_rounds": 0.0,
+      "performance_score_total": 428.31675965619314,
+      "performance_score_matches": 2,
+      "enemy_rank_sum": 30.0,
+      "enemy_rank_matches": 2,
+      "lobby_rank_sum": 30.555555555555554,
+      "lobby_rank_matches": 2,
       "performance_breakdown_totals": {
-        "damage": 0.0,
-        "trades": 0.0,
-        "assists": 0.0,
-        "utility_usage": 0.0,
+        "damage": 208.6594427244582,
+        "trades": 0.38699690402476783,
+        "assists": 0.8854489164086687,
+        "utility_usage": 5.111455108359133,
         "plants": 0.0,
-        "defuses": 0.0,
-        "adjusted_kills": 0.0,
-        "adjusted_deaths": 0.0
+        "defuses": 0.05263157894736842,
+        "adjusted_kills": 1.0593250773993808,
+        "adjusted_deaths": -1.4265990712074301
       },
-      "performance_grades": {},
+      "performance_grades": {
+        "pass": 2
+      },
       "performance_ratings": {
-        "combat": {},
-        "utility": {}
+        "combat": {
+          "damage": {
+            "down": 2
+          },
+          "death_impact": {
+            "down": 1,
+            "up": 1
+          },
+          "kill_impact": {
+            "down": 2
+          },
+          "trades": {
+            "up": 1,
+            "neutral": 1
+          }
+        },
+        "utility": {
+          "assists": {
+            "double_up": 2
+          },
+          "defuses": {
+            "double_up": 1,
+            "neutral": 1
+          },
+          "plants": {
+            "neutral": 2
+          },
+          "utility_usage": {
+            "neutral": 1,
+            "up": 1
+          }
+        }
       },
-      "maps": {}
+      "maps": {
+        "Bind": {
+          "matches": 1,
+          "wins": 0,
+          "losses": 1,
+          "draws": 0,
+          "rounds": 19,
+          "rounds_won": 6
+        },
+        "Lotus": {
+          "matches": 1,
+          "wins": 1,
+          "losses": 0,
+          "draws": 0,
+          "rounds": 17,
+          "rounds_won": 13
+        }
+      }
     },
-    "accolades_seasonal": [],
-    "processed_matches": []
+    "accolades_seasonal": [
+      {
+        "id": "0497d585-42ad-61a7-42bc-189571f40e2c",
+        "type": "clutches",
+        "count": 1,
+        "best_value": 1
+      },
+      {
+        "id": "1b13755f-4d5a-2c9e-6a39-bea7e6c53e7f",
+        "type": "kills",
+        "count": 1,
+        "best_value": 2
+      },
+      {
+        "id": "1c926cba-48cb-8aeb-c68d-a1ba2d012784",
+        "type": "top_frag",
+        "count": 1,
+        "best_value": 2
+      },
+      {
+        "id": "4815a8a2-4649-9bfe-afd2-38ae9cc22898",
+        "type": "distinction",
+        "count": 1,
+        "best_value": 500
+      },
+      {
+        "id": "6dc31cfd-41da-895f-9246-a8b63558cdb8",
+        "type": "damage_per_round",
+        "count": 1,
+        "best_value": 270
+      },
+      {
+        "id": "745b27f0-4bc2-13a4-4ee7-77be323155c2",
+        "type": "mvp",
+        "count": 1,
+        "best_value": 500
+      },
+      {
+        "id": "e43f9acb-448c-4aa1-1591-6db72c0b8dae",
+        "type": "assists",
+        "count": 2,
+        "best_value": 9
+      }
+    ],
+    "processed_matches": [
+      "5fc27a83-d103-41e2-ba60-6d753c1b84b0",
+      "c3011f03-0940-4e27-a124-fab09f341efc"
+    ]
   },
   {
     "schema_version": 2,
@@ -1976,76 +2325,77 @@
     "banner_card_id": "a60742e6-418c-365a-9133-7c8e08720bfa",
     "puuid": "8fc9761d-0baf-50c0-8be1-57b3aa64a87b",
     "rank": "Platinum 2",
-    "rr": 41,
-    "elo": 1341,
+    "rr": 23,
+    "elo": 1323,
     "season": "e11a6",
-    "matches": 5,
+    "matches": 6,
     "wins": 3,
-    "winrate": 60.0,
-    "matches_tracked": 5,
-    "avg_acs": 217.1,
-    "kd": 1.05,
-    "kad": 1.37,
-    "kast": 69.4,
-    "dd_delta": 1.7,
-    "acs_total": 24099,
-    "rounds_total": 111,
-    "kills_total": 87,
-    "deaths_total": 83,
-    "assists_total": 27,
-    "kast_rounds_total": 77,
-    "damage_delta_total": 191,
-    "time_total": 10323738,
-    "headshots_total": 48,
-    "bodyshots_total": 208,
-    "legshots_total": 7,
-    "hs_percent": 18.3,
-    "performance_score_total": 1372.012,
-    "performance_score_matches": 5,
-    "avg_performance_score": 274.4,
+    "winrate": 50.0,
+    "matches_tracked": 6,
+    "avg_acs": 214.3,
+    "kd": 1.01,
+    "kad": 1.35,
+    "kast": 70.8,
+    "dd_delta": -5.3,
+    "acs_total": 27864,
+    "rounds_total": 130,
+    "kills_total": 100,
+    "deaths_total": 99,
+    "assists_total": 34,
+    "kast_rounds_total": 92,
+    "damage_delta_total": -683,
+    "time_total": 12106066,
+    "headshots_total": 58,
+    "bodyshots_total": 236,
+    "legshots_total": 9,
+    "hs_percent": 19.1,
+    "performance_score_total": 1593.755,
+    "performance_score_matches": 6,
+    "avg_performance_score": 265.63,
     "performance_breakdown_totals": {
-      "damage": 691.1971014492754,
-      "trades": 1.4960144927536232,
-      "assists": 1.2608695652173914,
-      "utility_usage": 11.417391304347825,
-      "plants": 0.42028985507246375,
-      "defuses": 0.08514492753623187,
-      "adjusted_kills": 3.92259329710145,
-      "adjusted_deaths": -3.7492351449275363
+      "damage": 807.5655225019069,
+      "trades": 1.6012776506483601,
+      "assists": 1.6292906178489703,
+      "utility_usage": 13.891075514874142,
+      "plants": 0.578184591914569,
+      "defuses": 0.1904080854309687,
+      "adjusted_kills": 4.689566981311977,
+      "adjusted_deaths": -4.5309719870328
     },
     "performance_breakdown_averages": {
-      "damage": 138.239,
-      "trades": 0.299,
-      "assists": 0.252,
-      "utility_usage": 2.283,
-      "plants": 0.084,
-      "defuses": 0.017,
-      "adjusted_kills": 0.785,
-      "adjusted_deaths": -0.75
+      "damage": 134.594,
+      "trades": 0.267,
+      "assists": 0.272,
+      "utility_usage": 2.315,
+      "plants": 0.096,
+      "defuses": 0.032,
+      "adjusted_kills": 0.782,
+      "adjusted_deaths": -0.755
     },
     "performance_grades": {
-      "pass": 4,
+      "pass": 5,
       "merit": 1
     },
     "performance_ratings": {
       "combat": {
         "damage": {
           "neutral": 2,
-          "down": 1,
+          "down": 2,
           "up": 2
         },
         "death_impact": {
           "neutral": 2,
           "up": 1,
-          "down": 2
+          "down": 3
         },
         "kill_impact": {
-          "up": 3,
+          "up": 4,
           "neutral": 2
         },
         "trades": {
           "double_up": 4,
-          "up": 1
+          "up": 1,
+          "down": 1
         }
       },
       "utility": {
@@ -2053,88 +2403,89 @@
           "down": 2,
           "neutral": 1,
           "double_up": 1,
-          "up": 1
+          "up": 2
         },
         "defuses": {
-          "double_up": 2,
+          "double_up": 3,
           "neutral": 3
         },
         "plants": {
           "neutral": 1,
-          "double_up": 2,
+          "double_up": 3,
           "up": 2
         },
         "utility_usage": {
           "up": 3,
           "neutral": 1,
-          "double_down": 1
+          "double_down": 1,
+          "down": 1
         }
       }
     },
-    "enemy_rank_sum": 63.166666666666664,
-    "enemy_rank_matches": 5,
-    "enemy_rank_average_value": 12.63,
-    "lobby_rank_sum": 63.93055555555555,
-    "lobby_rank_matches": 5,
-    "lobby_rank_average_value": 12.79,
+    "enemy_rank_sum": 77.16666666666666,
+    "enemy_rank_matches": 6,
+    "enemy_rank_average_value": 12.86,
+    "lobby_rank_sum": 78.15277777777777,
+    "lobby_rank_matches": 6,
+    "lobby_rank_average_value": 13.03,
     "summary": {
-      "matches": 5,
+      "matches": 6,
       "wins": 3,
-      "losses": 2,
+      "losses": 3,
       "draws": 0,
-      "winrate": 60.0,
-      "rounds": 111,
-      "round_winrate": 51.4,
-      "time_played_ms": 10323738,
-      "acs": 217.1,
-      "adr": 139.3,
-      "dd_delta": 1.7,
-      "kd": 1.05,
-      "kad": 1.37,
-      "kast": 69.4,
-      "hs_percent": 18.3,
-      "kills_per_match": 17.4,
-      "deaths_per_match": 16.6,
-      "assists_per_match": 5.4,
-      "kills_per_round": 0.78,
+      "winrate": 50.0,
+      "rounds": 130,
+      "round_winrate": 48.5,
+      "time_played_ms": 12106066,
+      "acs": 214.3,
+      "adr": 135.9,
+      "dd_delta": -5.3,
+      "kd": 1.01,
+      "kad": 1.35,
+      "kast": 70.8,
+      "hs_percent": 19.1,
+      "kills_per_match": 16.67,
+      "deaths_per_match": 16.5,
+      "assists_per_match": 5.67,
+      "kills_per_round": 0.77,
       "first_bloods": 8,
-      "first_deaths": 8,
-      "opening_duel_winrate": 50.0,
-      "trade_kills": 21,
-      "traded_deaths": 15,
+      "first_deaths": 12,
+      "opening_duel_winrate": 40.0,
+      "trade_kills": 23,
+      "traded_deaths": 16,
       "multikills": {
-        "2k": 23,
+        "2k": 24,
         "3k": 4,
         "4k": 0,
         "5k": 0
       },
-      "clutches": 0,
-      "plants": 9,
-      "defuses": 2,
+      "clutches": 1,
+      "plants": 12,
+      "defuses": 4,
       "match_mvps": 1,
       "team_mvps": 0,
       "ability_casts_per_round": {
-        "grenade": 0.67,
-        "ability_1": 0.34,
-        "ability_2": 1.14,
+        "grenade": 0.65,
+        "ability_1": 0.35,
+        "ability_2": 1.2,
         "ultimate": 0.08
       },
-      "ultimates_per_match": 1.8,
-      "avg_spent_per_round": 3100.0,
-      "avg_loadout_per_round": 3654.0,
-      "avg_performance_score": 274.4,
+      "ultimates_per_match": 1.67,
+      "avg_spent_per_round": 3218.0,
+      "avg_loadout_per_round": 3617.0,
+      "avg_performance_score": 265.63,
       "performance_breakdown_averages": {
-        "damage": 138.239,
-        "trades": 0.299,
-        "assists": 0.252,
-        "utility_usage": 2.283,
-        "plants": 0.084,
-        "defuses": 0.017,
-        "adjusted_kills": 0.785,
-        "adjusted_deaths": -0.75
+        "damage": 134.594,
+        "trades": 0.267,
+        "assists": 0.272,
+        "utility_usage": 2.315,
+        "plants": 0.096,
+        "defuses": 0.032,
+        "adjusted_kills": 0.782,
+        "adjusted_deaths": -0.755
       },
-      "enemy_rank_average_value": 12.63,
-      "lobby_rank_average_value": 12.79,
+      "enemy_rank_average_value": 12.86,
+      "lobby_rank_average_value": 13.03,
       "maps": {
         "Summit": {
           "matches": 2,
@@ -2175,10 +2526,223 @@
           "rounds_won": 11,
           "winrate": 0.0,
           "round_winrate": 45.8
+        },
+        "Bind": {
+          "matches": 1,
+          "wins": 0,
+          "losses": 1,
+          "draws": 0,
+          "rounds": 19,
+          "rounds_won": 6,
+          "winrate": 0.0,
+          "round_winrate": 31.6
         }
       }
     },
     "agents": {
+      "Miks": {
+        "matches": 2,
+        "kills": 30,
+        "deaths": 31,
+        "assists": 18,
+        "time_played_ms": 3655249,
+        "headshot_percentage": 24.5,
+        "average_performance_score": 288.03,
+        "summary": {
+          "matches": 2,
+          "wins": 0,
+          "losses": 2,
+          "draws": 0,
+          "winrate": 0.0,
+          "rounds": 39,
+          "round_winrate": 33.3,
+          "time_played_ms": 3655249,
+          "acs": 226.2,
+          "adr": 133.8,
+          "dd_delta": -18.2,
+          "kd": 0.97,
+          "kad": 1.55,
+          "kast": 76.9,
+          "hs_percent": 24.5,
+          "kills_per_match": 15.0,
+          "deaths_per_match": 15.5,
+          "assists_per_match": 9.0,
+          "kills_per_round": 0.77,
+          "first_bloods": 1,
+          "first_deaths": 4,
+          "opening_duel_winrate": 20.0,
+          "trade_kills": 7,
+          "traded_deaths": 4,
+          "multikills": {
+            "2k": 7,
+            "3k": 0,
+            "4k": 0,
+            "5k": 0
+          },
+          "clutches": 1,
+          "plants": 6,
+          "defuses": 2,
+          "match_mvps": 1,
+          "team_mvps": 0,
+          "ability_casts_per_round": {
+            "grenade": 0.59,
+            "ability_1": 0.46,
+            "ability_2": 1.74,
+            "ultimate": 0.08
+          },
+          "ultimates_per_match": 1.5,
+          "avg_spent_per_round": 3472.0,
+          "avg_loadout_per_round": 3478.0,
+          "avg_performance_score": 288.03,
+          "performance_breakdown_averages": {
+            "damage": 133.334,
+            "trades": 0.228,
+            "assists": 0.459,
+            "utility_usage": 2.862,
+            "plants": 0.154,
+            "defuses": 0.053,
+            "adjusted_kills": 0.825,
+            "adjusted_deaths": -0.735
+          },
+          "enemy_rank_average_value": 13.25,
+          "lobby_rank_average_value": 13.55,
+          "maps": {
+            "Corrode": {
+              "matches": 1,
+              "wins": 0,
+              "losses": 1,
+              "draws": 0,
+              "rounds": 20,
+              "rounds_won": 7,
+              "winrate": 0.0,
+              "round_winrate": 35.0
+            },
+            "Bind": {
+              "matches": 1,
+              "wins": 0,
+              "losses": 1,
+              "draws": 0,
+              "rounds": 19,
+              "rounds_won": 6,
+              "winrate": 0.0,
+              "round_winrate": 31.6
+            }
+          }
+        },
+        "totals": {
+          "matches": 2,
+          "wins": 0,
+          "losses": 2,
+          "draws": 0,
+          "rounds": 39,
+          "rounds_won": 13,
+          "time_played_ms": 3655249,
+          "score": 8821,
+          "kills": 30,
+          "deaths": 31,
+          "assists": 18,
+          "headshots": 23,
+          "bodyshots": 68,
+          "legshots": 3,
+          "damage_dealt": 5217,
+          "damage_received": 5926,
+          "kast_rounds": 30,
+          "first_bloods": 1,
+          "first_deaths": 4,
+          "trade_kills": 7,
+          "traded_deaths": 4,
+          "multikills_2k": 7,
+          "multikills_3k": 0,
+          "multikills_4k": 0,
+          "aces": 0,
+          "clutches": 1,
+          "plants": 6,
+          "defuses": 2,
+          "match_mvps": 1,
+          "team_mvps": 0,
+          "ability_grenade": 23,
+          "ability_1": 18,
+          "ability_2": 68,
+          "ability_ultimate": 3,
+          "economy_spent": 135400,
+          "loadout_value": 135650,
+          "afk_rounds": 0.0,
+          "performance_score_total": 576.0520528135676,
+          "performance_score_matches": 2,
+          "enemy_rank_sum": 26.5,
+          "enemy_rank_matches": 2,
+          "lobby_rank_sum": 27.09722222222222,
+          "lobby_rank_matches": 2,
+          "performance_breakdown_totals": {
+            "damage": 266.6684210526316,
+            "trades": 0.4552631578947368,
+            "assists": 0.918421052631579,
+            "utility_usage": 5.723684210526316,
+            "plants": 0.3078947368421052,
+            "defuses": 0.10526315789473684,
+            "adjusted_kills": 1.6497736842105266,
+            "adjusted_deaths": -1.4709368421052633
+          },
+          "performance_grades": {
+            "merit": 1,
+            "pass": 1
+          },
+          "performance_ratings": {
+            "combat": {
+              "damage": {
+                "up": 1,
+                "down": 1
+              },
+              "death_impact": {
+                "up": 1,
+                "down": 1
+              },
+              "kill_impact": {
+                "up": 2
+              },
+              "trades": {
+                "double_up": 1,
+                "down": 1
+              }
+            },
+            "utility": {
+              "assists": {
+                "double_up": 1,
+                "up": 1
+              },
+              "defuses": {
+                "neutral": 1,
+                "double_up": 1
+              },
+              "plants": {
+                "double_up": 2
+              },
+              "utility_usage": {
+                "up": 1,
+                "down": 1
+              }
+            }
+          },
+          "maps": {
+            "Corrode": {
+              "matches": 1,
+              "wins": 0,
+              "losses": 1,
+              "draws": 0,
+              "rounds": 20,
+              "rounds_won": 7
+            },
+            "Bind": {
+              "matches": 1,
+              "wins": 0,
+              "losses": 1,
+              "draws": 0,
+              "rounds": 19,
+              "rounds_won": 6
+            }
+          }
+        }
+      },
       "Chamber": {
         "matches": 1,
         "kills": 19,
@@ -2531,184 +3095,6 @@
               "draws": 0,
               "rounds": 20,
               "rounds_won": 13
-            }
-          }
-        }
-      },
-      "Miks": {
-        "matches": 1,
-        "kills": 17,
-        "deaths": 15,
-        "assists": 11,
-        "time_played_ms": 1872921,
-        "headshot_percentage": 24.1,
-        "average_performance_score": 354.31,
-        "summary": {
-          "matches": 1,
-          "wins": 0,
-          "losses": 1,
-          "draws": 0,
-          "winrate": 0.0,
-          "rounds": 20,
-          "round_winrate": 35.0,
-          "time_played_ms": 1872921,
-          "acs": 252.8,
-          "adr": 150.3,
-          "dd_delta": 8.2,
-          "kd": 1.13,
-          "kad": 1.87,
-          "kast": 75.0,
-          "hs_percent": 24.1,
-          "kills_per_match": 17.0,
-          "deaths_per_match": 15.0,
-          "assists_per_match": 11.0,
-          "kills_per_round": 0.85,
-          "first_bloods": 1,
-          "first_deaths": 0,
-          "opening_duel_winrate": 100.0,
-          "trade_kills": 5,
-          "traded_deaths": 3,
-          "multikills": {
-            "2k": 6,
-            "3k": 0,
-            "4k": 0,
-            "5k": 0
-          },
-          "clutches": 0,
-          "plants": 3,
-          "defuses": 0,
-          "match_mvps": 1,
-          "team_mvps": 0,
-          "ability_casts_per_round": {
-            "grenade": 0.65,
-            "ability_1": 0.55,
-            "ability_2": 1.95,
-            "ultimate": 0.1
-          },
-          "ultimates_per_match": 2.0,
-          "avg_spent_per_round": 3060.0,
-          "avg_loadout_per_round": 3550.0,
-          "avg_performance_score": 354.31,
-          "performance_breakdown_averages": {
-            "damage": 150.3,
-            "trades": 0.35,
-            "assists": 0.55,
-            "utility_usage": 3.25,
-            "plants": 0.15,
-            "defuses": 0.0,
-            "adjusted_kills": 0.883,
-            "adjusted_deaths": -0.689
-          },
-          "enemy_rank_average_value": 12.5,
-          "lobby_rank_average_value": 12.88,
-          "maps": {
-            "Corrode": {
-              "matches": 1,
-              "wins": 0,
-              "losses": 1,
-              "draws": 0,
-              "rounds": 20,
-              "rounds_won": 7,
-              "winrate": 0.0,
-              "round_winrate": 35.0
-            }
-          }
-        },
-        "totals": {
-          "matches": 1,
-          "wins": 0,
-          "losses": 1,
-          "draws": 0,
-          "rounds": 20,
-          "rounds_won": 7,
-          "time_played_ms": 1872921,
-          "score": 5056,
-          "kills": 17,
-          "deaths": 15,
-          "assists": 11,
-          "headshots": 13,
-          "bodyshots": 40,
-          "legshots": 1,
-          "damage_dealt": 3006,
-          "damage_received": 2841,
-          "kast_rounds": 15,
-          "first_bloods": 1,
-          "first_deaths": 0,
-          "trade_kills": 5,
-          "traded_deaths": 3,
-          "multikills_2k": 6,
-          "multikills_3k": 0,
-          "multikills_4k": 0,
-          "aces": 0,
-          "clutches": 0,
-          "plants": 3,
-          "defuses": 0,
-          "match_mvps": 1,
-          "team_mvps": 0,
-          "ability_grenade": 13,
-          "ability_1": 11,
-          "ability_2": 39,
-          "ability_ultimate": 2,
-          "economy_spent": 61200,
-          "loadout_value": 71000,
-          "afk_rounds": 0.0,
-          "performance_score_total": 354.30853739129856,
-          "performance_score_matches": 1,
-          "enemy_rank_sum": 12.5,
-          "enemy_rank_matches": 1,
-          "lobby_rank_sum": 12.875,
-          "lobby_rank_matches": 1,
-          "performance_breakdown_totals": {
-            "damage": 150.3,
-            "trades": 0.35,
-            "assists": 0.55,
-            "utility_usage": 3.25,
-            "plants": 0.15,
-            "defuses": 0.0,
-            "adjusted_kills": 0.8828000000000003,
-            "adjusted_deaths": -0.6892000000000001
-          },
-          "performance_grades": {
-            "merit": 1
-          },
-          "performance_ratings": {
-            "combat": {
-              "damage": {
-                "up": 1
-              },
-              "death_impact": {
-                "up": 1
-              },
-              "kill_impact": {
-                "up": 1
-              },
-              "trades": {
-                "double_up": 1
-              }
-            },
-            "utility": {
-              "assists": {
-                "double_up": 1
-              },
-              "defuses": {
-                "neutral": 1
-              },
-              "plants": {
-                "double_up": 1
-              },
-              "utility_usage": {
-                "up": 1
-              }
-            }
-          },
-          "maps": {
-            "Corrode": {
-              "matches": 1,
-              "wins": 0,
-              "losses": 1,
-              "draws": 0,
-              "rounds": 20,
-              "rounds_won": 7
             }
           }
         }
@@ -3071,82 +3457,83 @@
       }
     },
     "totals": {
-      "matches": 5,
+      "matches": 6,
       "wins": 3,
-      "losses": 2,
+      "losses": 3,
       "draws": 0,
-      "rounds": 111,
-      "rounds_won": 57,
-      "time_played_ms": 10323738,
-      "score": 24099,
-      "kills": 87,
-      "deaths": 83,
-      "assists": 27,
-      "headshots": 48,
-      "bodyshots": 208,
-      "legshots": 7,
-      "damage_dealt": 15461,
-      "damage_received": 15270,
-      "kast_rounds": 77,
+      "rounds": 130,
+      "rounds_won": 63,
+      "time_played_ms": 12106066,
+      "score": 27864,
+      "kills": 100,
+      "deaths": 99,
+      "assists": 34,
+      "headshots": 58,
+      "bodyshots": 236,
+      "legshots": 9,
+      "damage_dealt": 17672,
+      "damage_received": 18355,
+      "kast_rounds": 92,
       "first_bloods": 8,
-      "first_deaths": 8,
-      "trade_kills": 21,
-      "traded_deaths": 15,
-      "multikills_2k": 23,
+      "first_deaths": 12,
+      "trade_kills": 23,
+      "traded_deaths": 16,
+      "multikills_2k": 24,
       "multikills_3k": 4,
       "multikills_4k": 0,
       "aces": 0,
-      "clutches": 0,
-      "plants": 9,
-      "defuses": 2,
+      "clutches": 1,
+      "plants": 12,
+      "defuses": 4,
       "match_mvps": 1,
       "team_mvps": 0,
-      "ability_grenade": 74,
-      "ability_1": 38,
-      "ability_2": 127,
-      "ability_ultimate": 9,
-      "economy_spent": 344100,
-      "loadout_value": 405600,
+      "ability_grenade": 84,
+      "ability_1": 45,
+      "ability_2": 156,
+      "ability_ultimate": 10,
+      "economy_spent": 418300,
+      "loadout_value": 470250,
       "afk_rounds": 0.0,
-      "performance_score_total": 1372.0116792634544,
-      "performance_score_matches": 5,
-      "enemy_rank_sum": 63.166666666666664,
-      "enemy_rank_matches": 5,
-      "lobby_rank_sum": 63.93055555555555,
-      "lobby_rank_matches": 5,
+      "performance_score_total": 1593.7551946857234,
+      "performance_score_matches": 6,
+      "enemy_rank_sum": 77.16666666666666,
+      "enemy_rank_matches": 6,
+      "lobby_rank_sum": 78.15277777777777,
+      "lobby_rank_matches": 6,
       "performance_breakdown_totals": {
-        "damage": 691.1971014492754,
-        "trades": 1.4960144927536232,
-        "assists": 1.2608695652173914,
-        "utility_usage": 11.417391304347825,
-        "plants": 0.42028985507246375,
-        "defuses": 0.08514492753623187,
-        "adjusted_kills": 3.92259329710145,
-        "adjusted_deaths": -3.7492351449275363
+        "damage": 807.5655225019069,
+        "trades": 1.6012776506483601,
+        "assists": 1.6292906178489703,
+        "utility_usage": 13.891075514874142,
+        "plants": 0.578184591914569,
+        "defuses": 0.1904080854309687,
+        "adjusted_kills": 4.689566981311977,
+        "adjusted_deaths": -4.5309719870328
       },
       "performance_grades": {
-        "pass": 4,
+        "pass": 5,
         "merit": 1
       },
       "performance_ratings": {
         "combat": {
           "damage": {
             "neutral": 2,
-            "down": 1,
+            "down": 2,
             "up": 2
           },
           "death_impact": {
             "neutral": 2,
             "up": 1,
-            "down": 2
+            "down": 3
           },
           "kill_impact": {
-            "up": 3,
+            "up": 4,
             "neutral": 2
           },
           "trades": {
             "double_up": 4,
-            "up": 1
+            "up": 1,
+            "down": 1
           }
         },
         "utility": {
@@ -3154,21 +3541,22 @@
             "down": 2,
             "neutral": 1,
             "double_up": 1,
-            "up": 1
+            "up": 2
           },
           "defuses": {
-            "double_up": 2,
+            "double_up": 3,
             "neutral": 3
           },
           "plants": {
             "neutral": 1,
-            "double_up": 2,
+            "double_up": 3,
             "up": 2
           },
           "utility_usage": {
             "up": 3,
             "neutral": 1,
-            "double_down": 1
+            "double_down": 1,
+            "down": 1
           }
         }
       },
@@ -3204,10 +3592,24 @@
           "draws": 0,
           "rounds": 24,
           "rounds_won": 11
+        },
+        "Bind": {
+          "matches": 1,
+          "wins": 0,
+          "losses": 1,
+          "draws": 0,
+          "rounds": 19,
+          "rounds_won": 6
         }
       }
     },
     "accolades_seasonal": [
+      {
+        "id": "0497d585-42ad-61a7-42bc-189571f40e2c",
+        "type": "clutches",
+        "count": 1,
+        "best_value": 1
+      },
       {
         "id": "3bc0563a-4fe9-a15c-0078-23a3408d64b5",
         "type": "trades",
@@ -3229,7 +3631,7 @@
       {
         "id": "e43f9acb-448c-4aa1-1591-6db72c0b8dae",
         "type": "assists",
-        "count": 1,
+        "count": 2,
         "best_value": 11
       }
     ],
@@ -3238,7 +3640,8 @@
       "67a3ba6f-aff8-4f24-8adb-74178fc15860",
       "77d0d1ab-19a7-49c7-aa6c-0401038d1c40",
       "a9fbe5f3-2b18-47a9-8e9b-63844f186b43",
-      "b0353923-e56d-4ea8-a86f-97ce5432a249"
+      "b0353923-e56d-4ea8-a86f-97ce5432a249",
+      "c3011f03-0940-4e27-a124-fab09f341efc"
     ]
   },
   {
@@ -5463,7 +5866,7 @@
     "id": "Siddharth",
     "riot_id": "BravosidOP#India",
     "name": "BravosidOP",
-    "level": 427,
+    "level": 428,
     "banner": "https://media.valorant-api.com/playercards/bc813b8f-497b-db60-13ce-1f818cbdb865/displayicon.png",
     "banner_card_id": "bc813b8f-497b-db60-13ce-1f818cbdb865",
     "puuid": "a476ec7b-eb58-5e1f-9856-7917425d73fa",
@@ -5471,164 +5874,170 @@
     "rr": 12,
     "elo": 1512,
     "season": "e11a6",
-    "matches": 6,
-    "wins": 3,
+    "matches": 8,
+    "wins": 4,
     "winrate": 50.0,
-    "matches_tracked": 6,
-    "avg_acs": 205.8,
-    "kd": 1.15,
-    "kad": 1.65,
-    "kast": 72.4,
-    "dd_delta": 21.8,
-    "acs_total": 25310,
-    "rounds_total": 123,
-    "kills_total": 90,
-    "deaths_total": 78,
-    "assists_total": 39,
-    "kast_rounds_total": 89,
-    "damage_delta_total": 2681,
-    "time_total": 12062894,
-    "headshots_total": 63,
-    "bodyshots_total": 201,
-    "legshots_total": 12,
+    "matches_tracked": 8,
+    "avg_acs": 217.8,
+    "kd": 1.19,
+    "kad": 1.61,
+    "kast": 72.6,
+    "dd_delta": 23.6,
+    "acs_total": 35724,
+    "rounds_total": 164,
+    "kills_total": 127,
+    "deaths_total": 107,
+    "assists_total": 45,
+    "kast_rounds_total": 119,
+    "damage_delta_total": 3864,
+    "time_total": 15858723,
+    "headshots_total": 87,
+    "bodyshots_total": 279,
+    "legshots_total": 16,
     "hs_percent": 22.8,
-    "performance_score_total": 1647.718,
-    "performance_score_matches": 6,
-    "avg_performance_score": 274.62,
+    "performance_score_total": 2268.293,
+    "performance_score_matches": 8,
+    "avg_performance_score": 283.54,
     "performance_breakdown_totals": {
-      "damage": 824.3189931413614,
-      "trades": 1.0535444088075667,
-      "assists": 1.8601887878203667,
-      "utility_usage": 14.558632157316369,
+      "damage": 1179.0542872590086,
+      "trades": 1.4383483303761941,
+      "assists": 2.1616593760556606,
+      "utility_usage": 18.42382823574774,
       "plants": 0.21789321789321792,
-      "defuses": 0.0,
-      "adjusted_kills": 4.275573922787739,
-      "adjusted_deaths": -3.633190731417706
+      "defuses": 0.058823529411764705,
+      "adjusted_kills": 6.105593530630877,
+      "adjusted_deaths": -5.0515412216137845
     },
     "performance_breakdown_averages": {
-      "damage": 137.386,
-      "trades": 0.176,
-      "assists": 0.31,
-      "utility_usage": 2.426,
-      "plants": 0.036,
-      "defuses": 0.0,
-      "adjusted_kills": 0.713,
-      "adjusted_deaths": -0.606
+      "damage": 147.382,
+      "trades": 0.18,
+      "assists": 0.27,
+      "utility_usage": 2.303,
+      "plants": 0.027,
+      "defuses": 0.007,
+      "adjusted_kills": 0.763,
+      "adjusted_deaths": -0.631
     },
     "performance_grades": {
       "merit": 2,
-      "pass": 4
+      "pass": 5,
+      "distinction": 1
     },
     "performance_ratings": {
       "combat": {
         "damage": {
           "up": 3,
-          "down": 1,
+          "down": 2,
           "neutral": 1,
-          "double_down": 1
+          "double_down": 1,
+          "double_up": 1
         },
         "death_impact": {
           "double_up": 3,
-          "neutral": 2,
-          "down": 1
+          "neutral": 3,
+          "down": 1,
+          "up": 1
         },
         "kill_impact": {
           "up": 2,
           "neutral": 3,
-          "double_down": 1
+          "double_down": 1,
+          "down": 1,
+          "double_up": 1
         },
         "trades": {
-          "up": 2,
+          "up": 3,
           "down": 2,
           "double_up": 1,
-          "neutral": 1
+          "neutral": 2
         }
       },
       "utility": {
         "assists": {
           "double_up": 3,
           "up": 1,
-          "down": 1,
+          "down": 3,
           "neutral": 1
         },
         "defuses": {
-          "neutral": 6
+          "neutral": 7,
+          "double_up": 1
         },
         "plants": {
           "up": 3,
-          "neutral": 3
+          "neutral": 5
         },
         "utility_usage": {
           "double_up": 2,
-          "neutral": 1,
-          "up": 3
+          "neutral": 2,
+          "up": 4
         }
       }
     },
-    "enemy_rank_sum": 75.58333333333333,
-    "enemy_rank_matches": 6,
-    "enemy_rank_average_value": 12.6,
-    "lobby_rank_sum": 78.52222222222223,
-    "lobby_rank_matches": 6,
-    "lobby_rank_average_value": 13.09,
+    "enemy_rank_sum": 104.18333333333332,
+    "enemy_rank_matches": 8,
+    "enemy_rank_average_value": 13.02,
+    "lobby_rank_sum": 107.62222222222222,
+    "lobby_rank_matches": 8,
+    "lobby_rank_average_value": 13.45,
     "summary": {
-      "matches": 6,
-      "wins": 3,
-      "losses": 3,
+      "matches": 8,
+      "wins": 4,
+      "losses": 4,
       "draws": 0,
       "winrate": 50.0,
-      "rounds": 123,
-      "round_winrate": 53.7,
-      "time_played_ms": 12062894,
-      "acs": 205.8,
-      "adr": 143.2,
-      "dd_delta": 21.8,
-      "kd": 1.15,
-      "kad": 1.65,
-      "kast": 72.4,
+      "rounds": 164,
+      "round_winrate": 54.9,
+      "time_played_ms": 15858723,
+      "acs": 217.8,
+      "adr": 149.4,
+      "dd_delta": 23.6,
+      "kd": 1.19,
+      "kad": 1.61,
+      "kast": 72.6,
       "hs_percent": 22.8,
-      "kills_per_match": 15.0,
-      "deaths_per_match": 13.0,
-      "assists_per_match": 6.5,
-      "kills_per_round": 0.73,
-      "first_bloods": 11,
-      "first_deaths": 13,
-      "opening_duel_winrate": 45.8,
-      "trade_kills": 14,
-      "traded_deaths": 12,
+      "kills_per_match": 15.88,
+      "deaths_per_match": 13.38,
+      "assists_per_match": 5.62,
+      "kills_per_round": 0.77,
+      "first_bloods": 17,
+      "first_deaths": 18,
+      "opening_duel_winrate": 48.6,
+      "trade_kills": 18,
+      "traded_deaths": 18,
       "multikills": {
-        "2k": 15,
-        "3k": 2,
+        "2k": 22,
+        "3k": 6,
         "4k": 2,
         "5k": 0
       },
       "clutches": 0,
       "plants": 4,
-      "defuses": 0,
-      "match_mvps": 2,
+      "defuses": 1,
+      "match_mvps": 3,
       "team_mvps": 2,
       "ability_casts_per_round": {
-        "grenade": 0.57,
-        "ability_1": 0.83,
+        "grenade": 0.54,
+        "ability_1": 0.71,
         "ability_2": 0.98,
-        "ultimate": 0.11
+        "ultimate": 0.12
       },
-      "ultimates_per_match": 2.17,
-      "avg_spent_per_round": 2485.0,
-      "avg_loadout_per_round": 3632.0,
-      "avg_performance_score": 274.62,
+      "ultimates_per_match": 2.38,
+      "avg_spent_per_round": 2506.0,
+      "avg_loadout_per_round": 3657.0,
+      "avg_performance_score": 283.54,
       "performance_breakdown_averages": {
-        "damage": 137.386,
-        "trades": 0.176,
-        "assists": 0.31,
-        "utility_usage": 2.426,
-        "plants": 0.036,
-        "defuses": 0.0,
-        "adjusted_kills": 0.713,
-        "adjusted_deaths": -0.606
+        "damage": 147.382,
+        "trades": 0.18,
+        "assists": 0.27,
+        "utility_usage": 2.303,
+        "plants": 0.027,
+        "defuses": 0.007,
+        "adjusted_kills": 0.763,
+        "adjusted_deaths": -0.631
       },
-      "enemy_rank_average_value": 12.6,
-      "lobby_rank_average_value": 13.09,
+      "enemy_rank_average_value": 13.02,
+      "lobby_rank_average_value": 13.45,
       "maps": {
         "Abyss": {
           "matches": 2,
@@ -5640,6 +6049,16 @@
           "winrate": 50.0,
           "round_winrate": 55.0
         },
+        "Lotus": {
+          "matches": 2,
+          "wins": 1,
+          "losses": 1,
+          "draws": 0,
+          "rounds": 38,
+          "rounds_won": 24,
+          "winrate": 50.0,
+          "round_winrate": 63.2
+        },
         "Haven": {
           "matches": 1,
           "wins": 0,
@@ -5649,16 +6068,6 @@
           "rounds_won": 12,
           "winrate": 0.0,
           "round_winrate": 46.2
-        },
-        "Lotus": {
-          "matches": 1,
-          "wins": 1,
-          "losses": 0,
-          "draws": 0,
-          "rounds": 14,
-          "rounds_won": 13,
-          "winrate": 100.0,
-          "round_winrate": 92.9
         },
         "Summit": {
           "matches": 1,
@@ -5679,6 +6088,16 @@
           "rounds_won": 13,
           "winrate": 100.0,
           "round_winrate": 54.2
+        },
+        "Sunset": {
+          "matches": 1,
+          "wins": 1,
+          "losses": 0,
+          "draws": 0,
+          "rounds": 17,
+          "rounds_won": 13,
+          "winrate": 100.0,
+          "round_winrate": 76.5
         }
       }
     },
@@ -6423,109 +6842,471 @@
             }
           }
         }
+      },
+      "Jett": {
+        "matches": 1,
+        "kills": 14,
+        "deaths": 18,
+        "assists": 3,
+        "time_played_ms": 2241337,
+        "headshot_percentage": 26.7,
+        "average_performance_score": 197.97,
+        "summary": {
+          "matches": 1,
+          "wins": 0,
+          "losses": 1,
+          "draws": 0,
+          "winrate": 0.0,
+          "rounds": 24,
+          "round_winrate": 45.8,
+          "time_played_ms": 2241337,
+          "acs": 174.1,
+          "adr": 121.5,
+          "dd_delta": -32.4,
+          "kd": 0.78,
+          "kad": 0.94,
+          "kast": 66.7,
+          "hs_percent": 26.7,
+          "kills_per_match": 14.0,
+          "deaths_per_match": 18.0,
+          "assists_per_match": 3.0,
+          "kills_per_round": 0.58,
+          "first_bloods": 3,
+          "first_deaths": 3,
+          "opening_duel_winrate": 50.0,
+          "trade_kills": 2,
+          "traded_deaths": 4,
+          "multikills": {
+            "2k": 4,
+            "3k": 0,
+            "4k": 0,
+            "5k": 0
+          },
+          "clutches": 0,
+          "plants": 0,
+          "defuses": 0,
+          "match_mvps": 0,
+          "team_mvps": 0,
+          "ability_casts_per_round": {
+            "grenade": 0.75,
+            "ability_1": 0.21,
+            "ability_2": 1.0,
+            "ultimate": 0.08
+          },
+          "ultimates_per_match": 2.0,
+          "avg_spent_per_round": 2658.0,
+          "avg_loadout_per_round": 3810.0,
+          "avg_performance_score": 197.97,
+          "performance_breakdown_averages": {
+            "damage": 121.5,
+            "trades": 0.208,
+            "assists": 0.125,
+            "utility_usage": 2.042,
+            "plants": 0.0,
+            "defuses": 0.0,
+            "adjusted_kills": 0.58,
+            "adjusted_deaths": -0.742
+          },
+          "enemy_rank_average_value": 14.8,
+          "lobby_rank_average_value": 15.0,
+          "maps": {
+            "Lotus": {
+              "matches": 1,
+              "wins": 0,
+              "losses": 1,
+              "draws": 0,
+              "rounds": 24,
+              "rounds_won": 11,
+              "winrate": 0.0,
+              "round_winrate": 45.8
+            }
+          }
+        },
+        "totals": {
+          "matches": 1,
+          "wins": 0,
+          "losses": 1,
+          "draws": 0,
+          "rounds": 24,
+          "rounds_won": 11,
+          "time_played_ms": 2241337,
+          "score": 4179,
+          "kills": 14,
+          "deaths": 18,
+          "assists": 3,
+          "headshots": 12,
+          "bodyshots": 32,
+          "legshots": 1,
+          "damage_dealt": 2916,
+          "damage_received": 3693,
+          "kast_rounds": 16,
+          "first_bloods": 3,
+          "first_deaths": 3,
+          "trade_kills": 2,
+          "traded_deaths": 4,
+          "multikills_2k": 4,
+          "multikills_3k": 0,
+          "multikills_4k": 0,
+          "aces": 0,
+          "clutches": 0,
+          "plants": 0,
+          "defuses": 0,
+          "match_mvps": 0,
+          "team_mvps": 0,
+          "ability_grenade": 18,
+          "ability_1": 5,
+          "ability_2": 24,
+          "ability_ultimate": 2,
+          "economy_spent": 63800,
+          "loadout_value": 91450,
+          "afk_rounds": 0.0,
+          "performance_score_total": 197.9671960607012,
+          "performance_score_matches": 1,
+          "enemy_rank_sum": 14.8,
+          "enemy_rank_matches": 1,
+          "lobby_rank_sum": 15.0,
+          "lobby_rank_matches": 1,
+          "performance_breakdown_totals": {
+            "damage": 121.5,
+            "trades": 0.20833333333333337,
+            "assists": 0.125,
+            "utility_usage": 2.0416666666666665,
+            "plants": 0.0,
+            "defuses": 0.0,
+            "adjusted_kills": 0.5796666666666667,
+            "adjusted_deaths": -0.7422916666666669
+          },
+          "performance_grades": {
+            "pass": 1
+          },
+          "performance_ratings": {
+            "combat": {
+              "damage": {
+                "down": 1
+              },
+              "death_impact": {
+                "neutral": 1
+              },
+              "kill_impact": {
+                "down": 1
+              },
+              "trades": {
+                "up": 1
+              }
+            },
+            "utility": {
+              "assists": {
+                "down": 1
+              },
+              "defuses": {
+                "neutral": 1
+              },
+              "plants": {
+                "neutral": 1
+              },
+              "utility_usage": {
+                "neutral": 1
+              }
+            }
+          },
+          "maps": {
+            "Lotus": {
+              "matches": 1,
+              "wins": 0,
+              "losses": 1,
+              "draws": 0,
+              "rounds": 24,
+              "rounds_won": 11
+            }
+          }
+        }
+      },
+      "Iso": {
+        "matches": 1,
+        "kills": 23,
+        "deaths": 11,
+        "assists": 3,
+        "time_played_ms": 1554492,
+        "headshot_percentage": 19.7,
+        "average_performance_score": 422.61,
+        "summary": {
+          "matches": 1,
+          "wins": 1,
+          "losses": 0,
+          "draws": 0,
+          "winrate": 100.0,
+          "rounds": 17,
+          "round_winrate": 76.5,
+          "time_played_ms": 1554492,
+          "acs": 366.8,
+          "adr": 233.2,
+          "dd_delta": 115.3,
+          "kd": 2.09,
+          "kad": 2.36,
+          "kast": 82.4,
+          "hs_percent": 19.7,
+          "kills_per_match": 23.0,
+          "deaths_per_match": 11.0,
+          "assists_per_match": 3.0,
+          "kills_per_round": 1.35,
+          "first_bloods": 3,
+          "first_deaths": 2,
+          "opening_duel_winrate": 60.0,
+          "trade_kills": 2,
+          "traded_deaths": 2,
+          "multikills": {
+            "2k": 3,
+            "3k": 4,
+            "4k": 0,
+            "5k": 0
+          },
+          "clutches": 0,
+          "plants": 0,
+          "defuses": 1,
+          "match_mvps": 1,
+          "team_mvps": 0,
+          "ability_casts_per_round": {
+            "grenade": 0.06,
+            "ability_1": 0.53,
+            "ability_2": 1.0,
+            "ultimate": 0.24
+          },
+          "ultimates_per_match": 4.0,
+          "avg_spent_per_round": 2444.0,
+          "avg_loadout_per_round": 3626.0,
+          "avg_performance_score": 422.61,
+          "performance_breakdown_averages": {
+            "damage": 233.235,
+            "trades": 0.176,
+            "assists": 0.176,
+            "utility_usage": 1.824,
+            "plants": 0.0,
+            "defuses": 0.059,
+            "adjusted_kills": 1.25,
+            "adjusted_deaths": -0.676
+          },
+          "enemy_rank_average_value": 13.8,
+          "lobby_rank_average_value": 14.1,
+          "maps": {
+            "Sunset": {
+              "matches": 1,
+              "wins": 1,
+              "losses": 0,
+              "draws": 0,
+              "rounds": 17,
+              "rounds_won": 13,
+              "winrate": 100.0,
+              "round_winrate": 76.5
+            }
+          }
+        },
+        "totals": {
+          "matches": 1,
+          "wins": 1,
+          "losses": 0,
+          "draws": 0,
+          "rounds": 17,
+          "rounds_won": 13,
+          "time_played_ms": 1554492,
+          "score": 6235,
+          "kills": 23,
+          "deaths": 11,
+          "assists": 3,
+          "headshots": 12,
+          "bodyshots": 46,
+          "legshots": 3,
+          "damage_dealt": 3965,
+          "damage_received": 2005,
+          "kast_rounds": 14,
+          "first_bloods": 3,
+          "first_deaths": 2,
+          "trade_kills": 2,
+          "traded_deaths": 2,
+          "multikills_2k": 3,
+          "multikills_3k": 4,
+          "multikills_4k": 0,
+          "aces": 0,
+          "clutches": 0,
+          "plants": 0,
+          "defuses": 1,
+          "match_mvps": 1,
+          "team_mvps": 0,
+          "ability_grenade": 1,
+          "ability_1": 9,
+          "ability_2": 17,
+          "ability_ultimate": 4,
+          "economy_spent": 41550,
+          "loadout_value": 61650,
+          "afk_rounds": 0.0,
+          "performance_score_total": 422.6072850527946,
+          "performance_score_matches": 1,
+          "enemy_rank_sum": 13.8,
+          "enemy_rank_matches": 1,
+          "lobby_rank_sum": 14.1,
+          "lobby_rank_matches": 1,
+          "performance_breakdown_totals": {
+            "damage": 233.23529411764707,
+            "trades": 0.17647058823529413,
+            "assists": 0.17647058823529413,
+            "utility_usage": 1.8235294117647056,
+            "plants": 0.0,
+            "defuses": 0.058823529411764705,
+            "adjusted_kills": 1.2503529411764709,
+            "adjusted_deaths": -0.6760588235294118
+          },
+          "performance_grades": {
+            "distinction": 1
+          },
+          "performance_ratings": {
+            "combat": {
+              "damage": {
+                "double_up": 1
+              },
+              "death_impact": {
+                "up": 1
+              },
+              "kill_impact": {
+                "double_up": 1
+              },
+              "trades": {
+                "neutral": 1
+              }
+            },
+            "utility": {
+              "assists": {
+                "down": 1
+              },
+              "defuses": {
+                "double_up": 1
+              },
+              "plants": {
+                "neutral": 1
+              },
+              "utility_usage": {
+                "up": 1
+              }
+            }
+          },
+          "maps": {
+            "Sunset": {
+              "matches": 1,
+              "wins": 1,
+              "losses": 0,
+              "draws": 0,
+              "rounds": 17,
+              "rounds_won": 13
+            }
+          }
+        }
       }
     },
     "totals": {
-      "matches": 6,
-      "wins": 3,
-      "losses": 3,
+      "matches": 8,
+      "wins": 4,
+      "losses": 4,
       "draws": 0,
-      "rounds": 123,
-      "rounds_won": 66,
-      "time_played_ms": 12062894,
-      "score": 25310,
-      "kills": 90,
-      "deaths": 78,
-      "assists": 39,
-      "headshots": 63,
-      "bodyshots": 201,
-      "legshots": 12,
-      "damage_dealt": 17619,
-      "damage_received": 14938,
-      "kast_rounds": 89,
-      "first_bloods": 11,
-      "first_deaths": 13,
-      "trade_kills": 14,
-      "traded_deaths": 12,
-      "multikills_2k": 15,
-      "multikills_3k": 2,
+      "rounds": 164,
+      "rounds_won": 90,
+      "time_played_ms": 15858723,
+      "score": 35724,
+      "kills": 127,
+      "deaths": 107,
+      "assists": 45,
+      "headshots": 87,
+      "bodyshots": 279,
+      "legshots": 16,
+      "damage_dealt": 24500,
+      "damage_received": 20636,
+      "kast_rounds": 119,
+      "first_bloods": 17,
+      "first_deaths": 18,
+      "trade_kills": 18,
+      "traded_deaths": 18,
+      "multikills_2k": 22,
+      "multikills_3k": 6,
       "multikills_4k": 2,
       "aces": 0,
       "clutches": 0,
       "plants": 4,
-      "defuses": 0,
-      "match_mvps": 2,
+      "defuses": 1,
+      "match_mvps": 3,
       "team_mvps": 2,
-      "ability_grenade": 70,
-      "ability_1": 102,
-      "ability_2": 120,
-      "ability_ultimate": 13,
-      "economy_spent": 305700,
-      "loadout_value": 446700,
+      "ability_grenade": 89,
+      "ability_1": 116,
+      "ability_2": 161,
+      "ability_ultimate": 19,
+      "economy_spent": 411050,
+      "loadout_value": 599800,
       "afk_rounds": 0.0,
-      "performance_score_total": 1647.718131539799,
-      "performance_score_matches": 6,
-      "enemy_rank_sum": 75.58333333333333,
-      "enemy_rank_matches": 6,
-      "lobby_rank_sum": 78.52222222222223,
-      "lobby_rank_matches": 6,
+      "performance_score_total": 2268.292612653295,
+      "performance_score_matches": 8,
+      "enemy_rank_sum": 104.18333333333332,
+      "enemy_rank_matches": 8,
+      "lobby_rank_sum": 107.62222222222222,
+      "lobby_rank_matches": 8,
       "performance_breakdown_totals": {
-        "damage": 824.3189931413614,
-        "trades": 1.0535444088075667,
-        "assists": 1.8601887878203667,
-        "utility_usage": 14.558632157316369,
+        "damage": 1179.0542872590086,
+        "trades": 1.4383483303761941,
+        "assists": 2.1616593760556606,
+        "utility_usage": 18.42382823574774,
         "plants": 0.21789321789321792,
-        "defuses": 0.0,
-        "adjusted_kills": 4.275573922787739,
-        "adjusted_deaths": -3.633190731417706
+        "defuses": 0.058823529411764705,
+        "adjusted_kills": 6.105593530630877,
+        "adjusted_deaths": -5.0515412216137845
       },
       "performance_grades": {
         "merit": 2,
-        "pass": 4
+        "pass": 5,
+        "distinction": 1
       },
       "performance_ratings": {
         "combat": {
           "damage": {
             "up": 3,
-            "down": 1,
+            "down": 2,
             "neutral": 1,
-            "double_down": 1
+            "double_down": 1,
+            "double_up": 1
           },
           "death_impact": {
             "double_up": 3,
-            "neutral": 2,
-            "down": 1
+            "neutral": 3,
+            "down": 1,
+            "up": 1
           },
           "kill_impact": {
             "up": 2,
             "neutral": 3,
-            "double_down": 1
+            "double_down": 1,
+            "down": 1,
+            "double_up": 1
           },
           "trades": {
-            "up": 2,
+            "up": 3,
             "down": 2,
             "double_up": 1,
-            "neutral": 1
+            "neutral": 2
           }
         },
         "utility": {
           "assists": {
             "double_up": 3,
             "up": 1,
-            "down": 1,
+            "down": 3,
             "neutral": 1
           },
           "defuses": {
-            "neutral": 6
+            "neutral": 7,
+            "double_up": 1
           },
           "plants": {
             "up": 3,
-            "neutral": 3
+            "neutral": 5
           },
           "utility_usage": {
             "double_up": 2,
-            "neutral": 1,
-            "up": 3
+            "neutral": 2,
+            "up": 4
           }
         }
       },
@@ -6547,12 +7328,12 @@
           "rounds_won": 12
         },
         "Lotus": {
-          "matches": 1,
+          "matches": 2,
           "wins": 1,
-          "losses": 0,
+          "losses": 1,
           "draws": 0,
-          "rounds": 14,
-          "rounds_won": 13
+          "rounds": 38,
+          "rounds_won": 24
         },
         "Summit": {
           "matches": 1,
@@ -6569,6 +7350,14 @@
           "draws": 0,
           "rounds": 24,
           "rounds_won": 13
+        },
+        "Sunset": {
+          "matches": 1,
+          "wins": 1,
+          "losses": 0,
+          "draws": 0,
+          "rounds": 17,
+          "rounds_won": 13
         }
       }
     },
@@ -6576,13 +7365,13 @@
       {
         "id": "1b13755f-4d5a-2c9e-6a39-bea7e6c53e7f",
         "type": "kills",
-        "count": 1,
-        "best_value": 18
+        "count": 2,
+        "best_value": 23
       },
       {
         "id": "1c926cba-48cb-8aeb-c68d-a1ba2d012784",
         "type": "top_frag",
-        "count": 1,
+        "count": 2,
         "best_value": 24
       },
       {
@@ -6592,16 +7381,22 @@
         "best_value": 0.4117647
       },
       {
+        "id": "4815a8a2-4649-9bfe-afd2-38ae9cc22898",
+        "type": "distinction",
+        "count": 1,
+        "best_value": 422.6073
+      },
+      {
         "id": "6dc31cfd-41da-895f-9246-a8b63558cdb8",
         "type": "damage_per_round",
-        "count": 2,
-        "best_value": 184.84616
+        "count": 3,
+        "best_value": 233.23529
       },
       {
         "id": "745b27f0-4bc2-13a4-4ee7-77be323155c2",
         "type": "mvp",
-        "count": 2,
-        "best_value": 371.5224
+        "count": 3,
+        "best_value": 422.6073
       },
       {
         "id": "bfe96c47-44d0-e473-585d-749146d2d05e",
@@ -6622,6 +7417,8 @@
       "43083f22-b0d0-4ca8-a440-7d0901dc4c9a",
       "525e8fd2-01c8-49a0-aa2d-56f29553556a",
       "641f8670-7ebc-4a76-b848-670c4284652b",
+      "c8848835-cff0-476c-8e88-960408cb9c1d",
+      "dfa399f8-99de-4093-94e1-795ae52b9040",
       "ecbd6e8e-74ac-44f1-b6d5-2beebd61e5a0"
     ]
   },
@@ -8365,56 +9162,56 @@
     "banner_card_id": "bc813b8f-497b-db60-13ce-1f818cbdb865",
     "puuid": "7ea6f002-e674-5817-af26-f99d72bbad6a",
     "rank": "Ascendant 1",
-    "rr": 37,
-    "elo": 1837,
+    "rr": 11,
+    "elo": 1811,
     "season": "e11a6",
-    "matches": 7,
+    "matches": 8,
     "wins": 4,
-    "winrate": 57.1,
-    "matches_tracked": 7,
-    "avg_acs": 207.3,
-    "kd": 1.0,
-    "kad": 1.41,
-    "kast": 69.0,
-    "dd_delta": 6.3,
-    "acs_total": 32129,
-    "rounds_total": 155,
-    "kills_total": 108,
-    "deaths_total": 108,
-    "assists_total": 44,
-    "kast_rounds_total": 107,
-    "damage_delta_total": 984,
-    "time_total": 14723472,
-    "headshots_total": 83,
-    "bodyshots_total": 272,
-    "legshots_total": 14,
-    "hs_percent": 22.5,
-    "performance_score_total": 1841.097,
-    "performance_score_matches": 7,
-    "avg_performance_score": 263.01,
+    "winrate": 50.0,
+    "matches_tracked": 8,
+    "avg_acs": 197.3,
+    "kd": 0.9,
+    "kad": 1.26,
+    "kast": 65.7,
+    "dd_delta": -2.5,
+    "acs_total": 33935,
+    "rounds_total": 172,
+    "kills_total": 113,
+    "deaths_total": 125,
+    "assists_total": 45,
+    "kast_rounds_total": 113,
+    "damage_delta_total": -429,
+    "time_total": 16220624,
+    "headshots_total": 87,
+    "bodyshots_total": 290,
+    "legshots_total": 15,
+    "hs_percent": 22.2,
+    "performance_score_total": 1919.357,
+    "performance_score_matches": 8,
+    "avg_performance_score": 239.92,
     "performance_breakdown_totals": {
-      "damage": 971.4860248447204,
-      "trades": 1.253592603049125,
-      "assists": 2.0745529832486356,
-      "utility_usage": 15.780432429888954,
+      "damage": 1043.4272013153086,
+      "trades": 1.430063191284419,
+      "assists": 2.1333765126604,
+      "utility_usage": 17.192197135771305,
       "plants": 0.7461297760210804,
       "defuses": 0.0,
-      "adjusted_kills": 4.927611863589309,
-      "adjusted_deaths": -4.992713218755882
+      "adjusted_kills": 5.273376569471662,
+      "adjusted_deaths": -5.866095571697058
     },
     "performance_breakdown_averages": {
-      "damage": 138.784,
+      "damage": 130.428,
       "trades": 0.179,
-      "assists": 0.296,
-      "utility_usage": 2.254,
-      "plants": 0.107,
+      "assists": 0.267,
+      "utility_usage": 2.149,
+      "plants": 0.093,
       "defuses": 0.0,
-      "adjusted_kills": 0.704,
-      "adjusted_deaths": -0.713
+      "adjusted_kills": 0.659,
+      "adjusted_deaths": -0.733
     },
     "performance_grades": {
       "merit": 1,
-      "pass": 6
+      "pass": 7
     },
     "performance_ratings": {
       "combat": {
@@ -8423,12 +9220,12 @@
           "up": 1,
           "neutral": 3,
           "down": 2,
-          "up": 1
+          "double_down": 1
         },
         "death_impact": {
           "neutral": 3,
           "down": 1,
-          "double_down": 1,
+          "double_down": 2,
           "double_up": 2
         },
         "kill_impact": {
@@ -8436,12 +9233,12 @@
           "up": 1,
           "neutral": 3,
           "down": 2,
-          "up": 1
+          "double_down": 1
         },
         "trades": {
           "double_up": 1,
           "double_down": 1,
-          "neutral": 1,
+          "neutral": 2,
           "up": 3,
           "down": 1
         }
@@ -8451,56 +9248,57 @@
           "neutral": 2,
           "down": 1,
           "double_up": 3,
-          "double_down": 1
+          "double_down": 2
         },
         "defuses": {
-          "neutral": 7
+          "neutral": 8
         },
         "plants": {
           "double_up": 2,
-          "neutral": 1,
+          "neutral": 2,
           "up": 4
         },
         "utility_usage": {
           "double_up": 2,
           "up": 3,
-          "neutral": 2
+          "neutral": 2,
+          "down": 1
         }
       }
     },
-    "enemy_rank_sum": 121.73333333333333,
-    "enemy_rank_matches": 7,
+    "enemy_rank_sum": 139.13333333333333,
+    "enemy_rank_matches": 8,
     "enemy_rank_average_value": 17.39,
-    "lobby_rank_sum": 122.35357142857143,
-    "lobby_rank_matches": 7,
-    "lobby_rank_average_value": 17.48,
+    "lobby_rank_sum": 140.05357142857142,
+    "lobby_rank_matches": 8,
+    "lobby_rank_average_value": 17.51,
     "summary": {
-      "matches": 7,
+      "matches": 8,
       "wins": 4,
-      "losses": 2,
+      "losses": 3,
       "draws": 1,
-      "winrate": 57.1,
-      "rounds": 155,
-      "round_winrate": 52.9,
-      "time_played_ms": 14723472,
-      "acs": 207.3,
-      "adr": 139.9,
-      "dd_delta": 6.3,
-      "kd": 1.0,
-      "kad": 1.41,
-      "kast": 69.0,
-      "hs_percent": 22.5,
-      "kills_per_match": 15.43,
-      "deaths_per_match": 15.43,
-      "assists_per_match": 6.29,
-      "kills_per_round": 0.7,
-      "first_bloods": 13,
-      "first_deaths": 19,
-      "opening_duel_winrate": 40.6,
-      "trade_kills": 20,
-      "traded_deaths": 20,
+      "winrate": 50.0,
+      "rounds": 172,
+      "round_winrate": 50.0,
+      "time_played_ms": 16220624,
+      "acs": 197.3,
+      "adr": 133.2,
+      "dd_delta": -2.5,
+      "kd": 0.9,
+      "kad": 1.26,
+      "kast": 65.7,
+      "hs_percent": 22.2,
+      "kills_per_match": 14.12,
+      "deaths_per_match": 15.62,
+      "assists_per_match": 5.62,
+      "kills_per_round": 0.66,
+      "first_bloods": 14,
+      "first_deaths": 22,
+      "opening_duel_winrate": 38.9,
+      "trade_kills": 22,
+      "traded_deaths": 23,
       "multikills": {
-        "2k": 22,
+        "2k": 24,
         "3k": 7,
         "4k": 2,
         "5k": 0
@@ -8511,27 +9309,27 @@
       "match_mvps": 0,
       "team_mvps": 1,
       "ability_casts_per_round": {
-        "grenade": 0.77,
-        "ability_1": 0.52,
-        "ability_2": 0.86,
-        "ultimate": 0.11
+        "grenade": 0.78,
+        "ability_1": 0.48,
+        "ability_2": 0.82,
+        "ultimate": 0.1
       },
-      "ultimates_per_match": 2.43,
-      "avg_spent_per_round": 2548.0,
-      "avg_loadout_per_round": 3548.0,
-      "avg_performance_score": 263.01,
+      "ultimates_per_match": 2.12,
+      "avg_spent_per_round": 2542.0,
+      "avg_loadout_per_round": 3445.0,
+      "avg_performance_score": 239.92,
       "performance_breakdown_averages": {
-        "damage": 138.784,
+        "damage": 130.428,
         "trades": 0.179,
-        "assists": 0.296,
-        "utility_usage": 2.254,
-        "plants": 0.107,
+        "assists": 0.267,
+        "utility_usage": 2.149,
+        "plants": 0.093,
         "defuses": 0.0,
-        "adjusted_kills": 0.704,
-        "adjusted_deaths": -0.713
+        "adjusted_kills": 0.659,
+        "adjusted_deaths": -0.733
       },
       "enemy_rank_average_value": 17.39,
-      "lobby_rank_average_value": 17.48,
+      "lobby_rank_average_value": 17.51,
       "maps": {
         "Bind": {
           "matches": 3,
@@ -8562,10 +9360,244 @@
           "rounds_won": 22,
           "winrate": 50.0,
           "round_winrate": 57.9
+        },
+        "Sunset": {
+          "matches": 1,
+          "wins": 0,
+          "losses": 1,
+          "draws": 0,
+          "rounds": 17,
+          "rounds_won": 4,
+          "winrate": 0.0,
+          "round_winrate": 23.5
         }
       }
     },
     "agents": {
+      "Chamber": {
+        "matches": 3,
+        "kills": 29,
+        "deaths": 43,
+        "assists": 11,
+        "time_played_ms": 5260385,
+        "headshot_percentage": 16.5,
+        "average_performance_score": 183.86,
+        "summary": {
+          "matches": 3,
+          "wins": 2,
+          "losses": 1,
+          "draws": 0,
+          "winrate": 66.7,
+          "rounds": 57,
+          "round_winrate": 52.6,
+          "time_played_ms": 5260385,
+          "acs": 152.9,
+          "adr": 109.1,
+          "dd_delta": -26.3,
+          "kd": 0.67,
+          "kad": 0.93,
+          "kast": 56.1,
+          "hs_percent": 16.5,
+          "kills_per_match": 9.67,
+          "deaths_per_match": 14.33,
+          "assists_per_match": 3.67,
+          "kills_per_round": 0.51,
+          "first_bloods": 4,
+          "first_deaths": 9,
+          "opening_duel_winrate": 30.8,
+          "trade_kills": 6,
+          "traded_deaths": 9,
+          "multikills": {
+            "2k": 8,
+            "3k": 1,
+            "4k": 1,
+            "5k": 0
+          },
+          "clutches": 0,
+          "plants": 5,
+          "defuses": 0,
+          "match_mvps": 0,
+          "team_mvps": 0,
+          "ability_casts_per_round": {
+            "grenade": 0.96,
+            "ability_1": 0.16,
+            "ability_2": 0.61,
+            "ultimate": 0.04
+          },
+          "ultimates_per_match": 0.67,
+          "avg_spent_per_round": 2435.0,
+          "avg_loadout_per_round": 3128.0,
+          "avg_performance_score": 183.86,
+          "performance_breakdown_averages": {
+            "damage": 106.147,
+            "trades": 0.205,
+            "assists": 0.214,
+            "utility_usage": 1.728,
+            "plants": 0.09,
+            "defuses": 0.0,
+            "adjusted_kills": 0.498,
+            "adjusted_deaths": -0.77
+          },
+          "enemy_rank_average_value": 16.74,
+          "lobby_rank_average_value": 16.9,
+          "maps": {
+            "Haven": {
+              "matches": 1,
+              "wins": 1,
+              "losses": 0,
+              "draws": 0,
+              "rounds": 16,
+              "rounds_won": 13,
+              "winrate": 100.0,
+              "round_winrate": 81.2
+            },
+            "Bind": {
+              "matches": 1,
+              "wins": 1,
+              "losses": 0,
+              "draws": 0,
+              "rounds": 24,
+              "rounds_won": 13,
+              "winrate": 100.0,
+              "round_winrate": 54.2
+            },
+            "Sunset": {
+              "matches": 1,
+              "wins": 0,
+              "losses": 1,
+              "draws": 0,
+              "rounds": 17,
+              "rounds_won": 4,
+              "winrate": 0.0,
+              "round_winrate": 23.5
+            }
+          }
+        },
+        "totals": {
+          "matches": 3,
+          "wins": 2,
+          "losses": 1,
+          "draws": 0,
+          "rounds": 57,
+          "rounds_won": 30,
+          "time_played_ms": 5260385,
+          "score": 8715,
+          "kills": 29,
+          "deaths": 43,
+          "assists": 11,
+          "headshots": 13,
+          "bodyshots": 62,
+          "legshots": 4,
+          "damage_dealt": 6218,
+          "damage_received": 7715,
+          "kast_rounds": 32,
+          "first_bloods": 4,
+          "first_deaths": 9,
+          "trade_kills": 6,
+          "traded_deaths": 9,
+          "multikills_2k": 8,
+          "multikills_3k": 1,
+          "multikills_4k": 1,
+          "aces": 0,
+          "clutches": 0,
+          "plants": 5,
+          "defuses": 0,
+          "match_mvps": 0,
+          "team_mvps": 0,
+          "ability_grenade": 55,
+          "ability_1": 9,
+          "ability_2": 35,
+          "ability_ultimate": 2,
+          "economy_spent": 138800,
+          "loadout_value": 178300,
+          "afk_rounds": 0.0,
+          "performance_score_total": 551.5690370259854,
+          "performance_score_matches": 3,
+          "enemy_rank_sum": 50.23333333333333,
+          "enemy_rank_matches": 3,
+          "lobby_rank_sum": 50.7,
+          "lobby_rank_matches": 3,
+          "performance_breakdown_totals": {
+            "damage": 318.44117647058823,
+            "trades": 0.6139705882352942,
+            "assists": 0.6421568627450981,
+            "utility_usage": 5.182598039215686,
+            "plants": 0.2708333333333333,
+            "defuses": 0.0,
+            "adjusted_kills": 1.4938376225490195,
+            "adjusted_deaths": -2.310455269607843
+          },
+          "performance_grades": {
+            "pass": 3
+          },
+          "performance_ratings": {
+            "combat": {
+              "damage": {
+                "down": 1,
+                "neutral": 1,
+                "double_down": 1
+              },
+              "death_impact": {
+                "double_down": 2,
+                "double_up": 1
+              },
+              "kill_impact": {
+                "down": 1,
+                "neutral": 1,
+                "double_down": 1
+              },
+              "trades": {
+                "up": 2,
+                "neutral": 1
+              }
+            },
+            "utility": {
+              "assists": {
+                "double_up": 1,
+                "double_down": 2
+              },
+              "defuses": {
+                "neutral": 3
+              },
+              "plants": {
+                "double_up": 1,
+                "up": 1,
+                "neutral": 1
+              },
+              "utility_usage": {
+                "up": 2,
+                "down": 1
+              }
+            }
+          },
+          "maps": {
+            "Haven": {
+              "matches": 1,
+              "wins": 1,
+              "losses": 0,
+              "draws": 0,
+              "rounds": 16,
+              "rounds_won": 13
+            },
+            "Bind": {
+              "matches": 1,
+              "wins": 1,
+              "losses": 0,
+              "draws": 0,
+              "rounds": 24,
+              "rounds_won": 13
+            },
+            "Sunset": {
+              "matches": 1,
+              "wins": 0,
+              "losses": 1,
+              "draws": 0,
+              "rounds": 17,
+              "rounds_won": 4
+            }
+          }
+        }
+      },
       "Fade": {
         "matches": 2,
         "kills": 32,
@@ -8953,207 +9985,6 @@
           }
         }
       },
-      "Chamber": {
-        "matches": 2,
-        "kills": 24,
-        "deaths": 26,
-        "assists": 10,
-        "time_played_ms": 3763233,
-        "headshot_percentage": 16.1,
-        "average_performance_score": 236.65,
-        "summary": {
-          "matches": 2,
-          "wins": 2,
-          "losses": 0,
-          "draws": 0,
-          "winrate": 100.0,
-          "rounds": 40,
-          "round_winrate": 65.0,
-          "time_played_ms": 3763233,
-          "acs": 172.7,
-          "adr": 124.9,
-          "dd_delta": -2.1,
-          "kd": 0.92,
-          "kad": 1.31,
-          "kast": 65.0,
-          "hs_percent": 16.1,
-          "kills_per_match": 12.0,
-          "deaths_per_match": 13.0,
-          "assists_per_match": 5.0,
-          "kills_per_round": 0.6,
-          "first_bloods": 3,
-          "first_deaths": 6,
-          "opening_duel_winrate": 33.3,
-          "trade_kills": 4,
-          "traded_deaths": 6,
-          "multikills": {
-            "2k": 6,
-            "3k": 1,
-            "4k": 1,
-            "5k": 0
-          },
-          "clutches": 0,
-          "plants": 5,
-          "defuses": 0,
-          "match_mvps": 0,
-          "team_mvps": 0,
-          "ability_casts_per_round": {
-            "grenade": 1.0,
-            "ability_1": 0.17,
-            "ability_2": 0.7,
-            "ultimate": 0.05
-          },
-          "ultimates_per_match": 1.0,
-          "avg_spent_per_round": 2414.0,
-          "avg_loadout_per_round": 3391.0,
-          "avg_performance_score": 236.65,
-          "performance_breakdown_averages": {
-            "damage": 123.25,
-            "trades": 0.219,
-            "assists": 0.292,
-            "utility_usage": 1.885,
-            "plants": 0.135,
-            "defuses": 0.0,
-            "adjusted_kills": 0.574,
-            "adjusted_deaths": -0.719
-          },
-          "enemy_rank_average_value": 16.42,
-          "lobby_rank_average_value": 16.5,
-          "maps": {
-            "Haven": {
-              "matches": 1,
-              "wins": 1,
-              "losses": 0,
-              "draws": 0,
-              "rounds": 16,
-              "rounds_won": 13,
-              "winrate": 100.0,
-              "round_winrate": 81.2
-            },
-            "Bind": {
-              "matches": 1,
-              "wins": 1,
-              "losses": 0,
-              "draws": 0,
-              "rounds": 24,
-              "rounds_won": 13,
-              "winrate": 100.0,
-              "round_winrate": 54.2
-            }
-          }
-        },
-        "totals": {
-          "matches": 2,
-          "wins": 2,
-          "losses": 0,
-          "draws": 0,
-          "rounds": 40,
-          "rounds_won": 26,
-          "time_played_ms": 3763233,
-          "score": 6909,
-          "kills": 24,
-          "deaths": 26,
-          "assists": 10,
-          "headshots": 9,
-          "bodyshots": 44,
-          "legshots": 3,
-          "damage_dealt": 4995,
-          "damage_received": 5079,
-          "kast_rounds": 26,
-          "first_bloods": 3,
-          "first_deaths": 6,
-          "trade_kills": 4,
-          "traded_deaths": 6,
-          "multikills_2k": 6,
-          "multikills_3k": 1,
-          "multikills_4k": 1,
-          "aces": 0,
-          "clutches": 0,
-          "plants": 5,
-          "defuses": 0,
-          "match_mvps": 0,
-          "team_mvps": 0,
-          "ability_grenade": 40,
-          "ability_1": 7,
-          "ability_2": 28,
-          "ability_ultimate": 2,
-          "economy_spent": 96550,
-          "loadout_value": 135650,
-          "afk_rounds": 0.0,
-          "performance_score_total": 473.3095246120631,
-          "performance_score_matches": 2,
-          "enemy_rank_sum": 32.83333333333333,
-          "enemy_rank_matches": 2,
-          "lobby_rank_sum": 33.0,
-          "lobby_rank_matches": 2,
-          "performance_breakdown_totals": {
-            "damage": 246.5,
-            "trades": 0.4375,
-            "assists": 0.5833333333333334,
-            "utility_usage": 3.7708333333333335,
-            "plants": 0.2708333333333333,
-            "defuses": 0.0,
-            "adjusted_kills": 1.1480729166666666,
-            "adjusted_deaths": -1.4370729166666667
-          },
-          "performance_grades": {
-            "pass": 2
-          },
-          "performance_ratings": {
-            "combat": {
-              "damage": {
-                "down": 1,
-                "neutral": 1
-              },
-              "death_impact": {
-                "double_down": 1,
-                "double_up": 1
-              },
-              "kill_impact": {
-                "down": 1,
-                "neutral": 1
-              },
-              "trades": {
-                "up": 2
-              }
-            },
-            "utility": {
-              "assists": {
-                "double_up": 1,
-                "double_down": 1
-              },
-              "defuses": {
-                "neutral": 2
-              },
-              "plants": {
-                "double_up": 1,
-                "up": 1
-              },
-              "utility_usage": {
-                "up": 2
-              }
-            }
-          },
-          "maps": {
-            "Haven": {
-              "matches": 1,
-              "wins": 1,
-              "losses": 0,
-              "draws": 0,
-              "rounds": 16,
-              "rounds_won": 13
-            },
-            "Bind": {
-              "matches": 1,
-              "wins": 1,
-              "losses": 0,
-              "draws": 0,
-              "rounds": 24,
-              "rounds_won": 13
-            }
-          }
-        }
-      },
       "Yoru": {
         "matches": 1,
         "kills": 16,
@@ -9334,28 +10165,28 @@
       }
     },
     "totals": {
-      "matches": 7,
+      "matches": 8,
       "wins": 4,
-      "losses": 2,
+      "losses": 3,
       "draws": 1,
-      "rounds": 155,
-      "rounds_won": 82,
-      "time_played_ms": 14723472,
-      "score": 32129,
-      "kills": 108,
-      "deaths": 108,
-      "assists": 44,
-      "headshots": 83,
-      "bodyshots": 272,
-      "legshots": 14,
-      "damage_dealt": 21692,
-      "damage_received": 20708,
-      "kast_rounds": 107,
-      "first_bloods": 13,
-      "first_deaths": 19,
-      "trade_kills": 20,
-      "traded_deaths": 20,
-      "multikills_2k": 22,
+      "rounds": 172,
+      "rounds_won": 86,
+      "time_played_ms": 16220624,
+      "score": 33935,
+      "kills": 113,
+      "deaths": 125,
+      "assists": 45,
+      "headshots": 87,
+      "bodyshots": 290,
+      "legshots": 15,
+      "damage_dealt": 22915,
+      "damage_received": 23344,
+      "kast_rounds": 113,
+      "first_bloods": 14,
+      "first_deaths": 22,
+      "trade_kills": 22,
+      "traded_deaths": 23,
+      "multikills_2k": 24,
       "multikills_3k": 7,
       "multikills_4k": 2,
       "aces": 0,
@@ -9364,32 +10195,32 @@
       "defuses": 0,
       "match_mvps": 0,
       "team_mvps": 1,
-      "ability_grenade": 119,
-      "ability_1": 80,
-      "ability_2": 134,
+      "ability_grenade": 134,
+      "ability_1": 82,
+      "ability_2": 141,
       "ability_ultimate": 17,
-      "economy_spent": 394950,
-      "loadout_value": 549950,
+      "economy_spent": 437200,
+      "loadout_value": 592600,
       "afk_rounds": 0.0,
-      "performance_score_total": 1841.0974030668522,
-      "performance_score_matches": 7,
-      "enemy_rank_sum": 121.73333333333333,
-      "enemy_rank_matches": 7,
-      "lobby_rank_sum": 122.35357142857143,
-      "lobby_rank_matches": 7,
+      "performance_score_total": 1919.3569154807744,
+      "performance_score_matches": 8,
+      "enemy_rank_sum": 139.13333333333333,
+      "enemy_rank_matches": 8,
+      "lobby_rank_sum": 140.05357142857142,
+      "lobby_rank_matches": 8,
       "performance_breakdown_totals": {
-        "damage": 971.4860248447204,
-        "trades": 1.253592603049125,
-        "assists": 2.0745529832486356,
-        "utility_usage": 15.780432429888954,
+        "damage": 1043.4272013153086,
+        "trades": 1.430063191284419,
+        "assists": 2.1333765126604,
+        "utility_usage": 17.192197135771305,
         "plants": 0.7461297760210804,
         "defuses": 0.0,
-        "adjusted_kills": 4.927611863589309,
-        "adjusted_deaths": -4.992713218755882
+        "adjusted_kills": 5.273376569471662,
+        "adjusted_deaths": -5.866095571697058
       },
       "performance_grades": {
         "merit": 1,
-        "pass": 6
+        "pass": 7
       },
       "performance_ratings": {
         "combat": {
@@ -9397,24 +10228,26 @@
             "double_up": 1,
             "up": 1,
             "neutral": 3,
-            "down": 2
+            "down": 2,
+            "double_down": 1
           },
           "death_impact": {
             "neutral": 3,
             "down": 1,
-            "double_down": 1,
+            "double_down": 2,
             "double_up": 2
           },
           "kill_impact": {
             "double_up": 1,
             "up": 1,
             "neutral": 3,
-            "down": 2
+            "down": 2,
+            "double_down": 1
           },
           "trades": {
             "double_up": 1,
             "double_down": 1,
-            "neutral": 1,
+            "neutral": 2,
             "up": 3,
             "down": 1
           }
@@ -9424,20 +10257,21 @@
             "neutral": 2,
             "down": 1,
             "double_up": 3,
-            "double_down": 1
+            "double_down": 2
           },
           "defuses": {
-            "neutral": 7
+            "neutral": 8
           },
           "plants": {
             "double_up": 2,
-            "neutral": 1,
+            "neutral": 2,
             "up": 4
           },
           "utility_usage": {
             "double_up": 2,
             "up": 3,
-            "neutral": 2
+            "neutral": 2,
+            "down": 1
           }
         }
       },
@@ -9465,6 +10299,14 @@
           "draws": 0,
           "rounds": 38,
           "rounds_won": 22
+        },
+        "Sunset": {
+          "matches": 1,
+          "wins": 0,
+          "losses": 1,
+          "draws": 0,
+          "rounds": 17,
+          "rounds_won": 4
         }
       }
     },
@@ -9507,6 +10349,7 @@
       "5f5e53c0-9747-461f-84a8-849537651e2f",
       "60817553-816f-45a0-9ce7-471d2c4d5483",
       "7a732599-0012-45c1-b715-8261ee580283",
+      "93cea3d3-1a40-4579-a58c-64a3f9804235",
       "fe6ab094-f6fb-400d-9015-7834db37fbd9"
     ]
   },
