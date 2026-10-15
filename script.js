@@ -305,38 +305,50 @@ function sigmoidNormalize(value, midpoint, steepness) {
   return 1 / (1 + Math.exp(-(v - midpoint) / steepness));
 }
 
-function valoStatScore(p) {
-  // Performance score is API-provided and normalized to [0, 1].
-  // Missing performance data receives a neutral value until it is available.
-  const performance = p.avg_performance_score == null
-    ? 0.5
-    : sigmoidNormalize(Number(p.avg_performance_score), 200, 60);
 
-  const acs = sigmoidNormalize(Number(p.avg_acs) || 0, 200, 65);
-  const kast = clamp((Number(p.kast) || 0) / 100, 0, 1);
-  const kad = sigmoidNormalize(Number(p.kad) || 0, 1.2, 0.28);
-  const dd = sigmoidNormalize(Number(p.dd_delta) || 0, 0, 30);
+function valoStatScore(player) {
+  const hasPerformanceScore =
+    (player.performance_score_matches || 0) > 0 &&
+    player.avg_performance_score != null;
 
-  const matchCount = Number(p.matches) || 0;
-  const win = matchCount > 0
-    ? clamp((Number(p.wins) || 0) / matchCount, 0, 1)
+  const acs = sigmoidNormalize(player.avg_acs, 200, 65);
+  const kast = clamp((player.kast || 0) / 100, 0, 1);
+  const kad = sigmoidNormalize(player.kad, 1.2, 0.28);
+  const dd = sigmoidNormalize(player.dd_delta, 0, 30);
+  const win = (player.matches || 0) > 0
+    ? clamp((player.wins || 0) / player.matches, 0, 1)
     : 0;
 
-  // Weights:
-  // Performance 40%, ACS 20%, KAST 15%, KA/D 10%,
-  // damage delta 10%, win rate 5%.
-  const score =
-    0.40 * performance +
-    0.20 * acs +
-    0.15 * kast +
-    0.10 * kad +
-    0.10 * dd +
-    0.05 * win;
+  let score;
 
-  if (matchCount == 0) return "NA";
+  if (hasPerformanceScore) {
+    const performance = sigmoidNormalize(
+      player.avg_performance_score,
+      200,
+      60
+    );
 
+    score =
+      0.40 * performance +
+      0.20 * acs +
+      0.15 * kast +
+      0.10 * kad +
+      0.10 * dd +
+      0.05 * win;
+  } else {
+    // Legacy distribution for acts without performance-score data.
+    score =
+      0.30 * acs +
+      0.20 * kast +
+      0.15 * kad +
+      0.25 * dd +
+      0.10 * win;
+  }
+  if (player.matches == 0) return "NA";
   return clamp(Math.round(score * 1000), 10, 1000);
 }
+
+
 
 function formatTime(ms) {
   const totalSeconds = Math.floor((Number(ms) || 0) / 1000);
@@ -494,10 +506,14 @@ async function loadActData(act) {
     const combinedData = [...cache];
     const actCount = {};
     const actNames = {};
+    const actScoreTotals = {};
+    const actScoreCounts = {};
 
     combinedData.forEach((player) => {
       actCount[player.id] = 1;
       actNames[player.id] = ["V26: A6"];
+      actScoreTotals[player.id] = valoStatScore(player);
+      actScoreCounts[player.id] = 1;      
     });
 
     try {
@@ -513,6 +529,9 @@ async function loadActData(act) {
           const existingIndex = combinedData.findIndex(
             (player) => player.id === actPlayer.id
           );
+          const actScore = valoStatScore(actPlayer);
+          actScoreTotals[actPlayer.id] = (actScoreTotals[actPlayer.id] || 0) + actScore;
+          actScoreCounts[actPlayer.id] = (actScoreCounts[actPlayer.id] || 0) + 1;
 
           if (existingIndex !== -1) {
             const player = combinedData[existingIndex];
@@ -624,10 +643,14 @@ async function loadActData(act) {
       }
 
       combinedData.forEach((player) => {
-        player.actCount = actCount[player.id];
+        player.actCount = actCount[player.id] || 1;
         player.actsPlayed = actNames[player.id]
           ? actNames[player.id].join(", ")
           : "";
+        player.valostat_score = Math.round(
+          (actScoreTotals[player.id] || valoStatScore(player)) /
+          (actScoreCounts[player.id] || 1)
+        );          
       });
     } catch (error) {
       console.error("Error loading act data:", error);
@@ -645,6 +668,16 @@ async function loadActData(act) {
 
   return cache;
 }
+
+
+function getDisplayedValoStatScore(player, act) {
+  if (act === "overall" && Number.isFinite(player.valostat_score)) {
+    return player.valostat_score;
+  }
+
+  return valoStatScore(player);
+}
+
 
 async function renderCards(act = currentAct) {
   const toggleControl = document.querySelector(".toggle-control");
@@ -677,7 +710,7 @@ async function renderCards(act = currentAct) {
     displayData.sort((a, b) => {
       switch (sortType) {
         case "score":
-          return valoStatScore(b) - valoStatScore(a);
+          return getDisplayedValoStatScore(b, act) - getDisplayedValoStatScore(a, act);
         case "rank":
           return (b.elo || 0) - (a.elo || 0);
         case "level":
@@ -727,7 +760,7 @@ async function renderCards(act = currentAct) {
   }
 
   displayData.forEach((player) => {
-    const score = valoStatScore(player);
+    const score = getDisplayedValoStatScore(player, act);
     let extraStat = "";
 
     switch (sortType) {
