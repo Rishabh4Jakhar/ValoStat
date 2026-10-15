@@ -1076,14 +1076,11 @@ th {
   font-size: 13px;
 }
 
-/* Hairline grids for secondary numbers */
-
 /* Hairline grids: cells draw their own right/bottom rule, so a partly
    filled last row stays empty instead of showing a filled block. */
 .modal-mini-grid,
 .modal-detail-grid,
-.accolade-grid,
-.modal-extra-grid {
+.accolade-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   border-top: 1px solid var(--line-soft);
@@ -1092,8 +1089,7 @@ th {
 
 .modal-mini-grid > *,
 .modal-detail-grid > *,
-.accolade-grid > *,
-.modal-extra-grid > * {
+.accolade-grid > * {
   border-right: 1px solid var(--line-soft);
   border-bottom: 1px solid var(--line-soft);
 }
@@ -1374,26 +1370,33 @@ th {
 
 /* ---------- Standalone player page (player.html) ---------- */
 
-.player-page {
-  min-height: 100vh;
-}
-
 .player-page-shell {
-  padding: 24px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
 }
 
 .player-page-topbar {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  max-width: 1180px;
-  margin: 0 auto 16px;
+  margin-bottom: 16px;
+}
+
+.player-page-act {
+  flex: 1;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .player-page-panel {
-  max-width: 1180px;
-  height: auto;
-  margin: 0 auto;
+  background: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.player-page-panel .card-modal-body {
+  overflow: visible;
 }
 
 .player-page-empty {
@@ -1411,80 +1414,6 @@ th {
 .player-page-empty p {
   margin-bottom: 20px;
   color: var(--muted);
-}
-
-.modal-hero-info {
-  display: flex;
-  align-items: flex-start;
-  gap: 24px;
-}
-
-.modal-hero-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.modal-ring {
-  position: relative;
-  display: grid;
-  flex-shrink: 0;
-  width: 96px;
-  height: 96px;
-  place-items: center;
-  border-radius: 50%;
-  background: conic-gradient(var(--good) calc(var(--win-percent, 0) * 1%), var(--line) 0);
-}
-
-.modal-ring::before {
-  content: "";
-  position: absolute;
-  inset: 7px;
-  border-radius: 50%;
-  background: var(--ink);
-}
-
-.modal-ring-text {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-.modal-implemented {
-  margin-top: 20px;
-}
-
-.modal-extra-grid {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  margin-top: 10px;
-}
-
-.modal-extra-item {
-  padding: 12px 16px;
-  background: var(--ink);
-}
-
-.modal-extra-item span {
-  display: block;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.modal-extra-item strong {
-  display: block;
-  color: var(--strong);
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 600;
-}
-
-.modal-extra-item small {
-  color: var(--faint);
-  font-size: 12px;
 }
 
 /* =========================================================

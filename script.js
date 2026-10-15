@@ -1,44 +1,60 @@
-const navButtons = document.querySelectorAll(".nav-btn");
 const profiles = document.getElementById("profiles");
 const selectA = document.getElementById("playerA");
 const selectB = document.getElementById("playerB");
 const compareBtn = document.getElementById("compareBtn");
 const comparison = document.getElementById("comparison");
-const defaultAct = "v26-a6";
+const isPlayerPage = Boolean(document.getElementById("playerPageRoot"));
 
-let players = [];
-let cache = {};
-let overallCache = null;
-let currentActData = null;
-let prev = null;
-let showDiff = false;
-let currentAct = defaultAct;
-
-let actMap = {
-  "overall": "overall",
-  "v26-a6": "e11a6",
-  "v26-a5": "e11a5",
-  "v26-a4": "e11a4",
-  "v26-a3": "e11a3",
-  "v26-a2": "e11a2",
+// Acts come from acts.json, which the fetch script keeps up to date.
+// This copy is only used if acts.json can't be loaded.
+const FALLBACK_ACTS = {
+  current: "e11a6",
+  acts: [
+    { code: "e11a6", label: "V26: A6" },
+    { code: "e11a5", label: "V26: A5" },
+    { code: "e11a4", label: "V26: A4" },
+    { code: "e11a3", label: "V26: A3" },
+    { code: "e11a2", label: "V26: A2" },
+  ],
 };
 
-function isDefaultActCode(act) {
-  return act === defaultAct || act === "e11a6";
+let actsConfig = FALLBACK_ACTS;
+let players = [];
+let cache = [];
+let overallCache = null;
+let currentActData = null;
+let prev = [];
+let showDiff = false;
+let currentAct = FALLBACK_ACTS.current;
+let lastLoadedAt = 0;
+const actFileCache = new Map();
+
+async function loadActsConfig() {
+  try {
+    const response = await fetch(`acts.json?ts=${Date.now()}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const config = await response.json();
+    if (!config?.current || !Array.isArray(config.acts)) throw new Error("unexpected format");
+    actsConfig = config;
+  } catch (error) {
+    console.warn("Using built-in act list; acts.json could not be loaded:", error);
+    actsConfig = FALLBACK_ACTS;
+  }
+  return actsConfig;
 }
 
-function trackerProfileUrl(riotId) {
-  return `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(riotId)}/overview`;
+function isDefaultActCode(act) {
+  return act === actsConfig.current;
 }
 
 function getActLabel(actCode) {
   if (actCode === "overall") return "Overall";
-  if (actCode === "e11a6" || actCode === defaultAct) return "V26: A6";
-  if (actCode === "e11a5") return "V26: A5";
-  if (actCode === "e11a4") return "V26: A4";
-  if (actCode === "e11a3") return "V26: A3";
-  if (actCode === "e11a2") return "V26: A2";
-  return String(actCode || "Player").toUpperCase();
+  const act = actsConfig.acts.find((item) => item.code === actCode);
+  return act?.label || String(actCode || "Player").toUpperCase();
+}
+
+function trackerProfileUrl(riotId) {
+  return `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(riotId)}/overview`;
 }
 
 function formatStat(value) {
@@ -785,16 +801,33 @@ function ensureCardModal() {
 }
 
 
-function openCardModal(player) {
+function playerPageUrl(player, act) {
+  return `player.html?id=${encodeURIComponent(player.id)}&act=${encodeURIComponent(act)}`;
+}
+
+function openCardModal(player, act = currentAct) {
   const modal = ensureCardModal();
   const title = modal.querySelector("#cardModalTitle");
   const body = modal.querySelector("#cardModalBody");
   const openLink = modal.querySelector("#cardModalOpenLink");
   const pageLink = modal.querySelector("#cardModalPageLink");
 
-  const currentActLabel = getActLabel(currentAct);
-  const isOverall = currentAct === "overall";
-  const score = getDisplayedValoStatScore(player, currentAct);
+  title.textContent = act === "overall" ? "Overall, all acts combined" : getActLabel(act);
+  modal.querySelector(".card-modal-content").dataset.tier = rankTier(player.rank);
+  body.innerHTML = renderPlayerProfile(player, act);
+  bindProfileTabs(body);
+
+  openLink.href = trackerProfileUrl(player.riot_id || player.id);
+  pageLink.href = playerPageUrl(player, act);
+  modal.classList.add("open");
+  body.scrollTop = 0;
+}
+
+// Full profile (hero, tabs, panels) used by both the popup and player.html.
+function renderPlayerProfile(player, act) {
+  const currentActLabel = getActLabel(act);
+  const isOverall = act === "overall";
+  const score = getDisplayedValoStatScore(player, act);
 
   const wins = Number(player.wins) || 0;
   const matches = Number(player.matches) || 0;
@@ -816,18 +849,6 @@ function openCardModal(player) {
     : "";
   const notRecorded = `<p class="modal-empty">Not recorded for this period. Detailed tracking started in V26: A6.</p>`;
 
-  const playerPayload = { player, currentAct, currentActLabel };
-  const playerPageUrl =
-    `player.html?payload=${encodeURIComponent(JSON.stringify(playerPayload))}`;
-
-  try {
-    localStorage.setItem("valoStatPlayerPayload", JSON.stringify(playerPayload));
-  } catch (error) {
-    console.error("Unable to store player payload for player page:", error);
-  }
-
-  title.textContent = isOverall ? "Overall, all acts combined" : currentActLabel;
-  modal.querySelector(".card-modal-content").dataset.tier = rankTier(player.rank);
 
   // The API's breakdown values are already per-round rates for each match;
   // these are their averages across matches.
@@ -906,7 +927,7 @@ function openCardModal(player) {
     </div>
   ` : notRecorded;
 
-  body.innerHTML = `
+  return `
     <section class="modal-hero">
       <div class="modal-hero-art">
         <img src="${escapeHtml(player.banner || "")}" alt="" />
@@ -1023,45 +1044,60 @@ function openCardModal(player) {
     </div>
   `;
 
-  // Switch tabs within this player's modal.
-  body.querySelectorAll(".modal-tab").forEach((tab) => {
+}
+
+function bindProfileTabs(root) {
+  root.querySelectorAll(".modal-tab").forEach((tab) => {
     tab.addEventListener("click", () => {
       const selected = tab.dataset.tab;
 
-      body.querySelectorAll(".modal-tab").forEach((item) => {
+      root.querySelectorAll(".modal-tab").forEach((item) => {
         const active = item === tab;
         item.classList.toggle("active", active);
         item.setAttribute("aria-selected", String(active));
       });
 
-      body.querySelectorAll(".modal-tab-panel").forEach((panel) => {
+      root.querySelectorAll(".modal-tab-panel").forEach((panel) => {
         const active = panel.dataset.panel === selected;
         panel.classList.toggle("active", active);
         panel.hidden = !active;
       });
     });
   });
-
-  openLink.href = trackerProfileUrl(player.riot_id || player.id);
-  pageLink.href = playerPageUrl;
-  modal.classList.add("open");
 }
 
 
 /* ------------------ Act Navigation ------------------ */
 
+// Buttons are built from acts.json and always carry act codes ("e11a6"),
+// so there is a single name for each act.
+function buildActNav() {
+  const nav = document.getElementById("actNav");
+  if (!nav) return;
+
+  const buttons = [{ code: "overall", label: "Overall" }, ...actsConfig.acts];
+  nav.innerHTML = buttons.map((act) => `
+    <button class="nav-btn${act.code === currentAct ? " active" : ""}" type="button" data-act="${escapeHtml(act.code)}" aria-pressed="${act.code === currentAct}">
+      ${escapeHtml(act.label)}
+    </button>
+  `).join("");
+
+  nav.addEventListener("click", (event) => {
+    const button = event.target.closest(".nav-btn");
+    if (button) setCurrentAct(button.dataset.act);
+  });
+}
+
 function setCurrentAct(act) {
-  const nextAct = actMap[act] || act;
-  if (nextAct === currentAct) return;
+  if (act === currentAct) return;
 
-  currentAct = nextAct;
+  currentAct = act;
+  currentActData = null;
 
-  if (isDefaultActCode(currentAct) || currentAct === "overall") {
-    currentActData = null;
-  }
-
-  navButtons.forEach((button) => {
-    button.classList.toggle("active", button.dataset.act === act);
+  document.querySelectorAll("#actNav .nav-btn").forEach((button) => {
+    const active = button.dataset.act === act;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
   });
 
   onActChange(act);
@@ -1074,13 +1110,7 @@ async function onActChange(act) {
   const toggleDiff = document.getElementById("toggleDiff");
   if (toggleDiff) toggleDiff.checked = false;
 
-  if (isDefaultActCode(act)) {
-    const data = await renderCards();
-    populateDropdowns(data);
-    return;
-  }
-
-  const data = await renderCards(actMap[act] || act);
+  const data = await renderCards(act);
   populateDropdowns(data);
 }
 
@@ -1193,6 +1223,10 @@ async function loadStats() {
 
   players = await current.json();
   cache = [...players];
+  lastLoadedAt = Date.now();
+  overallCache = null;
+  currentActData = null;
+  actFileCache.clear();
 
   let previous = [];
   try {
@@ -1203,9 +1237,23 @@ async function loadStats() {
 
   prev = computeDiff(cache, previous);
 
-  await renderCards();
-  populateDropdowns(players);
+  const data = await renderCards(currentAct);
+  populateDropdowns(data);
   lastUpdate(current);
+}
+
+// Stats refresh every few hours. If the page has been left open, reload the
+// data when the tab is shown again instead of showing stale numbers.
+const STALE_AFTER_MS = 15 * 60 * 1000;
+
+function refreshWhenStale() {
+  if (document.visibilityState !== "visible") return;
+  if (Date.now() - lastLoadedAt < STALE_AFTER_MS) return;
+
+  const modal = document.getElementById("cardModal");
+  if (modal?.classList.contains("open")) return;
+
+  loadStats().catch((error) => console.warn("Refreshing stats failed", error));
 }
 
 function computeDiff(curr, previous) {
@@ -1452,6 +1500,19 @@ function combinePlayerActs(entries) {
 
 /* ---------- Load Act Data ---------- */
 
+// Archived act files never change, so each is fetched once per page load.
+async function fetchActFile(code) {
+  if (!actFileCache.has(code)) {
+    actFileCache.set(code, fetch(`data/${code}.json`)
+      .then((response) => (response.ok ? response.json() : null))
+      .catch((error) => {
+        console.error(`Error loading act data ${code}:`, error);
+        return null;
+      }));
+  }
+  return actFileCache.get(code);
+}
+
 async function loadActData(act) {
   if (isDefaultActCode(act)) {
     return cache;
@@ -1466,34 +1527,22 @@ async function loadActData(act) {
       entriesById.get(player.id).push({ player, label });
     };
 
-    cache.forEach((player) => addEntry(player, getActLabel(defaultAct)));
+    cache.forEach((player) => addEntry(player, getActLabel(actsConfig.current)));
 
-    try {
-      // actMap is ordered newest act first.
-      for (const [displayName, actCode] of Object.entries(actMap)) {
-        if (displayName === "overall" || isDefaultActCode(displayName)) continue;
-
-        const response = await fetch(`data/${actCode}.json?ts=${Date.now()}`);
-        if (!response.ok) continue;
-
-        const actData = await response.json();
-        actData.forEach((player) => addEntry(player, getActLabel(actCode)));
-      }
-    } catch (error) {
-      console.error("Error loading act data:", error);
-    }
+    // acts.json lists acts newest first, so each player's first entry is
+    // their most recent act.
+    const archived = actsConfig.acts.filter((item) => !isDefaultActCode(item.code));
+    const files = await Promise.all(archived.map((item) => fetchActFile(item.code)));
+    files.forEach((actData, index) => {
+      if (!Array.isArray(actData)) return;
+      actData.forEach((player) => addEntry(player, archived[index].label));
+    });
 
     return [...entriesById.values()].map(combinePlayerActs);
   }
 
-  try {
-    const response = await fetch(`data/${act}.json?ts=${Date.now()}`);
-    if (response.ok) return await response.json();
-  } catch (error) {
-    console.error(`Error loading act data ${act}:`, error);
-  }
-
-  return cache;
+  const actData = await fetchActFile(act);
+  return Array.isArray(actData) ? actData : [];
 }
 
 
@@ -1571,9 +1620,9 @@ async function renderCards(act = currentAct) {
     return displayData || [];
   }
 
-  if (act === "overall" && !overallCache) {
+  if (act === "overall") {
     overallCache = displayData;
-  } else if (act !== "e11a6" && act !== "overall") {
+  } else if (!isDefaultActCode(act)) {
     currentActData = displayData;
   }
 
@@ -1713,7 +1762,7 @@ function resetComparison() {
 
 /* ------------------ Comparison ------------------ */
 
-compareBtn.addEventListener("click", () => {
+function onCompareClick() {
   const data = getComparisonData();
   if (!data || data.length === 0) return;
 
@@ -1723,7 +1772,7 @@ compareBtn.addEventListener("click", () => {
   if (!a || !b || a.id === b.id) return;
 
   renderComparison(a, b);
-});
+}
 
 const rankValues = {
   "Iron 1": 1,
@@ -1860,50 +1909,116 @@ function renderComparison(a, b) {
   }
 }
 
-/* ------------------ Start App ------------------ */
+/* ------------------ Player page (player.html) ------------------ */
 
-loadStats();
+async function initPlayerPage() {
+  const root = document.getElementById("playerPageRoot");
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  const act = params.get("act") || actsConfig.current;
 
-navButtons.forEach((button) => {
-  button.addEventListener("click", (event) => {
-    setCurrentAct(event.currentTarget.dataset.act);
-  });
-});
+  const showMissing = (message) => {
+    root.innerHTML = `
+      <section class="player-page-empty">
+        <h1>Player not found</h1>
+        <p>${escapeHtml(message)}</p>
+        <a class="modal-link-btn" href="index.html">Back to all players</a>
+      </section>
+    `;
+  };
 
-document.getElementById("sortSelect").addEventListener("change", async () => {
-  await renderCards();
-});
-
-document.getElementById("toggleDiff").addEventListener("change", async (event) => {
-  showDiff = event.target.checked;
-  await renderCards();
-});
-
-profiles.addEventListener("click", (event) => {
-  const card = event.target.closest(".card");
-  if (!card) return;
-
-  if (event.target.closest("a.player-link")) {
-    event.preventDefault();
+  if (!id) {
+    showMissing("This link doesn't say which player to show.");
+    return;
   }
 
-  const selectedData = getComparisonData();
-  if (!selectedData || selectedData.length === 0) return;
+  try {
+    const response = await fetch("stats.json?ts=" + Date.now());
+    cache = await response.json();
+  } catch (error) {
+    cache = [];
+  }
 
-  const playerId = card.dataset.playerId;
-  const player = selectedData.find((item) => item.id === playerId);
+  const data = await loadActData(act);
+  const player = data.find((item) => item.id === id);
 
-  if (!player) return;
+  if (!player) {
+    showMissing(`No stats for ${id} in ${getActLabel(act)}.`);
+    return;
+  }
 
-  openCardModal(player);
-});
+  document.title = `${player.id}, ${getActLabel(act)} | ValoStat`;
+  root.innerHTML = `
+    <nav class="player-page-topbar">
+      <a class="modal-link-btn modal-page-btn" href="index.html">All players</a>
+      <span class="player-page-act">${escapeHtml(act === "overall" ? "Overall, all acts combined" : getActLabel(act))}</span>
+      <a class="modal-link-btn" target="_blank" rel="noopener noreferrer" href="${trackerProfileUrl(player.riot_id || player.id)}">Tracker</a>
+    </nav>
+    <article class="player-page-panel" data-tier="${rankTier(player.rank)}">
+      <div class="card-modal-body">${renderPlayerProfile(player, act)}</div>
+    </article>
+  `;
+  bindProfileTabs(root);
+}
 
-// Cards are focusable; Enter or Space opens the same popup as a click.
-profiles.addEventListener("keydown", (event) => {
-  if (event.key !== "Enter" && event.key !== " ") return;
-  const card = event.target.closest(".card");
-  if (!card || event.target !== card) return;
+/* ------------------ Dashboard (index.html) ------------------ */
 
-  event.preventDefault();
-  card.click();
-});
+function initDashboard() {
+  currentAct = actsConfig.current;
+  buildActNav();
+
+  compareBtn.addEventListener("click", onCompareClick);
+
+  document.getElementById("sortSelect").addEventListener("change", async () => {
+    await renderCards();
+  });
+
+  document.getElementById("toggleDiff").addEventListener("change", async (event) => {
+    showDiff = event.target.checked;
+    await renderCards();
+  });
+
+  profiles.addEventListener("click", (event) => {
+    const card = event.target.closest(".card");
+    if (!card) return;
+
+    if (event.target.closest("a.player-link")) {
+      event.preventDefault();
+    }
+
+    const selectedData = getComparisonData();
+    if (!selectedData || selectedData.length === 0) return;
+
+    const playerId = card.dataset.playerId;
+    const player = selectedData.find((item) => item.id === playerId);
+
+    if (!player) return;
+
+    openCardModal(player);
+  });
+
+  // Cards are focusable; Enter or Space opens the same popup as a click.
+  profiles.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const card = event.target.closest(".card");
+    if (!card || event.target !== card) return;
+
+    event.preventDefault();
+    card.click();
+  });
+
+  document.addEventListener("visibilitychange", refreshWhenStale);
+
+  return loadStats();
+}
+
+async function init() {
+  await loadActsConfig();
+  if (isPlayerPage) {
+    await initPlayerPage();
+  } else {
+    await initDashboard();
+  }
+}
+
+init();
