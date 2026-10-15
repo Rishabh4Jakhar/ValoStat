@@ -567,10 +567,25 @@ def current_act_accolades(puuid, fallback):
 
 # ------------------------------------------------------------ act changeover
 
+# Valorant runs 6 acts a year. The site labels them by year and act
+# ("V26: A6"); the API labels the same act by episode ("e11a6"). One episode
+# is one year, so after e11a6 (V26: A6) comes e12a1 (V27: A1).
+ACTS_PER_YEAR = 6
+
+
 def act_key(code):
-    """'e11a6' -> (11, 6) so acts can be ordered; None for anything else."""
+    """'e11a6' -> (11, 6); None for anything that isn't an act code."""
     match = re.fullmatch(r"e(\d+)a(\d+)", str(code or ""))
     return (int(match.group(1)), int(match.group(2))) if match else None
+
+
+def next_act_code(code):
+    """The act that follows `code`: e11a5 -> e11a6, e11a6 -> e12a1."""
+    key = act_key(code)
+    if not key:
+        return None
+    episode, act = key
+    return f"e{episode}a{act + 1}" if act < ACTS_PER_YEAR else f"e{episode + 1}a1"
 
 
 def label_for_new_act(previous_code, previous_label, new_code):
@@ -660,10 +675,12 @@ seen_acts = {
     for value in identities.values() if not isinstance(value, Exception)
     for item in (value[3].get("seasonal") or [])
 }
-newest_act = max((code for code in seen_acts if act_key(code)), key=act_key, default=None)
-if newest_act and act_key(newest_act) > (act_key(CURRENT_ACT) or (0, 0)):
-    switch_to_new_act(acts_config, newest_act, old_data)
-    CURRENT_ACT = newest_act
+# Only the act directly after the current one can start a changeover, so a
+# stray or older season code in the MMR history never switches acts.
+upcoming_act = next_act_code(CURRENT_ACT)
+if upcoming_act and upcoming_act in seen_acts:
+    switch_to_new_act(acts_config, upcoming_act, old_data)
+    CURRENT_ACT = upcoming_act
 
 # Pass 2: matches and stats for the current act.
 out = []

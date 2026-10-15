@@ -669,8 +669,26 @@ function renderAgentCard(name, agent, totalMatches) {
       ${stat("Aces", modalNumber(multikills["5k"], 0))}
       ${stat("Clutches", modalNumber(s.clutches, 0))}
       ${stat("Plants / defuses", `${num(s.plants)} / ${num(s.defuses)}`)}
-      ${stat("Ults / match", modalNumber(s.ultimates_per_match, 1))}
       ${stat("Trade kills", modalNumber(s.trade_kills, 0))}
+      ${stat("Deaths traded", modalNumber(s.traded_deaths, 0))}
+    </div>
+  `;
+
+  // Ability casts come from the match API's per-slot counts; utility usage is
+  // the API's own per-round utility rating from the performance breakdown.
+  const casts = s.ability_casts_per_round || {};
+  const utilityUsage = s.performance_breakdown_averages?.utility_usage;
+  const utility = s.legacy ? "" : `
+    <div class="agent-block">
+      <p class="agent-block-title">Utility <span>casts per round</span></p>
+      <div class="agent-stats">
+        ${stat("Grenade", modalNumber(casts.grenade, 2))}
+        ${stat("Ability 1", modalNumber(casts.ability_1, 2))}
+        ${stat("Ability 2", modalNumber(casts.ability_2, 2))}
+        ${stat("Ultimate", modalNumber(casts.ultimate, 2))}
+        ${stat("Ults / match", modalNumber(s.ultimates_per_match, 1))}
+        ${stat("Utility usage", modalNumber(utilityUsage, 2))}
+      </div>
     </div>
   `;
 
@@ -712,6 +730,7 @@ function renderAgentCard(name, agent, totalMatches) {
 
       <div class="agent-stats">${primary}</div>
       ${secondary}
+      ${utility}
 
       <div class="agent-time">${s.legacy ? `<span>${footer}</span>` : footer}</div>
     </article>
