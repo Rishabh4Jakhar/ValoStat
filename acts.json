@@ -1,0 +1,10 @@
+{
+  "current": "e11a6",
+  "acts": [
+    { "code": "e11a6", "label": "V26: A6" },
+    { "code": "e11a5", "label": "V26: A5" },
+    { "code": "e11a4", "label": "V26: A4" },
+    { "code": "e11a3", "label": "V26: A3" },
+    { "code": "e11a2", "label": "V26: A2" }
+  ]
+}
