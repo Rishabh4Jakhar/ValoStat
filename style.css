@@ -17,6 +17,8 @@
   --muted: #8a90a1;
   --faint: #5e6475;
   --good: #5fc9a0;
+  --bad: #e05a5a;
+  --equal: #e6ef65;
   --changed: #e9c46a;
 
   /* Rank tier colours, tuned for a dark background. */
@@ -685,11 +687,11 @@ th {
 }
 
 .bad-stat {
-  color: var(--muted);
+  color: var(--bad);
 }
 
 .equal-stat {
-  color: var(--text);
+  color: var(--equal);
 }
 
 /* =========================================================
