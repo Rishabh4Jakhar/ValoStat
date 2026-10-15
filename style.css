@@ -5,28 +5,50 @@
    ========================================================= */
 
 :root {
-  --ink: #0f1923;
-  --ink-deep: #0a121a;
-  --panel: #16232e;
-  --panel-raised: #1c2c38;
-  --line: #2a3b48;
-  --line-soft: #213240;
-  --bone: #ece8e1;
-  --text: #d9dde0;
-  --muted: #8b9aa6;
-  --faint: #5f707d;
-  --red: #ff4655;
-  --red-deep: #bd3944;
-  --teal: #3fd1ae;
-  --amber: #f2c14e;
+  /* Neutral graphite base: the rank tiers are the only strong colours. */
+  --ink: #111319;
+  --ink-deep: #0c0e12;
+  --panel: #181b23;
+  --panel-raised: #1f232d;
+  --line: #2c313d;
+  --line-soft: #232733;
+  --strong: #eef0f5;
+  --text: #c8ccd7;
+  --muted: #8a90a1;
+  --faint: #5e6475;
+  --good: #5fc9a0;
+  --changed: #e9c46a;
+
+  /* Rank tier colours, tuned for a dark background. */
+  --tier-unrated: #7c8294;
+  --tier-iron: #8f9399;
+  --tier-bronze: #c08552;
+  --tier-silver: #c3cbd6;
+  --tier-gold: #e6b73e;
+  --tier-platinum: #45bdb2;
+  --tier-diamond: #b88ae8;
+  --tier-ascendant: #55c27f;
+  --tier-immortal: #e2566a;
+  --tier-radiant: #f3e2a0;
+  --tier: var(--tier-unrated);
 
   --font-body: "Barlow", "Segoe UI", system-ui, sans-serif;
   --font-display: "Barlow Condensed", "Arial Narrow", "Segoe UI", sans-serif;
 
-  --cut: 14px;
+  --cut: 12px;
   --content-max-width: 1680px;
   --card-min-width: 270px;
 }
+
+[data-tier="iron"] { --tier: var(--tier-iron); }
+[data-tier="bronze"] { --tier: var(--tier-bronze); }
+[data-tier="silver"] { --tier: var(--tier-silver); }
+[data-tier="gold"] { --tier: var(--tier-gold); }
+[data-tier="platinum"] { --tier: var(--tier-platinum); }
+[data-tier="diamond"] { --tier: var(--tier-diamond); }
+[data-tier="ascendant"] { --tier: var(--tier-ascendant); }
+[data-tier="immortal"] { --tier: var(--tier-immortal); }
+[data-tier="radiant"] { --tier: var(--tier-radiant); }
 
 *,
 *::before,
@@ -57,7 +79,7 @@ a {
 }
 
 :focus-visible {
-  outline: 2px solid var(--bone);
+  outline: 2px solid var(--strong);
   outline-offset: 2px;
 }
 
@@ -66,7 +88,7 @@ h2,
 h3,
 h4 {
   margin: 0;
-  color: var(--bone);
+  color: var(--strong);
   font-family: var(--font-display);
   font-weight: 700;
   line-height: 1.05;
@@ -107,17 +129,6 @@ h4 {
   line-height: 0.85;
 }
 
-/* The red slash after the wordmark, like Valorant's angled cuts. */
-.title::after {
-  content: "";
-  display: inline-block;
-  width: 0.22em;
-  height: 0.62em;
-  margin-left: 0.14em;
-  background: var(--red);
-  transform: skewX(-18deg);
-}
-
 .subtitle {
   margin: 0;
   color: var(--muted);
@@ -131,7 +142,7 @@ h4 {
   top: 0;
   z-index: 50;
   border-bottom: 1px solid var(--line);
-  background: rgba(15, 25, 35, 0.94);
+  background: rgba(17, 19, 25, 0.94);
   backdrop-filter: blur(8px);
 }
 
@@ -184,19 +195,19 @@ h4 {
   left: 12px;
   right: 12px;
   bottom: 0;
-  height: 3px;
-  background: var(--red);
+  height: 2px;
+  background: var(--strong);
   transform: scaleX(0);
   transition: transform 0.2s ease;
 }
 
 .nav-btn:hover {
   background: transparent;
-  color: var(--bone);
+  color: var(--strong);
 }
 
 .nav-btn.active {
-  color: var(--bone);
+  color: var(--strong);
 }
 
 .nav-btn.active::after {
@@ -242,7 +253,7 @@ select {
     linear-gradient(45deg, transparent 50%, var(--muted) 50%) right 17px center / 6px 6px no-repeat,
     linear-gradient(-45deg, transparent 50%, var(--muted) 50%) right 12px center / 6px 6px no-repeat,
     var(--panel);
-  color: var(--bone);
+  color: var(--strong);
   font: 500 14px var(--font-body);
   cursor: pointer;
 }
@@ -291,17 +302,17 @@ select:hover {
 }
 
 .toggle input:checked + .slider {
-  border-color: var(--amber);
+  border-color: var(--changed);
   background: rgba(242, 193, 78, 0.14);
 }
 
 .toggle input:checked + .slider::before {
-  background: var(--amber);
+  background: var(--changed);
   transform: translateX(20px);
 }
 
 .toggle input:focus-visible + .slider {
-  outline: 2px solid var(--bone);
+  outline: 2px solid var(--strong);
   outline-offset: 2px;
 }
 
@@ -333,20 +344,20 @@ button {
 
 #compareBtn,
 .modal-link-btn {
-  background: var(--red);
-  color: #fff;
+  background: var(--strong);
+  color: var(--ink);
 }
 
 #compareBtn:hover,
 .modal-link-btn:hover {
-  background: var(--red-deep);
+  background: #ffffff;
 }
 
 .reset-compare-btn,
 .modal-page-btn {
   border-color: var(--line);
   background: transparent;
-  color: var(--bone);
+  color: var(--strong);
 }
 
 .reset-compare-btn:hover,
@@ -376,7 +387,10 @@ main {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background: var(--panel);
+  background:
+    linear-gradient(var(--tier), var(--tier)) top / 100% 3px no-repeat,
+    radial-gradient(120% 70% at 0% 0%, color-mix(in srgb, var(--tier) 13%, transparent), transparent 70%),
+    var(--panel);
   box-shadow: inset 0 0 0 1px var(--line-soft);
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
   cursor: pointer;
@@ -384,20 +398,19 @@ main {
 }
 
 .card:hover {
-  background: var(--panel-raised);
-  box-shadow: inset 0 0 0 1px var(--faint);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tier) 55%, var(--line));
 }
 
 .card:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--bone);
+  box-shadow: inset 0 0 0 2px var(--strong);
 }
 
 .card-head {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 16px 16px 14px;
+  padding: 19px 16px 14px;
 }
 
 .banner {
@@ -420,7 +433,7 @@ main {
 
 .player-link,
 .player-link:visited {
-  color: var(--bone);
+  color: var(--strong);
   text-decoration: none;
 }
 
@@ -447,7 +460,7 @@ main {
 }
 
 .card-rank strong {
-  color: var(--bone);
+  color: var(--tier);
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 600;
@@ -496,7 +509,7 @@ main {
 }
 
 .card-stats .card-stat-focus dd {
-  color: var(--bone);
+  color: var(--strong);
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 600;
@@ -516,7 +529,7 @@ main {
 
 .score-value {
   grid-row: span 2;
-  color: var(--bone);
+  color: var(--strong);
   font-family: var(--font-display);
   font-size: 40px;
   font-weight: 700;
@@ -541,7 +554,7 @@ main {
 .pip {
   display: block;
   background:
-    linear-gradient(90deg, var(--red) calc(var(--fill, 0) * 100%), transparent 0),
+    linear-gradient(90deg, var(--tier) calc(var(--fill, 0) * 100%), transparent 0),
     var(--line);
   transform: skewX(-20deg);
 }
@@ -549,12 +562,12 @@ main {
 /* Changed-since-last-update cards */
 
 .card.diff-highlight {
-  box-shadow: inset 0 0 0 1px var(--amber), inset 4px 0 0 var(--amber);
+  box-shadow: inset 0 0 0 1px var(--changed), inset 4px 0 0 var(--changed);
 }
 
 .card.diff-highlight .card-stats dd,
 .card.diff-highlight .card-rank strong {
-  color: var(--amber);
+  color: var(--changed);
 }
 
 /* ---------- States ---------- */
@@ -588,7 +601,7 @@ main {
   display: block;
   width: 40%;
   height: 100%;
-  background: var(--red);
+  background: var(--strong);
   animation: loading-slide 1.1s ease-in-out infinite;
 }
 
@@ -656,7 +669,7 @@ td:first-child {
 }
 
 th {
-  color: var(--bone);
+  color: var(--strong);
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 600;
@@ -667,7 +680,7 @@ th {
 }
 
 .good-stat {
-  color: var(--teal);
+  color: var(--good);
   font-weight: 600;
 }
 
@@ -759,7 +772,7 @@ th {
 
 .modal-close-btn:hover {
   background: var(--panel);
-  color: var(--bone);
+  color: var(--strong);
 }
 
 .card-modal-body {
@@ -778,15 +791,20 @@ th {
 
 .modal-hero {
   display: grid;
-  grid-template-columns: 148px minmax(0, 1fr) 260px;
+  grid-template-columns: 136px minmax(0, 1fr) 240px;
   gap: 28px;
   align-items: stretch;
+  margin: -28px -32px 0;
+  padding: 28px 32px 30px;
+  background:
+    radial-gradient(70% 120% at 0% 0%, color-mix(in srgb, var(--tier) 12%, transparent), transparent 70%);
+  border-top: 2px solid var(--tier);
 }
 
 .modal-hero-art img {
   display: block;
-  width: 148px;
-  height: 148px;
+  width: 136px;
+  height: 136px;
   object-fit: cover;
   background: var(--panel);
   box-shadow: inset 0 0 0 1px var(--line);
@@ -800,7 +818,7 @@ th {
 }
 
 .modal-name {
-  font-size: clamp(48px, 6vw, 80px);
+  font-size: clamp(44px, 5vw, 68px);
   font-weight: 800;
   letter-spacing: -0.01em;
   text-transform: uppercase;
@@ -829,11 +847,15 @@ th {
 
 .modal-hero-facts dd {
   margin: 0;
-  color: var(--bone);
+  color: var(--strong);
   font-family: var(--font-display);
   font-size: 24px;
   font-weight: 600;
   line-height: 1.1;
+}
+
+.modal-hero-facts > div:first-child dd {
+  color: var(--tier);
 }
 
 .modal-hero-facts dd small {
@@ -858,7 +880,7 @@ th {
 }
 
 .modal-hero-winbar strong {
-  color: var(--bone);
+  color: var(--strong);
   font-variant-numeric: tabular-nums;
 }
 
@@ -871,10 +893,10 @@ th {
 .modal-progress span {
   display: block;
   height: 100%;
-  background: var(--teal);
+  background: var(--good);
 }
 
-/* The score slab: the one inverted, bone-coloured element on the page. */
+/* Score panel: dark and quiet; the tier colour carries the bar. */
 
 .modal-score-panel {
   display: flex;
@@ -882,48 +904,37 @@ th {
   justify-content: space-between;
   gap: 10px;
   padding: 18px 20px 20px;
-  background: var(--bone);
-  color: var(--ink);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+  background: var(--panel);
+  box-shadow: inset 0 0 0 1px var(--line);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
 }
 
-.modal-score-label {
-  color: #4a5560;
+.modal-score-label,
+.modal-score-sub {
+  color: var(--muted);
   font-size: 13px;
-  font-weight: 600;
 }
 
 .modal-score-value {
   display: flex;
   align-items: baseline;
   gap: 6px;
-  color: var(--ink);
+  color: var(--strong);
   font-family: var(--font-display);
-  font-size: 84px;
-  font-weight: 800;
-  line-height: 0.8;
+  font-size: 68px;
+  font-weight: 700;
+  line-height: 0.85;
   font-variant-numeric: tabular-nums;
 }
 
 .modal-score-value small {
-  color: #6d7680;
-  font-size: 22px;
+  color: var(--faint);
+  font-size: 20px;
   font-weight: 600;
 }
 
 .modal-score-panel .score-pips {
-  height: 12px;
-}
-
-.modal-score-panel .pip {
-  background:
-    linear-gradient(90deg, var(--red) calc(var(--fill, 0) * 100%), transparent 0),
-    #cfc9be;
-}
-
-.modal-score-sub {
-  color: #4a5560;
-  font-size: 13px;
+  height: 10px;
 }
 
 /* ---------- Tabs ---------- */
@@ -931,7 +942,7 @@ th {
 .modal-tabs {
   display: flex;
   gap: 4px;
-  margin: 30px 0 26px;
+  margin: 0 0 26px;
   overflow-x: auto;
   border-bottom: 1px solid var(--line);
   scrollbar-width: none;
@@ -959,19 +970,19 @@ th {
   left: 12px;
   right: 12px;
   bottom: -1px;
-  height: 3px;
-  background: var(--red);
+  height: 2px;
+  background: var(--strong);
   transform: scaleX(0);
   transition: transform 0.2s ease;
 }
 
 .modal-tab:hover {
   background: transparent;
-  color: var(--bone);
+  color: var(--strong);
 }
 
 .modal-tab.active {
-  color: var(--bone);
+  color: var(--strong);
 }
 
 .modal-tab.active::after {
@@ -1023,9 +1034,9 @@ th {
 .modal-stat-card > strong {
   display: block;
   margin-top: 4px;
-  color: var(--bone);
+  color: var(--strong);
   font-family: var(--font-display);
-  font-size: clamp(32px, 3.4vw, 44px);
+  font-size: clamp(30px, 3vw, 38px);
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -1110,7 +1121,7 @@ th {
 .modal-detail-grid strong {
   display: block;
   margin-top: 2px;
-  color: var(--bone);
+  color: var(--strong);
   font-family: var(--font-display);
   font-size: 26px;
   font-weight: 600;
@@ -1164,7 +1175,7 @@ th {
 }
 
 .modal-table td:first-child {
-  color: var(--bone);
+  color: var(--strong);
   font-family: var(--font-display);
   font-size: 19px;
   font-weight: 600;
@@ -1227,7 +1238,7 @@ th {
 
 .agent-match-count b {
   display: block;
-  color: var(--bone);
+  color: var(--strong);
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 600;
@@ -1246,13 +1257,13 @@ th {
 }
 
 .agent-pick-label strong {
-  color: var(--bone);
+  color: var(--strong);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
 .agent-pick .modal-progress span {
-  background: var(--red);
+  background: var(--tier);
 }
 
 .agent-stats {
@@ -1269,7 +1280,7 @@ th {
 
 .agent-stats strong {
   display: block;
-  color: var(--bone);
+  color: var(--strong);
   font-family: var(--font-display);
   font-size: 24px;
   font-weight: 600;
@@ -1324,7 +1335,7 @@ th {
   left: 0;
   width: 28px;
   height: 3px;
-  background: var(--red);
+  background: var(--tier);
 }
 
 .accolade-name {
@@ -1345,7 +1356,7 @@ th {
 }
 
 .accolade-card.earned .accolade-copy strong {
-  color: var(--bone);
+  color: var(--strong);
 }
 
 .accolade-copy small {
@@ -1421,7 +1432,7 @@ th {
   height: 96px;
   place-items: center;
   border-radius: 50%;
-  background: conic-gradient(var(--teal) calc(var(--win-percent, 0) * 1%), var(--red) 0);
+  background: conic-gradient(var(--good) calc(var(--win-percent, 0) * 1%), var(--line) 0);
 }
 
 .modal-ring::before {
@@ -1465,7 +1476,7 @@ th {
 
 .modal-extra-item strong {
   display: block;
-  color: var(--bone);
+  color: var(--strong);
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 600;
@@ -1484,6 +1495,10 @@ th {
   .modal-hero {
     grid-template-columns: 112px minmax(0, 1fr);
     gap: 20px;
+  }
+
+  .modal-hero {
+    margin: -28px -32px 0;
   }
 
   .modal-hero-art img {
@@ -1507,7 +1522,7 @@ th {
   .modal-score-value {
     grid-row: 1 / span 3;
     grid-column: 1;
-    font-size: 72px;
+    font-size: 60px;
   }
 
   .modal-score-panel .score-pips {
@@ -1607,6 +1622,8 @@ th {
   .modal-hero {
     grid-template-columns: 76px minmax(0, 1fr);
     gap: 16px;
+    margin: -20px -16px 0;
+    padding: 20px 16px 24px;
   }
 
   .modal-hero-art img {
@@ -1615,7 +1632,7 @@ th {
   }
 
   .modal-name {
-    font-size: 46px;
+    font-size: 42px;
   }
 
   .modal-hero-facts {
@@ -1627,7 +1644,7 @@ th {
   }
 
   .modal-score-value {
-    font-size: 60px;
+    font-size: 52px;
   }
 
   .modal-tab {
