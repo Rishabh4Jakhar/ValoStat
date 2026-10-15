@@ -3,13 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ValoStat Player</title>
+  <title>Player | ValoStat</title>
+  <link rel="icon" type="image/x-icon" href="https://cmsassets.rgpub.io/sanity/images/dsfx7636/news/cbf4460132cdfeb2a97fad5f9dd25ba0bc058f76-128x128.png?accountingTag=VAL" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="player-page">
   <main class="player-page-shell">
-    <div id="playerPageRoot"></div>
+    <div id="playerPageRoot">
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Loading player…</p>
+      </div>
+    </div>
   </main>
-  <script src="player.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
