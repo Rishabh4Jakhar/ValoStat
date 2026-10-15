@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import re
 import time
 
 API_KEY = os.environ["HENRIK_API_KEY"]
@@ -8,7 +9,21 @@ HEADERS = {"Authorization": API_KEY}
 
 REGION = "ap"
 PLATFORM = "pc"
-CURRENT_ACT = "e11a6"  # V26A6
+# The current act and the list of acts shown on the site live in acts.json.
+# When the MMR data shows a newer act, this script archives stats.json to
+# data/<old act>.json and switches acts.json to the new act by itself.
+ACTS_FILE = "acts.json"
+DEFAULT_ACTS = {
+    "current": "e11a6",
+    "acts": [
+        {"code": "e11a6", "label": "V26: A6"},
+        {"code": "e11a5", "label": "V26: A5"},
+        {"code": "e11a4", "label": "V26: A4"},
+        {"code": "e11a3", "label": "V26: A3"},
+        {"code": "e11a2", "label": "V26: A2"},
+    ],
+}
+CURRENT_ACT = None  # set from acts.json in main
 
 # Bump this when the shape of the stored totals changes. A player entry saved
 # with an older version is rebuilt from scratch on the next run (its processed
@@ -550,15 +565,107 @@ def current_act_accolades(puuid, fallback):
         return fallback
 
 
+# ------------------------------------------------------------ act changeover
+
+def act_key(code):
+    """'e11a6' -> (11, 6) so acts can be ordered; None for anything else."""
+    match = re.fullmatch(r"e(\d+)a(\d+)", str(code or ""))
+    return (int(match.group(1)), int(match.group(2))) if match else None
+
+
+def label_for_new_act(previous_code, previous_label, new_code):
+    """Derive a site label like 'V26: A6' for a new act from the previous one.
+
+    Same episode keeps the 'V' number; a new episode bumps it. If the previous
+    label doesn't follow that pattern, fall back to the act code. The label
+    can always be edited by hand in acts.json.
+    """
+    previous, new = act_key(previous_code), act_key(new_code)
+    label = re.fullmatch(r"V(\d+): A\d+", str(previous_label or ""))
+    if not (previous and new and label):
+        return new_code.upper()
+    year = int(label.group(1)) + (1 if new[0] != previous[0] else 0)
+    return f"V{year}: A{new[1]}"
+
+
+def load_json(path, fallback):
+    if not os.path.exists(path):
+        return fallback
+    with open(path, encoding="utf-8") as file:
+        return json.load(file)
+
+
+def write_json(path, data):
+    folder = os.path.dirname(path)
+    if folder:
+        os.makedirs(folder, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=2, ensure_ascii=False)
+
+
+def switch_to_new_act(acts_config, new_act, old_data):
+    """Archive the finished act and make new_act current in acts_config."""
+    previous_act = acts_config["current"]
+    archive_path = f"data/{previous_act}.json"
+    previous_entries = [p for p in old_data if isinstance(p, dict) and p.get("season") == previous_act]
+
+    if previous_entries and not os.path.exists(archive_path):
+        write_json(archive_path, previous_entries)
+        print(f"Archived {len(previous_entries)} players from {previous_act} to {archive_path}")
+    elif os.path.exists(archive_path):
+        print(f"{archive_path} already exists; leaving it as is")
+
+    previous_label = next(
+        (act.get("label") for act in acts_config["acts"] if act.get("code") == previous_act),
+        None,
+    )
+    acts_config["current"] = new_act
+    if not any(act.get("code") == new_act for act in acts_config["acts"]):
+        acts_config["acts"].insert(0, {
+            "code": new_act,
+            "label": label_for_new_act(previous_act, previous_label, new_act),
+        })
+    write_json(ACTS_FILE, acts_config)
+
+    # The "show changes" view compares against stats_prev.json, which now
+    # belongs to the old act, so start it fresh.
+    write_json("stats_prev.json", [])
+    print(f"Switched current act from {previous_act} to {new_act}")
+
+
 # --------------------------------------------------------------------- main
 
-if os.path.exists("stats.json"):
-    with open("stats.json", encoding="utf-8") as file:
-        old_data = json.load(file)
-else:
-    old_data = []
+acts_config = load_json(ACTS_FILE, None)
+if not acts_config:
+    acts_config = json.loads(json.dumps(DEFAULT_ACTS))
+    write_json(ACTS_FILE, acts_config)
+CURRENT_ACT = acts_config["current"]
 
+old_data = load_json("stats.json", [])
 old_data_map = {item["id"]: item for item in old_data if isinstance(item, dict) and "id" in item}
+
+# Pass 1: identity and MMR for every player. The MMR data also tells us
+# whether a newer act has started.
+identities = {}
+for pid, riot in PLAYERS.items():
+    try:
+        puuid, banner, account = resolve_player_identity(pid, riot, old_data_map)
+        identities[pid] = (puuid, banner, account, get_mmr(puuid))
+    except Exception as error:
+        identities[pid] = error
+        print(f"Failed to load identity/MMR for {riot}: {error}")
+
+seen_acts = {
+    (item.get("season") or {}).get("short")
+    for value in identities.values() if not isinstance(value, Exception)
+    for item in (value[3].get("seasonal") or [])
+}
+newest_act = max((code for code in seen_acts if act_key(code)), key=act_key, default=None)
+if newest_act and act_key(newest_act) > (act_key(CURRENT_ACT) or (0, 0)):
+    switch_to_new_act(acts_config, newest_act, old_data)
+    CURRENT_ACT = newest_act
+
+# Pass 2: matches and stats for the current act.
 out = []
 
 for pid, riot in PLAYERS.items():
@@ -572,8 +679,10 @@ for pid, riot in PLAYERS.items():
         print(f"Stored entry for {riot} is from an older format or act; rebuilding this act's stats")
 
     try:
-        puuid, banner, account = resolve_player_identity(pid, riot, old_data_map)
-        mmr = get_mmr(puuid)
+        identity = identities.get(pid)
+        if isinstance(identity, Exception) or identity is None:
+            raise identity or RuntimeError("identity was not loaded")
+        puuid, banner, account, mmr = identity
         season = next(
             (item for item in mmr.get("seasonal", []) if item.get("season", {}).get("short") == CURRENT_ACT),
             None,
@@ -728,10 +837,9 @@ for pid, riot in PLAYERS.items():
 
     except Exception as error:
         print(f"Failed {riot}: {error}")
-        if old:
+        if old and old.get("season") == CURRENT_ACT:
             out.append(old)
 
-with open("stats.json", "w", encoding="utf-8") as file:
-    json.dump(out, file, indent=2, ensure_ascii=False)
+write_json("stats.json", out)
 
 print("stats.json updated")
