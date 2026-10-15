@@ -1297,6 +1297,33 @@ th {
   font-size: 19px;
 }
 
+.agent-block {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.agent-block-title {
+  margin: 0 0 10px !important;
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.agent-block-title span {
+  margin-left: 6px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.agent-block .agent-stats strong {
+  color: var(--text);
+  font-size: 19px;
+}
+
 .agent-time {
   display: flex;
   flex-wrap: wrap;
