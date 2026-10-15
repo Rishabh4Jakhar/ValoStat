@@ -8422,7 +8422,8 @@
           "double_up": 1,
           "up": 1,
           "neutral": 3,
-          "down": 2
+          "down": 2,
+          "up": 1
         },
         "death_impact": {
           "neutral": 3,
@@ -8434,7 +8435,8 @@
           "double_up": 1,
           "up": 1,
           "neutral": 3,
-          "down": 2
+          "down": 2,
+          "up": 1
         },
         "trades": {
           "double_up": 1,
