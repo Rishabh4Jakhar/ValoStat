@@ -333,6 +333,8 @@ function valoStatScore(p) {
     0.10 * dd +
     0.05 * win;
 
+  if (matchCount == 0) return "NA";
+
   return clamp(Math.round(score * 1000), 10, 1000);
 }
 
