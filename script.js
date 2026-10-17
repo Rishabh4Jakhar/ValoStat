@@ -862,6 +862,7 @@ function ensureCardModal() {
       <div class="card-modal-header">
         <h2 id="cardModalTitle" class="card-modal-title">Player</h2>
         <div class="card-modal-actions">
+          <button id="cardModalCompare" class="modal-link-btn modal-page-btn" type="button">Compare</button>
           <a id="cardModalPageLink" class="modal-link-btn modal-page-btn" target="_blank" rel="noopener noreferrer">Open in New Page</a>
           <a id="cardModalOpenLink" class="modal-link-btn" target="_blank" rel="noopener noreferrer">Tracker</a>
           <button id="cardModalClose" class="modal-close-btn" type="button" aria-label="Close popup">×</button>
@@ -875,6 +876,10 @@ function ensureCardModal() {
 
   modal.querySelector("#cardModalClose").addEventListener("click", () => {
     modal.classList.remove("open");
+  });
+
+  modal.querySelector("#cardModalCompare").addEventListener("click", (event) => {
+    compareFromModal(event.currentTarget.dataset.playerId);
   });
 
   modal.addEventListener("click", (event) => {
@@ -911,6 +916,7 @@ function openCardModal(player, act = currentAct) {
 
   openLink.href = trackerProfileUrl(player.riot_id || player.id);
   pageLink.href = playerPageUrl(player, act);
+  modal.querySelector("#cardModalCompare").dataset.playerId = player.id;
   modal.classList.add("open");
   body.scrollTop = 0;
 }
@@ -1031,6 +1037,7 @@ function renderPlayerProfile(player, act) {
       <button class="modal-tab active" type="button" role="tab" aria-selected="true" data-tab="overview">Overview</button>
       <button class="modal-tab" type="button" role="tab" aria-selected="false" data-tab="performance">Performance</button>
       <button class="modal-tab" type="button" role="tab" aria-selected="false" data-tab="agents">Agents</button>
+      <button class="modal-tab" type="button" role="tab" aria-selected="false" data-tab="party">Party</button>
       <button class="modal-tab" type="button" role="tab" aria-selected="false" data-tab="matchmaking">Matchmaking</button>
       <button class="modal-tab" type="button" role="tab" aria-selected="false" data-tab="accolades">Accolades</button>
     </nav>
@@ -1087,6 +1094,10 @@ function renderPlayerProfile(player, act) {
       ${modalSection("Agent pool", coverage || `${agents.length} agents with recorded stats`, renderAgentPool(agents, agentMatchesTotal))}
     </div>
 
+    <div class="modal-tab-panel" data-panel="party" role="tabpanel" hidden>
+      ${renderPartyTab(player)}
+    </div>
+
     <div class="modal-tab-panel" data-panel="matchmaking" role="tabpanel" hidden>
       <div class="modal-stats-grid">
         ${modalStat("Current rank", player.rank || "Unrated", `${modalNumber(player.rr, 0)} RR`)}
@@ -1094,6 +1105,10 @@ function renderPlayerProfile(player, act) {
         ${modalStat("Average lobby rank", modalRank(rankLobby == null ? null : Math.round(rankLobby)), rankLobby == null ? "Not enough rank data" : `Rank value ${modalNumber(rankLobby, 2)} / 25`)}
         ${modalStat("Matches counted", modalNumber(player.enemy_rank_matches, 0), "For enemy rank average")}
       </div>
+      ${modalSection("RR over time", isOverall ? "Current act only" : "One point each time the rating changed", renderRrHistory(player))}
+
+      ${modalSection("Recent matches", isOverall ? "Latest act, newest first" : "Last 10 matches, newest first", renderRecentMatches(player))}
+
       ${modalSection("How to read this", "Rank values use an ordered scale from Iron 1 to Radiant", `
         <p class="modal-description">Average enemy rank estimates the average rank of opponents in matches where rank data was available. Average lobby rank includes all players with a known tier. These are averages across matches, not your current rank.</p>
       `)}
@@ -1501,6 +1516,15 @@ function combinePlayerActs(entries) {
     summary,
     agents,
 
+    // Party stats exist from the current fetcher onwards; recent matches and
+    // RR history come from the newest act the player appears in.
+    party: entries.some((entry) => entry.player.party)
+      ? entries.reduce((all, entry) => mergeParty(all, entry.player.party), { by_size: {}, friends: {} })
+      : null,
+    recent_matches: base.recent_matches || [],
+    rr_history: base.rr_history || [],
+    schema_version: base.schema_version,
+
     actCount: entries.length,
     actsPlayed: entries.map((entry) => entry.label).join(", "),
     detailedActs: detailed.map((entry) => entry.label),
@@ -1613,8 +1637,9 @@ const STAT_GROUPS = ["General", "Combat", "Impact", "Utility & economy", "Matchm
 const STATS = [
   { key: "score", label: "ValoStat score", group: "General", get: (p, act) => getDisplayedValoStatScore(p, act), format: (v) => formatScore(v) },
   { key: "rank", label: "Rank", group: "General", compare: false, get: (p) => finite(p.elo) ?? (rankValue(p.rank) * 100 + num(p.rr)), format: (v, p) => p.rank || "Unrated" },
-  { key: "winPercentage", label: "Win rate", group: "General", get: (p) => (hasMatches(p) ? finite(p.winrate) : null), format: formatters.pct },
+  { key: "winPercentage", label: "Win rate", short: "Win %", group: "General", get: (p) => (hasMatches(p) ? finite(p.winrate) : null), format: formatters.pct },
   { key: "matchesPlayed", label: "Matches played", group: "General", get: (p) => finite(p.matches), format: formatters.int },
+  { key: "wins", label: "Wins", group: "General", compare: false, get: (p) => (hasMatches(p) ? finite(p.wins) : null), format: (v, p) => (v == null ? "N/A" : `${num(p.wins)}/${num(p.matches)}`) },
   { key: "time", label: "Time played", short: "Playtime", group: "General", get: (p) => (hasMatches(p) ? finite(p.time_total) : null), format: formatters.time },
   { key: "level", label: "Account level", group: "General", compare: false, get: (p) => finite(p.level), format: formatters.int },
 
@@ -1651,7 +1676,7 @@ const STATS = [
 const STAT_BY_KEY = Object.fromEntries(STATS.map((stat) => [stat.key, stat]));
 
 // Stats shown on every player card (3 x 2 grid).
-const CARD_STATS = ["winPercentage", "performance", "kd", "acs", "kast", "time"];
+const CARD_STATS = ["performance", "wins", "winPercentage", "kd", "kast", "time"];
 
 function statValue(stat, player, act = currentAct) {
   return finite(stat.get(player, act));
@@ -1711,6 +1736,294 @@ function sortPlayers(data, stat, act) {
     if (va == null || vb == null) return (va == null) - (vb == null);
     return (va - vb) * direction;
   });
+}
+
+/* ------------------ Recent form, RR history and party ------------------ */
+
+const RESULT_NAMES = { win: "Win", loss: "Loss", draw: "Draw" };
+const PARTY_NAMES = { 1: "Solo", 2: "Duo", 3: "Trio", 4: "4-stack", 5: "5-stack" };
+
+function partyName(size) {
+  return PARTY_NAMES[size] || `${size}-stack`;
+}
+
+function timeAgo(iso) {
+  const time = Date.parse(iso || "");
+  if (!Number.isFinite(time)) return "";
+  const minutes = Math.round((Date.now() - time) / 60000);
+  if (minutes < 60) return `${Math.max(minutes, 1)}m ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  if (days <= 14) return `${days}d ago`;
+  return new Date(time).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
+
+function shortDate(iso) {
+  const time = Date.parse(iso || "");
+  return Number.isFinite(time)
+    ? new Date(time).toLocaleDateString(undefined, { day: "numeric", month: "short" })
+    : "";
+}
+
+function matchSummaryText(match) {
+  return `${RESULT_NAMES[match.result] || "Match"} ${num(match.rounds_won)}–${num(match.rounds_lost)} on ${match.map || "unknown map"} as ${match.agent || "unknown agent"}`;
+}
+
+// Last 10 results on a player card, oldest on the left.
+function renderFormStrip(player) {
+  const recent = Array.isArray(player.recent_matches) ? player.recent_matches : [];
+  if (!recent.length) return "";
+
+  const ordered = recent.slice().reverse();
+  const wins = ordered.filter((m) => m.result === "win").length;
+  const losses = ordered.filter((m) => m.result === "loss").length;
+  const dots = ordered.map((m) => `
+    <i class="form-dot form-${escapeHtml(m.result || "draw")}" title="${escapeHtml(matchSummaryText(m))}"></i>
+  `).join("");
+
+  return `
+    <div class="card-form" role="img" aria-label="Last ${ordered.length} matches: ${wins} wins, ${losses} losses">
+      <span class="card-form-label">Last ${ordered.length}</span>
+      <span class="form-dots">${dots}</span>
+      <span class="card-form-record">${wins}–${losses}</span>
+    </div>
+  `;
+}
+
+// Older act files predate these features; the current act fills in on the next refresh.
+function notYetTracked(player, what) {
+  return player.schema_version || player.summary
+    ? `<p class="modal-empty">${what} appear after the next data refresh.</p>`
+    : `<p class="modal-empty">${what} aren't recorded for this act.</p>`;
+}
+
+function renderRecentMatches(player) {
+  const recent = Array.isArray(player.recent_matches) ? player.recent_matches : [];
+  if (!recent.length) return notYetTracked(player, "Recent matches");
+
+  const rows = recent.map((m) => {
+    const others = Math.max(0, num(m.party_size) - 1 - (m.party_with || []).length);
+    const withText = (m.party_with || []).length
+      ? `with ${m.party_with.join(", ")}${others ? ` +${others}` : ""}`
+      : num(m.party_size) > 1 ? `with ${others} not tracked` : "";
+    const kd = num(m.deaths) ? num(m.kills) / num(m.deaths) : num(m.kills);
+    const mvp = m.match_mvp ? "Match MVP" : m.team_mvp ? "Team MVP" : "";
+
+    return `
+      <li class="match-row" data-result="${escapeHtml(m.result || "draw")}">
+        <span class="match-result">${RESULT_NAMES[m.result] || "—"}${mvp ? `<small>${mvp}</small>` : ""}</span>
+        <span class="match-score">${num(m.rounds_won)}–${num(m.rounds_lost)}<small>${escapeHtml(m.map || "")}</small></span>
+        <span class="match-agent">${escapeHtml(m.agent || "")}<small>${escapeHtml(timeAgo(m.started_at))}</small></span>
+        <span class="match-kda">${num(m.kills)} / ${num(m.deaths)} / ${num(m.assists)}<small>K/D ${fixedNumber(kd, 2)}</small></span>
+        <span class="match-acs">${m.acs == null ? "—" : Math.round(m.acs)}<small>ACS</small></span>
+        <span class="match-perf">${m.performance_score == null ? "—" : Math.round(m.performance_score)}<small>${escapeHtml(m.grade ? m.grade.charAt(0).toUpperCase() + m.grade.slice(1) : "Performance")}</small></span>
+        <span class="match-party">${partyName(num(m.party_size) || 1)}<small>${escapeHtml(withText)}</small></span>
+      </li>
+    `;
+  }).join("");
+
+  return `<ol class="match-list">${rows}</ol>`;
+}
+
+// RR over time, drawn from one point per rating change.
+function renderRrHistory(player) {
+  const history = (Array.isArray(player.rr_history) ? player.rr_history : [])
+    .filter((point) => finite(point.elo) != null);
+
+  if (!history.length) return notYetTracked(player, "RR changes");
+
+  const first = history[0];
+  const last = history[history.length - 1];
+
+  if (history.length < 2) {
+    return `<p class="modal-empty">Tracking started ${escapeHtml(shortDate(first.t))} at ${escapeHtml(first.rank)}, ${num(first.rr)} RR. The graph appears once the rating changes.</p>`;
+  }
+
+  const net = num(last.elo) - num(first.elo);
+  const peak = history.reduce((best, point) => (num(point.elo) > num(best.elo) ? point : best), first);
+
+  const width = 760;
+  const height = 220;
+  const pad = { top: 16, right: 18, bottom: 26, left: 92 };
+  const elos = history.map((point) => num(point.elo));
+  const low = Math.floor((Math.min(...elos) - 20) / 100) * 100;
+  const high = Math.ceil((Math.max(...elos) + 20) / 100) * 100;
+  const x = (i) => pad.left + (i / (history.length - 1)) * (width - pad.left - pad.right);
+  const y = (elo) => pad.top + (1 - (elo - low) / Math.max(high - low, 1)) * (height - pad.top - pad.bottom);
+
+  // A gridline at the start of each rank (every 100 rating).
+  const grid = [];
+  for (let elo = low; elo <= high; elo += 100) {
+    grid.push(`
+      <line class="rr-grid" x1="${pad.left}" x2="${width - pad.right}" y1="${y(elo)}" y2="${y(elo)}" />
+      ${elo < high ? `<text class="rr-rank" x="${pad.left - 10}" y="${(y(elo) + y(elo + 100)) / 2 + 4}" text-anchor="end">${escapeHtml(modalRank(Math.floor(elo / 100) + 1))}</text>` : ""}
+    `);
+  }
+
+  const points = history.map((point, i) => `${x(i).toFixed(1)},${y(num(point.elo)).toFixed(1)}`);
+  const area = `${pad.left},${height - pad.bottom} ${points.join(" ")} ${x(history.length - 1).toFixed(1)},${height - pad.bottom}`;
+  const dots = history.map((point, i) => `
+    <circle class="rr-dot" cx="${x(i).toFixed(1)}" cy="${y(num(point.elo)).toFixed(1)}" r="${i === history.length - 1 ? 4.5 : 3}">
+      <title>${escapeHtml(`${shortDate(point.t)}: ${point.rank}, ${num(point.rr)} RR`)}</title>
+    </circle>
+  `).join("");
+
+  return `
+    <div class="modal-stats-grid rr-summary">
+      ${modalStat("Since tracking began", `${net > 0 ? "+" : ""}${net} RR`, `From ${first.rank}, ${num(first.rr)} RR on ${shortDate(first.t)}`)}
+      ${modalStat("Peak", peak.rank, `${num(peak.rr)} RR on ${shortDate(peak.t)}`)}
+      ${modalStat("Now", last.rank, `${num(last.rr)} RR`)}
+      ${modalStat("Rating changes", modalNumber(history.length - 1, 0), "Recorded at each update")}
+    </div>
+    <svg class="rr-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="RR over time, ${net >= 0 ? "up" : "down"} ${Math.abs(net)} since ${shortDate(first.t)}">
+      ${grid.join("")}
+      <polygon class="rr-area" points="${area}" />
+      <polyline class="rr-line" points="${points.join(" ")}" />
+      ${dots}
+      <text class="rr-axis" x="${pad.left}" y="${height - 6}">${escapeHtml(shortDate(first.t))}</text>
+      <text class="rr-axis" x="${width - pad.right}" y="${height - 6}" text-anchor="end">${escapeHtml(shortDate(last.t))}</text>
+    </svg>
+  `;
+}
+
+const PARTY_KEYS = [
+  "matches", "wins", "losses", "draws", "rounds", "rounds_won",
+  "time_played_ms", "score", "kills", "deaths", "assists",
+  "headshots", "bodyshots", "legshots",
+  "damage_dealt", "damage_received", "kast_rounds",
+  "first_bloods", "first_deaths",
+  "performance_score_total", "performance_score_matches",
+];
+
+function partySummary(t) {
+  const shots = num(t.headshots) + num(t.bodyshots) + num(t.legshots);
+  return {
+    matches: num(t.matches),
+    wins: num(t.wins),
+    losses: num(t.losses),
+    draws: num(t.draws),
+    winrate: ratio(num(t.wins), num(t.matches), 1, 100),
+    acs: ratio(num(t.score), num(t.rounds), 1),
+    adr: ratio(num(t.damage_dealt), num(t.rounds), 1),
+    kd: num(t.matches) ? ratio(num(t.kills), Math.max(num(t.deaths), 1), 2) : null,
+    kast: ratio(num(t.kast_rounds), num(t.rounds), 1, 100),
+    hs: ratio(num(t.headshots), shots, 1, 100),
+    performance: ratio(num(t.performance_score_total), num(t.performance_score_matches), 1),
+    firstBloods: ratio(num(t.first_bloods), num(t.matches), 2),
+  };
+}
+
+function mergeParty(target, source) {
+  if (!source) return target;
+  Object.entries(source.by_size || {}).forEach(([size, totals]) => {
+    target.by_size[size] = mergeCounts(target.by_size[size] || {}, totals);
+  });
+  Object.entries(source.friends || {}).forEach(([friend, pair]) => {
+    const entry = target.friends[friend] || (target.friends[friend] = { me: {}, them: {} });
+    mergeCounts(entry.me, pair.me);
+    mergeCounts(entry.them, pair.them);
+  });
+  return target;
+}
+
+// The player list currently on screen, used to colour friends by rank.
+let activePlayers = [];
+
+function renderPartyTab(player) {
+  const party = player.party;
+  if (!party || !Object.keys(party.by_size || {}).length) {
+    return notYetTracked(player, "Party stats");
+  }
+
+  const overallWinrate = partySummary(Object.values(party.by_size).reduce((all, t) => mergeCounts(all, t), {})).winrate;
+
+  const sizeRows = Object.entries(party.by_size)
+    .map(([size, totals]) => [Number(size), partySummary(totals)])
+    .filter(([, s]) => s.matches > 0)
+    .sort((a, b) => a[0] - b[0])
+    .map(([size, s]) => `
+      <tr>
+        <th scope="row">${partyName(size)}</th>
+        <td>${s.matches}</td>
+        <td>${formatRecord(s.wins, s.losses, s.draws)}</td>
+        <td class="${s.winrate > overallWinrate ? "good-stat" : s.winrate < overallWinrate ? "bad-stat" : ""}">${modalPercent(s.winrate)}</td>
+        <td>${fixedNumber(s.acs, 1)}</td>
+        <td>${fixedNumber(s.kd, 2)}</td>
+        <td>${modalPercent(s.kast)}</td>
+        <td>${fixedNumber(s.adr, 1)}</td>
+        <td>${fixedNumber(s.performance, 1)}</td>
+      </tr>
+    `).join("");
+
+  const sizeTable = `
+    <div class="table-scroll">
+      <table class="modal-table party-table">
+        <thead>
+          <tr><th>Queue</th><th>Matches</th><th>W–L</th><th>Win %</th><th>ACS</th><th>K/D</th><th>KAST</th><th>ADR</th><th>Performance</th></tr>
+        </thead>
+        <tbody>${sizeRows}</tbody>
+      </table>
+    </div>
+    <p class="modal-footnote">Win rates in green or red are above or below this player's ${modalPercent(overallWinrate)} across all queues.</p>
+  `;
+
+  const friendStats = [
+    ["ACS", "acs", fixedNumber, 1],
+    ["K/D", "kd", fixedNumber, 2],
+    ["KAST", "kast", (v) => modalPercent(v)],
+    ["ADR", "adr", fixedNumber, 1],
+    ["Headshot %", "hs", (v) => modalPercent(v)],
+    ["First bloods / match", "firstBloods", fixedNumber, 2],
+    ["Avg performance", "performance", fixedNumber, 1],
+  ];
+
+  const friends = Object.entries(party.friends || {})
+    .map(([id, pair]) => ({ id, me: partySummary(pair.me), them: partySummary(pair.them) }))
+    .filter((f) => f.me.matches > 0)
+    .sort((a, b) => b.me.matches - a.me.matches);
+
+  const friendCards = friends.map((f) => {
+    const friendPlayer = activePlayers.find((p) => p.id === f.id);
+    const tally = { a: 0, b: 0 };
+    const rows = friendStats.map(([label, key, format, digits]) => {
+      const va = finite(f.me[key]);
+      const vb = finite(f.them[key]);
+      const winner = compareWinner(va, vb, "high");
+      if (winner === "a" || winner === "b") tally[winner] += 1;
+      return compareRow(label, format(va, digits), format(vb, digits), { va, vb, winner });
+    }).join("");
+
+    return `
+      <article class="friend-card" data-tier="${rankTier(friendPlayer?.rank)}">
+        <header class="friend-head">
+          <div class="friend-side">
+            <strong>${escapeHtml(player.id)}</strong>
+            <small>${tally.a} of ${friendStats.length} stats ahead</small>
+          </div>
+          <div class="friend-together">
+            <b>${f.me.matches}</b>
+            <span>${f.me.matches === 1 ? "match" : "matches"} together</span>
+            <small class="${f.me.winrate > overallWinrate ? "good-stat" : f.me.winrate < overallWinrate ? "bad-stat" : ""}">${formatRecord(f.me.wins, f.me.losses, f.me.draws)}, ${modalPercent(f.me.winrate, 0)} won</small>
+          </div>
+          <div class="friend-side friend-them">
+            <strong>${escapeHtml(f.id)}</strong>
+            <small>${tally.b} of ${friendStats.length} stats ahead</small>
+          </div>
+        </header>
+        <div class="friend-rows">${rows}</div>
+      </article>
+    `;
+  }).join("");
+
+  return `
+    ${modalSection("By queue size", "Every match this period, split by how many players queued together", sizeTable)}
+    ${modalSection("With friends", friends.length
+      ? `${player.id}'s performance next to each tracked friend's, in the matches they queued together`
+      : "", friends.length
+      ? `<div class="friend-list">${friendCards}</div>`
+      : `<p class="modal-empty">No matches queued with other tracked players yet.</p>`)}
+  `;
 }
 
 const RANK_TIERS = ["iron", "bronze", "silver", "gold", "platinum", "diamond", "ascendant", "immortal", "radiant"];
@@ -1788,6 +2101,8 @@ function renderPlayerCard(player, view) {
         ${focus}
       </dl>
 
+      ${renderFormStrip(player)}
+
       <div class="score">
         <span class="score-value">${escapeHtml(formatScore(score))}</span>
         ${scoreMeter(score)}
@@ -1822,6 +2137,7 @@ async function renderCards(act = currentAct) {
     currentActData = displayData;
   }
 
+  activePlayers = displayData;
   updateSortAvailability(displayData, act);
   const sortType = document.getElementById("sortSelect").value;
   const sortStat = STAT_BY_KEY[sortType];
@@ -1829,6 +2145,17 @@ async function renderCards(act = currentAct) {
   if (sortStat) {
     sortPlayers(displayData, sortStat, act);
   }
+
+  // The minimum-matches filter only applies while a stat is being sorted,
+  // so a handful of games can't top a ranking.
+  const minMatches = sortStat ? getMinMatches() : 0;
+  const shown = minMatches
+    ? displayData.filter((player) => num(player.matches) >= minMatches)
+    : displayData;
+  const hiddenCount = displayData.length - shown.length;
+
+  updateMinMatchesControl(Boolean(sortStat));
+  syncUrlState();
 
   profiles.innerHTML = "";
 
@@ -1839,7 +2166,11 @@ async function renderCards(act = currentAct) {
 
   const cards = [];
 
-  displayData.forEach((player) => {
+  if (hiddenCount) {
+    cards.push(`<p class="grid-note">${hiddenCount} ${hiddenCount === 1 ? "player" : "players"} with fewer than ${minMatches} matches ${hiddenCount === 1 ? "is" : "are"} hidden.</p>`);
+  }
+
+  shown.forEach((player) => {
     const playerKey = getPlayerMatchKey(player);
     const playerDiff = prev.find((item) => item.key === playerKey);
 
@@ -2058,6 +2389,80 @@ function renderComparison(a, b) {
   }
 }
 
+/* ------------------ Minimum matches and shareable views ------------------ */
+
+function getMinMatches() {
+  const input = document.getElementById("minMatches");
+  const value = Math.floor(Number(input?.value));
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function updateMinMatchesControl(visible) {
+  const control = document.getElementById("minMatchesControl");
+  if (control) control.hidden = !visible;
+}
+
+// The act, sort, direction and minimum matches live in the URL, so a link
+// reopens the same view.
+function syncUrlState() {
+  if (isPlayerPage) return;
+  const params = new URLSearchParams();
+  const sort = document.getElementById("sortSelect").value;
+
+  if (currentAct !== actsConfig.current) params.set("act", currentAct);
+  if (sort !== "default") {
+    params.set("sort", sort);
+    const stat = STAT_BY_KEY[sort];
+    const defaultDirection = stat?.better === "low" ? "asc" : "desc";
+    if (sortDirection !== defaultDirection) params.set("dir", sortDirection);
+    if (getMinMatches()) params.set("min", String(getMinMatches()));
+  }
+
+  const query = params.toString();
+  const url = `${window.location.pathname}${query ? `?${query}` : ""}`;
+  if (url !== `${window.location.pathname}${window.location.search}`) {
+    window.history.replaceState(null, "", url);
+  }
+}
+
+function readUrlState() {
+  const params = new URLSearchParams(window.location.search);
+  const act = params.get("act");
+  const knownAct = act === "overall" || actsConfig.acts.some((item) => item.code === act);
+  if (act && knownAct) currentAct = act;
+
+  const sort = params.get("sort");
+  const stat = STAT_BY_KEY[sort];
+  if (stat) {
+    document.getElementById("sortSelect").value = sort;
+    sortDirection = params.get("dir") === "asc" || params.get("dir") === "desc"
+      ? params.get("dir")
+      : stat.better === "low" ? "asc" : "desc";
+  }
+
+  const min = Math.floor(Number(params.get("min")));
+  if (Number.isFinite(min) && min > 0) {
+    document.getElementById("minMatches").value = String(min);
+  }
+}
+
+// Start a comparison from a player's popup.
+function compareFromModal(playerId) {
+  const modal = document.getElementById("cardModal");
+  modal?.classList.remove("open");
+
+  selectA.value = playerId;
+  if (selectB.value === playerId) {
+    const other = [...selectB.options].find((option) => option.value !== playerId);
+    if (other) selectB.value = other.value;
+  }
+
+  const section = document.querySelector(".compare-section");
+  section?.scrollIntoView({ behavior: "smooth", block: "start" });
+  onCompareClick();
+  selectB.focus({ preventScroll: true });
+}
+
 /* ------------------ Player page (player.html) ------------------ */
 
 async function initPlayerPage() {
@@ -2089,6 +2494,7 @@ async function initPlayerPage() {
   }
 
   const data = await loadActData(act);
+  activePlayers = data;
   const player = data.find((item) => item.id === id);
 
   if (!player) {
@@ -2114,11 +2520,17 @@ async function initPlayerPage() {
 
 function initDashboard() {
   currentAct = actsConfig.current;
+  buildSortMenu();
+  readUrlState();
   buildActNav();
 
   compareBtn.addEventListener("click", onCompareClick);
 
-  buildSortMenu();
+  let minMatchesTimer = null;
+  document.getElementById("minMatches").addEventListener("input", () => {
+    clearTimeout(minMatchesTimer);
+    minMatchesTimer = setTimeout(() => renderCards(), 250);
+  });
 
   document.getElementById("sortSelect").addEventListener("change", async (event) => {
     // A new stat starts with its better end first (fewest deaths, most kills).
