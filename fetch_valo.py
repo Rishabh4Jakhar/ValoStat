@@ -3,6 +3,7 @@ import json
 import os
 import re
 import time
+from datetime import datetime, timezone
 
 API_KEY = os.environ["HENRIK_API_KEY"]
 HEADERS = {"Authorization": API_KEY}
@@ -28,7 +29,7 @@ CURRENT_ACT = None  # set from acts.json in main
 # Bump this when the shape of the stored totals changes. A player entry saved
 # with an older version is rebuilt from scratch on the next run (its processed
 # match list is discarded, so every match in the act is fetched again).
-STATS_SCHEMA_VERSION = 2
+STATS_SCHEMA_VERSION = 3  # 3: party stats and recent matches
 
 PLAYERS = {
     "Rishabh": "Rishabh4#Gamer",
@@ -105,6 +106,19 @@ COUNTER_KEYS = (
 )
 
 MAP_COUNTER_KEYS = ("matches", "wins", "losses", "draws", "rounds", "rounds_won")
+
+# Smaller set of counters kept for party stats (by party size and per friend).
+PARTY_COUNTER_KEYS = (
+    "matches", "wins", "losses", "draws", "rounds", "rounds_won",
+    "time_played_ms", "score", "kills", "deaths", "assists",
+    "headshots", "bodyshots", "legshots",
+    "damage_dealt", "damage_received", "kast_rounds",
+    "first_bloods", "first_deaths",
+    "performance_score_total", "performance_score_matches",
+)
+
+RECENT_MATCHES_KEPT = 10
+RR_HISTORY_KEPT = 400
 
 
 def rate_limited_get(url):
@@ -537,7 +551,25 @@ def analyse_match(match, puuid):
         "lobby_rank_matches": 1 if lobby_ranks else 0,
     }
 
+    # Everyone sharing this player's party_id queued together (1 = solo).
+    party_id = player.get("party_id")
+    party_puuids = [
+        p.get("puuid") for p in match.get("players") or []
+        if party_id and p.get("party_id") == party_id and p.get("puuid") != puuid
+    ]
+    rounds_lost = (my_team.get("rounds") or {}).get("lost")
+    if not isinstance(rounds_lost, int):
+        rounds_lost = len(rounds) - rounds_won
+
     return {
+        "match_id": metadata.get("match_id"),
+        "started_at": metadata.get("started_at"),
+        "result": "draw" if draw else ("win" if won else "loss"),
+        "rounds_won": rounds_won,
+        "rounds_lost": rounds_lost,
+        "party_size": min(len(party_puuids) + 1, 5),
+        "party_puuids": party_puuids,
+        "performance_score": perf_score if has_perf else None,
         "agent": (player.get("agent") or {}).get("name") or "Unknown",
         "map": (metadata.get("map") or {}).get("name"),
         "counters": counters,
@@ -550,6 +582,48 @@ def analyse_match(match, puuid):
         } if has_perf else {},
         "account_level": player.get("account_level"),
         "card_id": (player.get("customization") or {}).get("card"),
+    }
+
+
+def empty_party_totals():
+    return {key: 0 for key in PARTY_COUNTER_KEYS}
+
+
+def normalize_party_totals(existing):
+    return {key: num((existing or {}).get(key)) for key in PARTY_COUNTER_KEYS}
+
+
+def add_party_match(target, match_stats):
+    for key in PARTY_COUNTER_KEYS:
+        target[key] += match_stats["counters"].get(key, 0)
+
+
+def recent_match_entry(match_stats, puuid_to_id):
+    """Compact record of one match for the recent matches list."""
+    c = match_stats["counters"]
+    return {
+        "match_id": match_stats["match_id"],
+        "started_at": match_stats["started_at"],
+        "map": match_stats["map"],
+        "agent": match_stats["agent"],
+        "result": match_stats["result"],
+        "rounds_won": match_stats["rounds_won"],
+        "rounds_lost": match_stats["rounds_lost"],
+        "kills": c["kills"],
+        "deaths": c["deaths"],
+        "assists": c["assists"],
+        "acs": round(c["score"] / c["rounds"], 1) if c["rounds"] else None,
+        "adr": round(c["damage_dealt"] / c["rounds"], 1) if c["rounds"] else None,
+        "headshot_percent": round(c["headshots"] / (c["headshots"] + c["bodyshots"] + c["legshots"]) * 100, 1)
+            if (c["headshots"] + c["bodyshots"] + c["legshots"]) else None,
+        "performance_score": round(match_stats["performance_score"], 1)
+            if match_stats["performance_score"] is not None else None,
+        "grade": match_stats["grade"],
+        "match_mvp": bool(c["match_mvps"]),
+        "team_mvp": bool(c["team_mvps"]),
+        "party_size": match_stats["party_size"],
+        # Only friends tracked on the site are named.
+        "party_with": [puuid_to_id[p] for p in match_stats["party_puuids"] if p in puuid_to_id],
     }
 
 
@@ -682,6 +756,14 @@ if upcoming_act and upcoming_act in seen_acts:
     switch_to_new_act(acts_config, upcoming_act, old_data)
     CURRENT_ACT = upcoming_act
 
+# Tracked players by puuid, so party members can be matched to friends.
+puuid_to_id = {
+    value[0]: pid for pid, value in identities.items()
+    if not isinstance(value, Exception) and value[0]
+}
+
+RUN_TIME = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
 # Pass 2: matches and stats for the current act.
 out = []
 
@@ -719,6 +801,23 @@ for pid, riot in PLAYERS.items():
             for agent_name, agent in (old.get("agents") or {}).items()
         } if up_to_date else {}
 
+        # Party stats: totals by party size (1 = solo ... 5 = five-stack), and
+        # for each tracked friend, this player's and the friend's totals in
+        # the matches they queued together.
+        old_party = (old.get("party") or {}) if up_to_date else {}
+        party_sizes = {
+            size: normalize_party_totals(value)
+            for size, value in (old_party.get("by_size") or {}).items()
+        }
+        party_friends = {
+            friend: {
+                "me": normalize_party_totals(value.get("me")),
+                "them": normalize_party_totals(value.get("them")),
+            }
+            for friend, value in (old_party.get("friends") or {}).items()
+        }
+        recent = {m["match_id"]: m for m in (old.get("recent_matches") or []) if m.get("match_id")} if up_to_date else {}
+
         expected_new_matches = max(0, int(matches_played) - len(processed_match_ids))
         if expected_new_matches:
             matches = get_unprocessed_current_act_matches(
@@ -747,6 +846,20 @@ for pid, riot in PLAYERS.items():
 
             add_match(totals, match_stats)
             add_match(agent_totals.setdefault(match_stats["agent"], empty_totals()), match_stats)
+
+            add_party_match(party_sizes.setdefault(str(match_stats["party_size"]), empty_party_totals()), match_stats)
+            for friend_puuid in match_stats["party_puuids"]:
+                friend_id = puuid_to_id.get(friend_puuid)
+                if not friend_id or friend_id == pid:
+                    continue
+                friend_stats = analyse_match(match, friend_puuid)
+                if friend_stats is None:
+                    continue
+                pair = party_friends.setdefault(friend_id, {"me": empty_party_totals(), "them": empty_party_totals()})
+                add_party_match(pair["me"], match_stats)
+                add_party_match(pair["them"], friend_stats)
+
+            recent[match_id] = recent_match_entry(match_stats, puuid_to_id)
 
             # The match feed is newest first, so only take level/card from the
             # newest match we see in this run.
@@ -785,6 +898,26 @@ for pid, riot in PLAYERS.items():
             }
 
         current_tier = mmr.get("current") or {}
+        current_rank = (current_tier.get("tier") or {}).get("name", old.get("rank", "Unrated"))
+        current_rr = current_tier.get("rr", old.get("rr", 0))
+        current_elo = current_tier.get("elo", old.get("elo", 0))
+
+        # Newest matches first; started_at is an ISO timestamp, so it sorts as text.
+        recent_matches = sorted(recent.values(), key=lambda m: m.get("started_at") or "", reverse=True)[:RECENT_MATCHES_KEPT]
+
+        # RR over time: one point each time the rating changes. Kept across
+        # schema rebuilds within the same act.
+        rr_history = list(old.get("rr_history") or []) if old.get("season") == CURRENT_ACT else []
+        last_point = rr_history[-1] if rr_history else None
+        if matches_played and (not last_point or last_point.get("elo") != current_elo or last_point.get("rank") != current_rank):
+            rr_history.append({
+                "t": RUN_TIME,
+                "rank": current_rank,
+                "rr": current_rr,
+                "elo": current_elo,
+                "matches": matches_played,
+            })
+        rr_history = rr_history[-RR_HISTORY_KEPT:]
 
         out.append({
             "schema_version": STATS_SCHEMA_VERSION,
@@ -797,9 +930,9 @@ for pid, riot in PLAYERS.items():
             "banner": f"https://media.valorant-api.com/playercards/{latest_card_id}/displayicon.png" if latest_card_id else banner,
             "banner_card_id": latest_card_id,
             "puuid": puuid,
-            "rank": (current_tier.get("tier") or {}).get("name", old.get("rank", "Unrated")),
-            "rr": current_tier.get("rr", old.get("rr", 0)),
-            "elo": current_tier.get("elo", old.get("elo", 0)),
+            "rank": current_rank,
+            "rr": current_rr,
+            "elo": current_elo,
             "season": CURRENT_ACT,
 
             # MMR is the source of truth for games and wins in the act.
@@ -849,6 +982,14 @@ for pid, riot in PLAYERS.items():
             "totals": totals,
 
             "accolades_seasonal": accolades_seasonal,
+
+            "party": {
+                "by_size": dict(sorted(party_sizes.items())),
+                "friends": dict(sorted(party_friends.items(), key=lambda item: -item[1]["me"]["matches"])),
+            },
+            "recent_matches": recent_matches,
+            "rr_history": rr_history,
+
             "processed_matches": sorted(processed_match_ids),
         })
 
