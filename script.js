@@ -427,58 +427,131 @@ function formatRecord(wins, losses, draws) {
   return num(draws) ? `${record}–${num(draws)}` : record;
 }
 
-// Convert nested performance rating data into readable metric cards.
-function modalRatingCards(ratings) {
-  if (!ratings || typeof ratings !== "object") {
-    return `<p class="modal-empty">No rating data available for this act.</p>`;
-  }
-
-  const cards = Object.entries(ratings).flatMap(([group, metrics]) => {
-    if (!metrics || typeof metrics !== "object") return [];
-
-    return Object.entries(metrics).map(([metric, value]) => {
-      let displayValue = value;
-
-      // Ratings may be stored as a value -> occurrence-count map.
-      if (value && typeof value === "object") {
-        const entries = Object.entries(value);
-        if (!entries.length) return "";
-
-        const best = entries.sort((a, b) => Number(b[1]) - Number(a[1]))[0];
-        displayValue = best[0];
-      }
-
-      return `
-        <article class="modal-mini-card">
-          <span>${escapeHtml(metric.replace(/_/g, " "))}</span>
-          <strong>${escapeHtml(String(displayValue ?? "N/A").replace(/_/g, " "))}</strong>
-          <small>Most common ${escapeHtml(group)} rating</small>
-        </article>
-      `;
-    });
-  }).filter(Boolean);
-
-  return cards.length
-    ? `<div class="modal-mini-grid">${cards.join("")}</div>`
-    : `<p class="modal-empty">No rating data available for this act.</p>`;
-}
+// Match grades come from the match's performance score.
+const MATCH_GRADES = [
+  { key: "distinction", label: "Distinction", range: "420–500" },
+  { key: "merit", label: "Merit", range: "330–420" },
+  { key: "pass", label: "Pass", range: "0–330" },
+];
 
 function modalGradeCards(grades) {
-  const entries = Object.entries(grades || {}).filter(([, count]) => num(count) > 0);
-  if (!entries.length) {
+  const total = MATCH_GRADES.reduce((sum, grade) => sum + num(grades?.[grade.key]), 0);
+  if (!total) {
     return `<p class="modal-empty">No match grades recorded for this period.</p>`;
   }
 
-  const total = entries.reduce((sum, [, count]) => sum + num(count), 0);
-  const cards = entries
-    .sort((a, b) => num(b[1]) - num(a[1]))
-    .map(([grade, count]) => modalMiniCard(
-      grade.replace(/_/g, " "),
-      modalNumber(count, 0),
-      `${modalNumber((num(count) / total) * 100, 0)}% of graded matches`
-    ));
+  const cards = MATCH_GRADES.map((grade) => {
+    const count = num(grades?.[grade.key]);
+    return `
+      <article class="modal-mini-card grade-card" data-grade="${grade.key}">
+        <span>${escapeHtml(grade.label)} <em>(${grade.range})</em></span>
+        <strong>${modalNumber(count, 0)}</strong>
+        <small>${modalNumber((count / total) * 100, 0)}% of graded matches</small>
+      </article>
+    `;
+  });
 
   return `<div class="modal-mini-grid">${cards.join("")}</div>`;
+}
+
+// In-game impact ratings, from worst to best.
+const RATING_LEVELS = ["double_down", "down", "neutral", "up", "double_up"];
+const RATING_NAMES = {
+  double_down: "Strongly down",
+  down: "Down",
+  neutral: "Neutral",
+  up: "Up",
+  double_up: "Strongly up",
+};
+
+// Typical rating across matches: the average of the per-match ratings
+// (double down = -2 ... double up = +2), rounded to the nearest level.
+function typicalRating(counts) {
+  let total = 0;
+  let sum = 0;
+  RATING_LEVELS.forEach((level, index) => {
+    const count = num(counts?.[level]);
+    total += count;
+    sum += count * (index - 2);
+  });
+  if (!total) return null;
+  return { level: RATING_LEVELS[Math.round(sum / total) + 2], total };
+}
+
+function ratingIcon(level) {
+  const shapes = {
+    double_up: '<polyline points="3,9 8,4 13,9"/><polyline points="3,14 8,9 13,14"/>',
+    up: '<polyline points="3,11 8,6 13,11"/>',
+    neutral: '<line x1="4" y1="8" x2="12" y2="8"/>',
+    down: '<polyline points="3,5 8,10 13,5"/>',
+    double_down: '<polyline points="3,2 8,7 13,2"/><polyline points="3,7 8,12 13,7"/>',
+  };
+  return `<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">${shapes[level] || shapes.neutral}</svg>`;
+}
+
+function ratingBreakdownText(counts) {
+  return RATING_LEVELS.slice().reverse()
+    .filter((level) => num(counts?.[level]) > 0)
+    .map((level) => `${RATING_NAMES[level].toLowerCase()} ${num(counts[level])}`)
+    .join(", ");
+}
+
+// Rows match the in-game performance screen. Each breakdown value sits next
+// to the rating the API gives it (kill_impact rates adjusted kills, and so on).
+const BREAKDOWN_ROWS = [
+  [
+    { key: "damage", label: "Damage", rating: ["combat", "damage"], digits: 1 },
+    { key: "adjusted_kills", label: "Adjusted kills", rating: ["combat", "kill_impact"] },
+    { key: "adjusted_deaths", label: "Adjusted deaths", rating: ["combat", "death_impact"] },
+    { key: "trades", label: "Trades", rating: ["combat", "trades"] },
+  ],
+  [
+    { key: "assists", label: "Assists", rating: ["utility", "assists"] },
+    { key: "utility_usage", label: "Utility usage", rating: ["utility", "utility_usage"] },
+    { key: "plants", label: "Plants", rating: ["utility", "plants"] },
+    { key: "defuses", label: "Defuses", rating: ["utility", "defuses"] },
+  ],
+];
+
+function renderBreakdownTable(player) {
+  const averages = player.performance_breakdown_averages || {};
+  const hasValues = Object.values(averages).some((value) => value != null);
+  if (!hasValues) {
+    return `<p class="modal-empty">No performance breakdown is available for this period.</p>`;
+  }
+
+  const column = (rows) => `
+    <table class="breakdown-table">
+      <thead>
+        <tr><th scope="col">Stat</th><th scope="col">Per round</th><th scope="col">Impact</th></tr>
+      </thead>
+      <tbody>
+        ${rows.map((row) => {
+          const counts = player.performance_ratings?.[row.rating[0]]?.[row.rating[1]];
+          const rating = typicalRating(counts);
+          const detail = rating
+            ? `Usually ${RATING_NAMES[rating.level].toLowerCase()} across ${rating.total} rated matches (${ratingBreakdownText(counts)})`
+            : "No rating recorded";
+          return `
+            <tr>
+              <th scope="row">${escapeHtml(row.label)}</th>
+              <td>${modalNumber(averages[row.key], row.digits ?? 2)}</td>
+              <td>
+                ${rating
+                  ? `<span class="impact impact-${rating.level}" role="img" aria-label="${escapeHtml(detail)}" title="${escapeHtml(detail)}">${ratingIcon(rating.level)}</span>`
+                  : `<span class="impact impact-none" title="${detail}">–</span>`}
+              </td>
+            </tr>
+          `;
+        }).join("")}
+      </tbody>
+    </table>
+  `;
+
+  return `
+    <div class="breakdown-grid">${BREAKDOWN_ROWS.map(column).join("")}</div>
+    <p class="modal-footnote">Impact is the typical rating the game gave each stat across rated matches. Hover an icon to see how often each rating came up.</p>
+  `;
 }
 
 function renderMapsTable(maps) {
@@ -869,28 +942,6 @@ function renderPlayerProfile(player, act) {
   const notRecorded = `<p class="modal-empty">Not recorded for this period. Detailed tracking started in V26: A6.</p>`;
 
 
-  // The API's breakdown values are already per-round rates for each match;
-  // these are their averages across matches.
-  const performanceBreakdown = player.performance_breakdown_averages || {};
-  const performanceBreakdownLabels = {
-    damage: "Damage",
-    trades: "Trades",
-    assists: "Assists",
-    utility_usage: "Utility usage",
-    plants: "Spike plants",
-    defuses: "Defuses",
-    adjusted_kills: "Adjusted kills",
-    adjusted_deaths: "Adjusted deaths",
-  };
-
-  const breakdownCards = Object.entries(performanceBreakdown)
-    .filter(([, value]) => value != null)
-    .map(([key, value]) => modalMiniCard(
-      performanceBreakdownLabels[key] || key.replace(/_/g, " "),
-      modalNumber(value, key === "damage" ? 1 : 2),
-      "Per round, averaged over matches"
-    )).join("");
-
   const agents = Object.entries(player.agents || {})
     .sort((a, b) => (b[1].matches || 0) - (a[1].matches || 0));
   const agentMatchesTotal = summary?.matches ?? trackedMatches(player);
@@ -1025,17 +1076,9 @@ function renderPlayerProfile(player, act) {
 
       ${modalSection("Impact", coverage || "Opening duels, trades and round-winning plays", impactSection)}
 
-      ${modalSection("Performance breakdown", "Per-round values reported by the match API, averaged across matches", `
-        ${breakdownCards
-          ? `<div class="modal-mini-grid">${breakdownCards}</div>`
-          : `<p class="modal-empty">No performance breakdown is available for this period.</p>`}
-      `)}
+      ${modalSection("Performance breakdown", "Per-round values from the match API, averaged across matches", renderBreakdownTable(player))}
 
-      ${modalSection("Match grades", "How often each grade was given by the API", modalGradeCards(player.performance_grades))}
-
-      ${modalSection("Combat ratings", "Most common rating for each metric", `
-        ${modalRatingCards(player.performance_ratings)}
-      `)}
+      ${modalSection("Match grades", "Each match is graded by its performance score", modalGradeCards(player.performance_grades))}
 
       ${modalSection("Utility & economy", coverage || "Ability usage and spending", utilitySection)}
     </div>
@@ -1275,6 +1318,7 @@ function refreshWhenStale() {
   loadStats().catch((error) => console.warn("Refreshing stats failed", error));
 }
 
+// Pairs each player with their entry from the previous update.
 function computeDiff(curr, previous) {
   const previousMap = {};
 
@@ -1284,73 +1328,24 @@ function computeDiff(curr, previous) {
     if (player?.id) previousMap[`id:${player.id}`] = player;
   });
 
-  const diffs = [];
-
-  curr.forEach((player) => {
+  return curr.map((player) => {
     const old =
       previousMap[`puuid:${player.puuid}`] ||
       previousMap[`riot_id:${player.riot_id}`] ||
       previousMap[`id:${player.id}`];
 
-    if (!old) return;
+    if (!old) return null;
 
-    const newScore = valoStatScore(player);
-    const oldScore = valoStatScore(old);
-    const scoreChanged = newScore !== oldScore;
+    const changed =
+      player.matches !== old.matches ||
+      player.rank !== old.rank ||
+      player.rr !== old.rr ||
+      player.wins !== old.wins ||
+      player.time_total !== old.time_total ||
+      valoStatScore(player) !== valoStatScore(old);
 
-    const diff = {
-      id: player.id,
-      puuid: player.puuid,
-      banner: player.banner,
-      riot_id: player.riot_id,
-
-      diff:
-        player.matches !== old.matches ||
-        player.level !== old.level ||
-        player.rank !== old.rank ||
-        player.rr !== old.rr ||
-        player.wins !== old.wins ||
-        player.winrate !== old.winrate ||
-        player.time_total !== old.time_total ||
-        scoreChanged,
-
-      rank: player.rank !== old.rank
-        ? `${old.rank} → ${player.rank}`
-        : player.rank,
-
-      level: player.level !== old.level
-        ? `${old.level} → ${player.level}`
-        : player.level,
-
-      rr: player.rr !== old.rr
-        ? `${old.rr} → ${player.rr}`
-        : player.rr,
-
-      matches: player.matches !== old.matches
-        ? `${old.matches} → ${player.matches}`
-        : player.matches,
-
-      wins: player.wins !== old.wins
-        ? `${old.wins} → ${player.wins}`
-        : player.wins,
-
-      winrate: player.winrate !== old.winrate
-        ? `${old.winrate}% → ${player.winrate}%`
-        : `${player.winrate}%`,
-
-      time_total: player.time_total !== old.time_total
-        ? `${formatTime(old.time_total)} → ${formatTime(player.time_total)}`
-        : formatTime(player.time_total),
-
-      score: scoreChanged
-        ? `${formatScore(oldScore)} → ${formatScore(newScore)}`
-        : formatScore(newScore),
-    };
-
-    diffs.push(diff);
-  });
-
-  return diffs;
+    return { key: getPlayerMatchKey(player), diff: changed, old };
+  }).filter(Boolean);
 }
 
 function lastUpdate(response) {
@@ -1566,6 +1561,158 @@ async function loadActData(act) {
 
 
 // Rank tier keyword ("Gold 2" -> "gold") used for the colour of cards and the popup.
+/* ------------------ Stat definitions ------------------ */
+// One list drives the sort menu, the highlighted stat on cards and the
+// player comparison. `better` says which direction wins: "high", "low", or
+// null when neither is better (shown without a winner).
+
+function finite(value) {
+  const number = Number(value);
+  return value != null && value !== "" && Number.isFinite(number) ? number : null;
+}
+
+function rankValue(rank) {
+  return rankValues[rank] || 0;
+}
+
+function hasMatches(p) {
+  return Number(p?.matches) > 0;
+}
+
+function summaryRate(p, getCount) {
+  const s = p?.summary;
+  return s && s.matches ? getCount(s) / s.matches : null;
+}
+
+function totalCastsPerRound(p) {
+  const casts = p?.summary?.ability_casts_per_round;
+  if (!casts) return null;
+  const values = Object.values(casts).map(finite).filter((value) => value != null);
+  return values.length ? values.reduce((a, b) => a + b, 0) : null;
+}
+
+// Fixed decimals keep a column of values the same width (1.50, not 1.5).
+function fixedNumber(value, digits) {
+  return value == null
+    ? "N/A"
+    : value.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+
+const formatters = {
+  int: (v) => modalNumber(v, 0),
+  dec1: (v) => fixedNumber(v, 1),
+  dec2: (v) => fixedNumber(v, 2),
+  pct: (v) => modalPercent(v),
+  signed: (v) => (v == null ? "N/A" : `${v > 0 ? "+" : ""}${modalNumber(v, 1)}`),
+  time: (v) => (v == null ? "N/A" : formatTime(v)),
+  rankAverage: (v) => (v == null ? "N/A" : `${modalRank(Math.round(v))} (${modalNumber(v, 1)})`),
+};
+
+const STAT_GROUPS = ["General", "Combat", "Impact", "Utility & economy", "Matchmaking"];
+
+const STATS = [
+  { key: "score", label: "ValoStat score", group: "General", get: (p, act) => getDisplayedValoStatScore(p, act), format: (v) => formatScore(v) },
+  { key: "rank", label: "Rank", group: "General", compare: false, get: (p) => finite(p.elo) ?? (rankValue(p.rank) * 100 + num(p.rr)), format: (v, p) => p.rank || "Unrated" },
+  { key: "winPercentage", label: "Win rate", group: "General", get: (p) => (hasMatches(p) ? finite(p.winrate) : null), format: formatters.pct },
+  { key: "matchesPlayed", label: "Matches played", group: "General", get: (p) => finite(p.matches), format: formatters.int },
+  { key: "time", label: "Time played", short: "Playtime", group: "General", get: (p) => (hasMatches(p) ? finite(p.time_total) : null), format: formatters.time },
+  { key: "level", label: "Account level", group: "General", compare: false, get: (p) => finite(p.level), format: formatters.int },
+
+  { key: "performance", label: "Avg performance score", short: "Performance", group: "Combat", get: (p) => (num(p.performance_score_matches) > 0 ? finite(p.avg_performance_score) : null), format: formatters.dec1 },
+  { key: "acs", label: "ACS", group: "Combat", get: (p) => (hasMatches(p) ? finite(p.avg_acs) : null), format: formatters.dec1 },
+  { key: "adr", label: "ADR", group: "Combat", get: (p) => finite(p.summary?.adr), format: formatters.dec1 },
+  { key: "kd", label: "K/D", group: "Combat", get: (p) => (hasMatches(p) ? finite(p.kd) : null), format: formatters.dec2 },
+  { key: "kad", label: "KA/D", group: "Combat", get: (p) => (hasMatches(p) ? finite(p.kad) : null), format: formatters.dec2 },
+  { key: "kast", label: "KAST", group: "Combat", get: (p) => (hasMatches(p) ? finite(p.kast) : null), format: formatters.pct },
+  { key: "dd", label: "Damage delta / round", short: "Damage delta", group: "Combat", get: (p) => (hasMatches(p) ? finite(p.dd_delta) : null), format: formatters.signed },
+  { key: "hs", label: "Headshot %", group: "Combat", get: (p) => (num(p.headshots_total) + num(p.bodyshots_total) + num(p.legshots_total) > 0 ? finite(p.hs_percent) : null), format: formatters.pct },
+  { key: "kills", label: "Kills / match", group: "Combat", get: (p) => perMatch(p, p.kills_total), format: formatters.dec2 },
+  { key: "deaths", label: "Deaths / match", group: "Combat", better: "low", get: (p) => perMatch(p, p.deaths_total), format: formatters.dec2 },
+  { key: "assists", label: "Assists / match", group: "Combat", get: (p) => perMatch(p, p.assists_total), format: formatters.dec2 },
+
+  { key: "openingDuels", label: "Opening duels won", group: "Impact", get: (p) => finite(p.summary?.opening_duel_winrate), format: formatters.pct },
+  { key: "firstBloods", label: "First bloods / match", group: "Impact", get: (p) => summaryRate(p, (s) => num(s.first_bloods)), format: formatters.dec2 },
+  { key: "tradeKills", label: "Trade kills / match", group: "Impact", get: (p) => summaryRate(p, (s) => num(s.trade_kills)), format: formatters.dec2 },
+  { key: "multikills", label: "3K+ rounds / match", group: "Impact", get: (p) => summaryRate(p, (s) => num(s.multikills?.["3k"]) + num(s.multikills?.["4k"]) + num(s.multikills?.["5k"])), format: formatters.dec2 },
+  { key: "clutches", label: "Clutches", group: "Impact", get: (p) => finite(p.summary?.clutches), format: formatters.int },
+  { key: "aces", label: "Aces", group: "Impact", get: (p) => finite(p.summary?.multikills?.["5k"]), format: formatters.int },
+  { key: "mvps", label: "Match MVPs", group: "Impact", get: (p) => finite(p.summary?.match_mvps), format: formatters.int },
+  { key: "roundWin", label: "Round win rate", group: "Impact", get: (p) => finite(p.summary?.round_winrate), format: formatters.pct },
+
+  { key: "utilityUsage", label: "Utility usage", group: "Utility & economy", get: (p) => (num(p.performance_score_matches) > 0 ? finite(p.performance_breakdown_averages?.utility_usage) : null), format: formatters.dec2 },
+  { key: "abilityCasts", label: "Ability casts / round", group: "Utility & economy", get: totalCastsPerRound, format: formatters.dec2 },
+  { key: "ults", label: "Ultimates / match", group: "Utility & economy", get: (p) => finite(p.summary?.ultimates_per_match), format: formatters.dec2 },
+  { key: "spend", label: "Credits spent / round", group: "Utility & economy", better: null, get: (p) => finite(p.summary?.avg_spent_per_round), format: formatters.int },
+
+  { key: "enemyRank", label: "Avg enemy rank", group: "Matchmaking", better: null, get: (p) => finite(p.enemy_rank_average_value), format: formatters.rankAverage },
+  { key: "lobbyRank", label: "Avg lobby rank", group: "Matchmaking", better: null, get: (p) => finite(p.lobby_rank_average_value), format: formatters.rankAverage },
+].map((stat) => ({ better: "high", compare: true, ...stat }));
+
+const STAT_BY_KEY = Object.fromEntries(STATS.map((stat) => [stat.key, stat]));
+
+// Stats shown on every player card (3 x 2 grid).
+const CARD_STATS = ["winPercentage", "performance", "kd", "acs", "kast", "time"];
+
+function statValue(stat, player, act = currentAct) {
+  return finite(stat.get(player, act));
+}
+
+function statText(stat, player, act = currentAct) {
+  return stat.format(statValue(stat, player, act), player);
+}
+
+/* ------------------ Sorting ------------------ */
+
+let sortDirection = "desc";
+
+function buildSortMenu() {
+  const select = document.getElementById("sortSelect");
+  select.innerHTML = `<option value="default">Default order</option>` + STAT_GROUPS.map((group) => `
+    <optgroup label="${escapeHtml(group)}">
+      ${STATS.filter((stat) => stat.group === group).map((stat) => `
+        <option value="${stat.key}">${escapeHtml(stat.label)}</option>
+      `).join("")}
+    </optgroup>
+  `).join("");
+}
+
+// Older acts don't have every stat; disable the ones nobody has.
+function updateSortAvailability(data, act) {
+  const select = document.getElementById("sortSelect");
+  STATS.forEach((stat) => {
+    const option = select.querySelector(`option[value="${stat.key}"]`);
+    if (!option) return;
+    const available = data.some((player) => statValue(stat, player, act) != null);
+    option.disabled = !available;
+    option.textContent = available ? stat.label : `${stat.label} (not tracked)`;
+  });
+
+  if (select.selectedOptions[0]?.disabled) {
+    select.value = "default";
+  }
+  updateSortDirectionButton();
+}
+
+function updateSortDirectionButton() {
+  const button = document.getElementById("sortDirection");
+  if (!button) return;
+  const isDefault = document.getElementById("sortSelect").value === "default";
+  button.disabled = isDefault;
+  button.textContent = sortDirection === "desc" ? "Highest first" : "Lowest first";
+  button.setAttribute("aria-label", `Sort direction: ${button.textContent}. Click to reverse.`);
+}
+
+function sortPlayers(data, stat, act) {
+  const direction = sortDirection === "desc" ? -1 : 1;
+  return data.sort((a, b) => {
+    const va = statValue(stat, a, act);
+    const vb = statValue(stat, b, act);
+    // Players without a value always go last, whichever the direction.
+    if (va == null || vb == null) return (va == null) - (vb == null);
+    return (va - vb) * direction;
+  });
+}
+
 const RANK_TIERS = ["iron", "bronze", "silver", "gold", "platinum", "diamond", "ascendant", "immortal", "radiant"];
 
 function rankTier(rank) {
@@ -1573,18 +1720,51 @@ function rankTier(rank) {
   return RANK_TIERS.includes(tier) ? tier : "unrated";
 }
 
-function cardStat(label, value, className = "") {
+function cardStat(label, value, options = {}) {
   return `
-    <div${className ? ` class="${className}"` : ""}>
+    <div${options.className ? ` class="${options.className}"` : ""}>
       <dt>${escapeHtml(label)}</dt>
       <dd>${escapeHtml(value)}</dd>
+      ${options.was ? `<span class="card-was">was ${escapeHtml(options.was)}</span>` : ""}
     </div>
   `;
 }
 
 function renderPlayerCard(player, view) {
+  const { act, sortKey, old } = view;
+  const score = getDisplayedValoStatScore(player, act);
+
+  // "was ..." notes appear only in the changes view, and only for values that moved.
+  const was = (current, previous) => (old && previous !== current ? previous : "");
+
+  const stats = CARD_STATS.map((key) => {
+    const stat = STAT_BY_KEY[key];
+    const text = statText(stat, player, act);
+    return cardStat(stat.short || stat.label, text, {
+      className: key === sortKey ? "is-sorted" : "",
+      was: old ? was(text, statText(stat, old, act)) : "",
+    });
+  }).join("");
+
+  // When sorting by a stat that isn't on the card, show it as an extra row.
+  const sortStat = STAT_BY_KEY[sortKey];
+  const focus = sortStat && !CARD_STATS.includes(sortKey) && sortKey !== "score" && sortKey !== "rank"
+    ? cardStat(sortStat.label, statText(sortStat, player, act), { className: "card-stat-focus" })
+    : "";
+
+  const rankText = `${player.rank || "Unrated"}`;
+  const oldRank = old ? `${old.rank || "Unrated"}, ${num(old.rr)} RR` : "";
+  const rankChanged = old && (old.rank !== player.rank || old.rr !== player.rr);
+
+  const oldScore = old ? formatScore(valoStatScore(old)) : "";
+  const scoreLabel = act === "overall" && player.actCount > 1
+    ? `ValoStat score, average of ${player.actCount} acts`
+    : old && oldScore !== formatScore(score)
+      ? `ValoStat score, was ${oldScore}`
+      : "ValoStat score";
+
   return `
-    <article class="card${view.isDiff ? " diff-highlight" : ""}" data-tier="${rankTier(player.rank)}" data-player-id="${escapeHtml(player.id)}" tabindex="0" aria-label="${escapeHtml(player.id)}, open full stats">
+    <article class="card${old ? " diff-highlight" : ""}${sortKey === "score" ? " sorted-by-score" : ""}" data-tier="${rankTier(player.rank)}" data-player-id="${escapeHtml(player.id)}" tabindex="0" aria-label="${escapeHtml(player.id)}, open full stats">
       <div class="card-head">
         <img src="${escapeHtml(player.banner || "")}" class="banner" alt="" loading="lazy" />
         <div class="card-identity">
@@ -1597,24 +1777,21 @@ function renderPlayerCard(player, view) {
         </div>
       </div>
 
-      <div class="card-rank">
-        <strong>${escapeHtml(view.rank || "Unrated")}</strong>
-        <span>${escapeHtml(view.rr ?? 0)} RR</span>
+      <div class="card-rank${sortKey === "rank" ? " is-sorted" : ""}">
+        <strong>${escapeHtml(rankText)}</strong>
+        <span>${escapeHtml(player.rr ?? 0)} RR</span>
+        ${rankChanged ? `<span class="card-was">was ${escapeHtml(oldRank)}</span>` : ""}
       </div>
 
       <dl class="card-stats">
-        ${cardStat("Level", view.level ?? "—")}
-        ${cardStat("Wins", view.wins)}
-        ${cardStat("Win rate", view.winrate)}
-        ${cardStat("Playtime", view.time)}
-        ${player.actCount ? cardStat("Acts counted", player.actCount) : ""}
-        ${view.focus ? cardStat(view.focus[0], view.focus[1], "card-stat-focus") : ""}
+        ${stats}
+        ${focus}
       </dl>
 
       <div class="score">
-        <span class="score-value">${escapeHtml(view.scoreText)}</span>
-        ${scoreMeter(view.score)}
-        <span class="score-label">ValoStat score</span>
+        <span class="score-value">${escapeHtml(formatScore(score))}</span>
+        ${scoreMeter(score)}
+        <span class="score-label">${escapeHtml(scoreLabel)}</span>
       </div>
     </article>
   `;
@@ -1645,98 +1822,33 @@ async function renderCards(act = currentAct) {
     currentActData = displayData;
   }
 
+  updateSortAvailability(displayData, act);
   const sortType = document.getElementById("sortSelect").value;
+  const sortStat = STAT_BY_KEY[sortType];
 
-  // Higher first; players without a value always go last.
-  const byValue = (getValue) => (a, b) => {
-    const va = getValue(a);
-    const vb = getValue(b);
-    const aMissing = va == null || !Number.isFinite(va);
-    const bMissing = vb == null || !Number.isFinite(vb);
-    if (aMissing || bMissing) return aMissing - bMissing;
-    return vb - va;
-  };
-
-  const comparators = {
-    score: byValue((p) => getDisplayedValoStatScore(p, act)),
-    rank: byValue((p) => p.elo || 0),
-    level: byValue((p) => p.level || 0),
-    winPercentage: byValue((p) => p.winrate || 0),
-    matchesPlayed: byValue((p) => p.matches || 0),
-    kills: byValue((p) => perMatch(p, p.kills_total)),
-    // Fewer deaths per game ranks higher.
-    deaths: byValue((p) => {
-      const value = perMatch(p, p.deaths_total);
-      return value == null ? null : -value;
-    }),
-    assists: byValue((p) => perMatch(p, p.assists_total)),
-    acs: byValue((p) => p.avg_acs || 0),
-    kd: byValue((p) => p.kd || 0),
-    kad: byValue((p) => p.kad || 0),
-    kast: byValue((p) => p.kast || 0),
-    dd: byValue((p) => p.dd_delta || 0),
-    time: byValue((p) => p.time_total || 0),
-  };
-
-  if (comparators[sortType]) {
-    displayData.sort(comparators[sortType]);
+  if (sortStat) {
+    sortPlayers(displayData, sortStat, act);
   }
 
   profiles.innerHTML = "";
 
-  if (showDiff && prev.length > 0) {
-    const hasDiff = prev.some((player) => player.diff);
-
-    if (!hasDiff) {
-      profiles.innerHTML = "<p class='no-changes'>No changes since last update.</p>";
-      return displayData;
-    }
+  if (showDiff && prev.length > 0 && !prev.some((player) => player.diff)) {
+    profiles.innerHTML = "<p class='no-changes'>No changes since last update.</p>";
+    return displayData;
   }
-
-  const perMatchText = (player, total) => {
-    const value = perMatch(player, total);
-    return value == null ? "N/A" : Math.trunc(value * 100) / 100;
-  };
-
-  // The extra stat shown on each card follows the sort choice.
-  const focusStat = (player) => {
-    switch (sortType) {
-      case "kills": return ["Kills per match", perMatchText(player, player.kills_total)];
-      case "deaths": return ["Deaths per match", perMatchText(player, player.deaths_total)];
-      case "assists": return ["Assists per match", perMatchText(player, player.assists_total)];
-      case "acs": return ["Average ACS", formatStat(player.avg_acs || 0)];
-      case "kd": return ["K/D", formatStat(player.kd || 0)];
-      case "kad": return ["KA/D", formatStat(player.kad || 0)];
-      case "kast": return ["KAST", `${formatStat(player.kast || 0)}%`];
-      case "dd": return ["Damage delta per round", formatStat(player.dd_delta || 0)];
-      default: return null;
-    }
-  };
 
   const cards = [];
 
   displayData.forEach((player) => {
     const playerKey = getPlayerMatchKey(player);
-    const playerDiff = prev.find(
-      (item) => getPlayerMatchKey(item) === playerKey
-    );
+    const playerDiff = prev.find((item) => item.key === playerKey);
 
     if (showDiff && playerDiff && !playerDiff.diff) return;
 
-    const useDiff = Boolean(showDiff && playerDiff && playerDiff.diff);
-    const score = getDisplayedValoStatScore(player, act);
-
     cards.push(renderPlayerCard(player, {
-      isDiff: useDiff,
-      rank: useDiff ? playerDiff.rank : player.rank,
-      rr: useDiff ? playerDiff.rr : player.rr,
-      level: useDiff ? playerDiff.level : player.level,
-      wins: useDiff ? `${playerDiff.wins}/${playerDiff.matches}` : `${player.wins}/${player.matches}`,
-      winrate: useDiff ? playerDiff.winrate : `${player.winrate}%`,
-      time: useDiff ? playerDiff.time_total : formatTime(player.time_total),
-      scoreText: useDiff ? playerDiff.score : formatScore(score),
-      score,
-      focus: focusStat(player),
+      act,
+      sortKey: sortStat ? sortType : null,
+      old: showDiff && playerDiff?.diff ? playerDiff.old : null,
     }));
   });
 
@@ -1821,89 +1933,107 @@ const rankValues = {
   "Radiant": 25,
 };
 
-function statRow(a, b, higherBetter = true, rank = false, isTime = false) {
-  let compareA = a;
-  let compareB = b;
-  let displayA = a;
-  let displayB = b;
+// Which side wins: "a", "b", "tie", or null when there's no winner.
+function compareWinner(va, vb, better) {
+  if (!better || va == null || vb == null) return null;
+  if (va === vb) return "tie";
+  const aHigher = va > vb;
+  return (better === "high") === aHigher ? "a" : "b";
+}
 
-  if (rank) {
-    compareA = rankValues[a] || 0;
-    compareB = rankValues[b] || 0;
-  }
+function compareRow(label, a, b, options = {}) {
+  const { va, vb, winner, note } = options;
+  const max = Math.max(Math.abs(va ?? 0), Math.abs(vb ?? 0));
+  const width = (value) => (value == null || !max ? 0 : (Math.abs(value) / max) * 100);
+  const side = (who) => {
+    if (winner === "tie") return "equal-stat";
+    if (!winner) return "";
+    return winner === who ? "good-stat" : "bad-stat";
+  };
 
-  if (isTime) {
-    displayA = formatTime(a);
-    displayB = formatTime(b);
-  } else {
-    displayA = formatStat(a);
-    displayB = formatStat(b);
-  }
-
-  // Nothing to compare against when one side has no value.
-  if (compareA == null || compareB == null) {
-    return `<td>${displayA}</td><td>${displayB}</td>`;
-  }
-
-  if (compareA === compareB) {
-    return `<td class="equal-stat">${displayA}</td><td class="equal-stat">${displayB}</td>`;
-  }
-
-  const goodA = higherBetter
-    ? compareA > compareB
-    : compareA < compareB;
-
-  return goodA
-    ? `<td class="good-stat">${displayA}</td><td class="bad-stat">${displayB}</td>`
-    : `<td class="bad-stat">${displayA}</td><td class="good-stat">${displayB}</td>`;
+  return `
+    <div class="cmp-row" data-winner="${winner || "none"}">
+      <span class="cmp-val cmp-a ${side("a")}">${escapeHtml(a)}</span>
+      <span class="cmp-bar cmp-bar-a ${side("a")}"><i style="width:${width(va)}%"></i></span>
+      <span class="cmp-label">${escapeHtml(label)}${note ? `<small>${escapeHtml(note)}</small>` : ""}</span>
+      <span class="cmp-bar cmp-bar-b ${side("b")}"><i style="width:${width(vb)}%"></i></span>
+      <span class="cmp-val cmp-b ${side("b")}">${escapeHtml(b)}</span>
+    </div>
+  `;
 }
 
 function renderComparison(a, b) {
+  const act = currentAct;
+  const tally = { a: 0, b: 0, tie: 0 };
+  const count = (winner) => {
+    if (winner) tally[winner] += 1;
+    return winner;
+  };
+
+  // Rank first. RR only decides anything when both players hold the same rank.
+  const rankA = rankValue(a.rank);
+  const rankB = rankValue(b.rank);
+  const sameRank = rankA === rankB;
+  const rankRows = [
+    compareRow("Rank", a.rank || "Unrated", b.rank || "Unrated", {
+      va: rankA, vb: rankB, winner: count(compareWinner(rankA, rankB, "high")),
+    }),
+    compareRow("RR", `${num(a.rr)}`, `${num(b.rr)}`, {
+      va: num(a.rr), vb: num(b.rr),
+      winner: sameRank ? count(compareWinner(num(a.rr), num(b.rr), "high")) : null,
+      note: sameRank ? "" : "Only compared within the same rank",
+    }),
+  ];
+
+  const groups = STAT_GROUPS.map((group) => {
+    const rows = STATS
+      .filter((stat) => stat.group === group && stat.compare)
+      .map((stat) => {
+        const va = statValue(stat, a, act);
+        const vb = statValue(stat, b, act);
+        if (va == null && vb == null) return "";
+        return compareRow(stat.label, stat.format(va, a), stat.format(vb, b), {
+          va, vb, winner: count(compareWinner(va, vb, stat.better)),
+        });
+      })
+      .filter(Boolean);
+
+    if (group === "General") rows.unshift(...rankRows);
+    if (group === "General" && act === "overall") {
+      rows.push(compareRow("Acts counted", `${a.actCount || 1}`, `${b.actCount || 1}`, {
+        va: a.actCount || 1, vb: b.actCount || 1, winner: null,
+      }));
+    }
+    if (!rows.length) return "";
+
+    return `
+      <section class="cmp-group">
+        <h3>${escapeHtml(group)}</h3>
+        ${rows.join("")}
+      </section>
+    `;
+  }).join("");
+
+  const headline = (player, side) => `
+    <div class="cmp-player cmp-player-${side}" data-tier="${rankTier(player.rank)}">
+      <strong>${escapeHtml(player.id)}</strong>
+      <span>${escapeHtml(player.rank || "Unrated")}</span>
+      <b>${tally[side]}</b>
+      <small>stats won</small>
+    </div>
+  `;
+
   comparison.innerHTML = `
-    <table>
-      <tr>
-        <th>Stat</th>
-        <th>${escapeHtml(a.id)}</th>
-        <th>${escapeHtml(b.id)}</th>
-      </tr>
-
-      <tr>
-        <td>Rank</td>
-        ${statRow(a.rank, b.rank, true, true)}
-      </tr>
-
-      <tr>
-        <td>RR</td>
-        ${statRow(a.rr, b.rr)}
-      </tr>
-
-      <tr>
-        <td>ValoStat Score</td>
-        ${statRow(getDisplayedValoStatScore(a, currentAct), getDisplayedValoStatScore(b, currentAct))}
-      </tr>
-
-      ${a.actCount || b.actCount ? `
-        <tr><td>Acts Counted</td>${statRow(a.actCount || 1, b.actCount || 1)}</tr>
-      ` : ""}
-
-      ${a.actsPlayed || b.actsPlayed ? `
-        <tr>
-          <td>Acts Played</td>
-          <td>${escapeHtml(a.actsPlayed?.toUpperCase() || "N/A")}</td>
-          <td>${escapeHtml(b.actsPlayed?.toUpperCase() || "N/A")}</td>
-        </tr>
-      ` : ""}
-
-      <tr><td>Playtime</td>${statRow(a.time_total, b.time_total, true, false, true)}</tr>
-      <tr><td>Matches</td>${statRow(a.matches, b.matches)}</tr>
-      <tr><td>Winrate %</td>${statRow(a.winrate, b.winrate)}</tr>
-      <tr><td>Avg Performance</td>${statRow(a.avg_performance_score, b.avg_performance_score)}</tr>
-      <tr><td>Avg ACS</td>${statRow(a.avg_acs, b.avg_acs)}</tr>
-      <tr><td>K/D</td>${statRow(a.kd, b.kd)}</tr>
-      <tr><td>KA/D</td>${statRow(a.kad, b.kad)}</tr>
-      <tr><td>KAST %</td>${statRow(a.kast, b.kast)}</tr>
-      <tr><td>DDΔ / round</td>${statRow(a.dd_delta, b.dd_delta)}</tr>
-    </table>
+    <div class="cmp-head">
+      ${headline(a, "a")}
+      <div class="cmp-vs">
+        <span>vs</span>
+        ${tally.tie ? `<small>${tally.tie} tied</small>` : ""}
+      </div>
+      ${headline(b, "b")}
+    </div>
+    ${groups}
+    <p class="modal-footnote">Bars show each value relative to the larger of the two. Stats where neither side is better, like credits spent or average enemy rank, aren't counted.</p>
   `;
 
   try {
@@ -1988,7 +2118,19 @@ function initDashboard() {
 
   compareBtn.addEventListener("click", onCompareClick);
 
-  document.getElementById("sortSelect").addEventListener("change", async () => {
+  buildSortMenu();
+
+  document.getElementById("sortSelect").addEventListener("change", async (event) => {
+    // A new stat starts with its better end first (fewest deaths, most kills).
+    const stat = STAT_BY_KEY[event.target.value];
+    sortDirection = stat?.better === "low" ? "asc" : "desc";
+    updateSortDirectionButton();
+    await renderCards();
+  });
+
+  document.getElementById("sortDirection").addEventListener("click", async () => {
+    sortDirection = sortDirection === "desc" ? "asc" : "desc";
+    updateSortDirectionButton();
     await renderCards();
   });
 

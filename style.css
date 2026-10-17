@@ -264,6 +264,28 @@ select:hover {
   border-color: var(--faint);
 }
 
+.sort-direction {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--strong);
+  font: 500 14px var(--font-body);
+  white-space: nowrap;
+}
+
+.sort-direction:hover:not(:disabled) {
+  border-color: var(--faint);
+}
+
+.sort-direction:disabled {
+  color: var(--faint);
+  cursor: default;
+}
+
+select option:disabled {
+  color: var(--faint);
+}
+
 /* Toggle switch */
 
 .toggle {
@@ -452,9 +474,10 @@ main {
 
 .card-rank {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 10px;
+  gap: 2px 10px;
   margin: 0 16px;
   padding: 10px 0;
   border-top: 1px solid var(--line);
@@ -476,45 +499,81 @@ main {
 
 .card-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 12px;
   margin: 0;
-  padding: 12px 16px 14px;
+  padding: 14px 16px 16px;
 }
 
 .card-stats div {
+  position: relative;
   min-width: 0;
 }
 
 .card-stats dt {
   color: var(--muted);
   font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-stats dd {
   margin: 0;
-  color: var(--text);
-  font-size: 15px;
-  font-weight: 500;
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.15;
   font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
-/* The highlighted extra stat that follows the sort choice. */
+/* The stat the grid is sorted by takes the player's tier colour. */
+.card-stats .is-sorted dt,
+.card-stats .is-sorted dd,
+.card-rank.is-sorted span {
+  color: var(--tier);
+}
+
+.card-stats .is-sorted::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 0;
+  width: 18px;
+  height: 2px;
+  background: var(--tier);
+}
+
+/* Extra row for a sorted stat that isn't one of the six above. */
 .card-stats .card-stat-focus {
   grid-column: 1 / -1;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 6px 10px;
+  gap: 12px;
+  padding: 7px 10px;
   background: var(--ink);
 }
 
-.card-stats .card-stat-focus dd {
-  color: var(--strong);
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 600;
+.card-stats .card-stat-focus dt {
+  color: var(--tier);
+}
+
+/* "was ..." notes in the changes view */
+.card-was {
+  display: block;
+  color: var(--changed);
+  font-size: 11px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-rank .card-was {
+  flex-basis: 100%;
 }
 
 /* Score strip at the bottom of each card */
@@ -567,10 +626,7 @@ main {
   box-shadow: inset 0 0 0 1px var(--changed), inset 4px 0 0 var(--changed);
 }
 
-.card.diff-highlight .card-stats dd,
-.card.diff-highlight .card-rank strong {
-  color: var(--changed);
-}
+
 
 /* ---------- States ---------- */
 
@@ -647,7 +703,147 @@ main {
 }
 
 #comparison {
-  max-width: 880px;
+  max-width: 960px;
+}
+
+/* ---------- Head-to-head comparison ---------- */
+
+.cmp-head {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 16px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.cmp-player {
+  display: grid;
+  gap: 2px;
+}
+
+.cmp-player-b {
+  text-align: right;
+}
+
+.cmp-player strong {
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: 800;
+  line-height: 0.95;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.cmp-player span {
+  color: var(--tier);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.cmp-player b {
+  margin-top: 8px;
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cmp-player small,
+.cmp-vs small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.cmp-vs {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding-bottom: 4px;
+}
+
+.cmp-vs span {
+  color: var(--faint);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.cmp-group {
+  margin-top: 26px;
+}
+
+.cmp-group h3 {
+  margin-bottom: 6px;
+  font-size: 22px;
+}
+
+.cmp-row {
+  display: grid;
+  grid-template-columns: 132px 1fr 170px 1fr 132px;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.cmp-val {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cmp-b {
+  text-align: right;
+}
+
+.cmp-label {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.cmp-label small {
+  display: block;
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.cmp-bar {
+  display: flex;
+  height: 6px;
+  background: var(--line-soft);
+}
+
+.cmp-bar-a {
+  justify-content: flex-end;
+}
+
+.cmp-bar i {
+  display: block;
+  height: 100%;
+  background: var(--faint);
+}
+
+.cmp-bar.good-stat i {
+  background: var(--good);
+}
+
+.cmp-bar.bad-stat i,
+.cmp-bar.equal-stat i {
+  background: var(--faint);
+}
+
+.cmp-val.bad-stat {
+  font-weight: 500;
 }
 
 /* ---------- Tables ---------- */
@@ -1183,6 +1379,94 @@ th {
   background: var(--panel);
 }
 
+/* Performance breakdown, laid out like the in-game screen */
+
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 28px;
+}
+
+.breakdown-table th,
+.breakdown-table td {
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.breakdown-table thead th {
+  border-bottom-color: var(--line);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.breakdown-table tbody th {
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.breakdown-table td {
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.breakdown-table th:last-child,
+.breakdown-table td:last-child {
+  width: 64px;
+  text-align: center;
+}
+
+.impact {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  vertical-align: middle;
+}
+
+.impact svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+.impact-double_up,
+.impact-up {
+  color: var(--good);
+}
+
+.impact-neutral {
+  color: var(--strong);
+}
+
+.impact-down,
+.impact-double_down {
+  color: var(--bad);
+}
+
+.impact-none {
+  color: var(--faint);
+}
+
+.grade-card > span em {
+  color: var(--faint);
+  font-style: normal;
+}
+
+.grade-card[data-grade="distinction"] > strong {
+  color: var(--tier);
+}
+
 /* ---------- Agents ---------- */
 
 .agent-grid {
@@ -1516,6 +1800,35 @@ th {
 }
 
 @media (max-width: 640px) {
+  .breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cmp-row {
+    grid-template-columns: auto 1fr 1fr auto;
+    grid-template-areas:
+      "label label label label"
+      "va bara barb vb";
+    gap: 4px 8px;
+  }
+
+  .cmp-label {
+    grid-area: label;
+  }
+
+  .cmp-a { grid-area: va; }
+  .cmp-bar-a { grid-area: bara; }
+  .cmp-bar-b { grid-area: barb; }
+  .cmp-b { grid-area: vb; }
+
+  .cmp-player b {
+    font-size: 32px;
+  }
+
+  .sort-control {
+    flex-wrap: wrap;
+  }
+
   :root {
     --card-min-width: 100%;
   }

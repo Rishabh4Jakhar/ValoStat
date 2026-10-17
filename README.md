@@ -10,8 +10,10 @@ Valorant stats for a group of friends: one card per player, a detailed profile f
 - Per-agent stats: win rate, ACS, ADR, K/D, KAST, headshot %, first bloods, multi-kills, clutches, utility use and best map
 - Map results, opening duels, trades, match grades and economy
 - Shareable player pages (`player.html?id=<player>&act=<act code>`)
-- Show what changed since the last update
-- Sort by any stat, and compare two players side by side
+- Show what changed since the last update, with each card noting the previous value
+- Sort by any of 31 stats, highest or lowest first
+- Head-to-head comparison of two players across every stat, grouped by type, with a count of stats won
+- Performance breakdown with the game's own impact ratings and match grade ranges
 - Stats refresh automatically every 4 hours, and a new act is picked up and archived on its own
 
 ## ValoStat score

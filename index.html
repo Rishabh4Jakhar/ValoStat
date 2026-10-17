@@ -39,22 +39,10 @@
       <div class="sort-control">
         <label for="sortSelect">Sort by</label>
         <select id="sortSelect">
-          <option value="default">Default</option>
-          <option value="score">ValoStat Score</option>
-          <option value="rank">Rank</option>
-          <option value="level">Level</option>
-          <option value="winPercentage">Win rate</option>
-          <option value="matchesPlayed">Matches played</option>
-          <option value="time">Time played</option>
-          <option value="acs">ACS</option>
-          <option value="kd">K/D</option>
-          <option value="kad">KA/D</option>
-          <option value="kast">KAST</option>
-          <option value="dd">Damage delta</option>
-          <option value="kills">Kills per game</option>
-          <option value="deaths">Deaths per game</option>
-          <option value="assists">Assists per game</option>
+          <!-- Filled from the STATS list in script.js -->
+          <option value="default">Default order</option>
         </select>
+        <button id="sortDirection" class="sort-direction" type="button" disabled>Highest first</button>
       </div>
 
       <div class="toggle-control">
