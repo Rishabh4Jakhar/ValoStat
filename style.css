@@ -264,6 +264,40 @@ select:hover {
   border-color: var(--faint);
 }
 
+[hidden] {
+  display: none !important;
+}
+
+.min-matches {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.min-matches input {
+  width: 72px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--panel);
+  color: var(--strong);
+  font: 500 14px var(--font-body);
+}
+
+.min-matches input:hover {
+  border-color: var(--faint);
+}
+
+.grid-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 .sort-direction {
   padding: 8px 12px;
   border: 1px solid var(--line);
@@ -576,6 +610,49 @@ main {
   flex-basis: 100%;
 }
 
+/* Last 10 results */
+
+.card-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 16px;
+  padding: 10px 0 12px;
+}
+
+.card-form-label,
+.card-form-record {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.card-form-record {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.form-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.form-dot {
+  display: block;
+  width: 9px;
+  height: 9px;
+  transform: skewX(-20deg);
+  background: var(--faint);
+}
+
+.form-win {
+  background: var(--good);
+}
+
+.form-loss {
+  background: var(--bad);
+}
+
 /* Score strip at the bottom of each card */
 
 .score {
@@ -685,15 +762,17 @@ main {
 .compare-section h2 {
   margin-bottom: 18px;
   font-size: 36px;
+  text-align: center;
   text-transform: uppercase;
 }
 
 .compare-controls {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 10px 12px;
-  margin-bottom: 22px;
+  margin-bottom: 26px;
 }
 
 .compare-controls > span {
@@ -704,6 +783,11 @@ main {
 
 #comparison {
   max-width: 960px;
+  margin: 0 auto;
+}
+
+#comparison > .modal-footnote {
+  text-align: center;
 }
 
 /* ---------- Head-to-head comparison ---------- */
@@ -1467,6 +1551,220 @@ th {
   color: var(--tier);
 }
 
+/* ---------- Matchmaking: RR over time ---------- */
+
+.rr-summary {
+  margin-bottom: 14px;
+}
+
+.rr-chart {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  overflow: visible;
+}
+
+.rr-grid {
+  stroke: var(--line-soft);
+  stroke-width: 1;
+}
+
+.rr-rank,
+.rr-axis {
+  fill: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+}
+
+.rr-area {
+  fill: color-mix(in srgb, var(--tier) 12%, transparent);
+}
+
+.rr-line {
+  fill: none;
+  stroke: var(--tier);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.rr-dot {
+  fill: var(--ink);
+  stroke: var(--tier);
+  stroke-width: 2;
+}
+
+/* ---------- Matchmaking: recent matches ---------- */
+
+.match-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line-soft);
+}
+
+.match-row {
+  display: grid;
+  grid-template-columns: 74px 80px minmax(90px, 1.1fr) minmax(96px, 1fr) 54px 74px minmax(110px, 1.3fr);
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px 10px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  box-shadow: inset 3px 0 0 var(--faint);
+}
+
+.match-row[data-result="win"] {
+  box-shadow: inset 3px 0 0 var(--good);
+}
+
+.match-row[data-result="loss"] {
+  box-shadow: inset 3px 0 0 var(--bad);
+}
+
+.match-row > span {
+  min-width: 0;
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.match-row small {
+  display: block;
+  overflow: hidden;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.match-row[data-result="win"] .match-result {
+  color: var(--good);
+}
+
+.match-row[data-result="loss"] .match-result {
+  color: var(--bad);
+}
+
+/* ---------- Party ---------- */
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.party-table {
+  min-width: 620px;
+}
+
+.party-table tbody th {
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.party-table td.good-stat {
+  color: var(--good);
+  font-weight: 600;
+}
+
+.party-table td.bad-stat {
+  color: var(--bad);
+  font-weight: 600;
+}
+
+.friend-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 470px), 1fr));
+  gap: 16px;
+}
+
+.friend-card {
+  padding: 16px 20px 8px;
+  background: var(--panel);
+  box-shadow: inset 3px 0 0 var(--tier);
+}
+
+.friend-head {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.friend-side strong {
+  display: block;
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.friend-them {
+  text-align: right;
+}
+
+.friend-them strong {
+  color: var(--tier);
+}
+
+.friend-side small,
+.friend-together span,
+.friend-together small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.friend-together {
+  text-align: center;
+}
+
+.friend-together b {
+  display: block;
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.friend-together small.good-stat {
+  color: var(--good);
+}
+
+.friend-together small.bad-stat {
+  color: var(--bad);
+}
+
+.friend-rows .cmp-row {
+  grid-template-columns: 62px 1fr 128px 1fr 62px;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.friend-rows .cmp-label {
+  font-size: 12px;
+}
+
+.friend-rows .cmp-row:last-child {
+  border-bottom: 0;
+}
+
+.friend-rows .cmp-val {
+  font-size: 17px;
+}
+
 /* ---------- Agents ---------- */
 
 .agent-grid {
@@ -1734,6 +2032,21 @@ th {
    ========================================================= */
 
 @media (max-width: 980px) {
+  .match-row {
+    grid-template-columns: 70px 74px 1fr 1fr 70px;
+    grid-template-areas:
+      "result score agent kda acs"
+      "result score party party perf";
+  }
+
+  .match-result { grid-area: result; }
+  .match-score { grid-area: score; }
+  .match-agent { grid-area: agent; }
+  .match-kda { grid-area: kda; }
+  .match-acs { grid-area: acs; }
+  .match-perf { grid-area: perf; }
+  .match-party { grid-area: party; }
+
   .modal-hero {
     grid-template-columns: 112px minmax(0, 1fr);
     gap: 20px;
@@ -1800,6 +2113,31 @@ th {
 }
 
 @media (max-width: 640px) {
+  .match-row {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-areas:
+      "result score agent"
+      "kda acs perf"
+      "party party party";
+    gap: 8px 10px;
+  }
+
+  .friend-card {
+    padding: 14px 14px 6px;
+  }
+
+  .friend-side strong {
+    font-size: 20px;
+  }
+
+  .friend-rows .cmp-row {
+    grid-template-columns: auto 1fr 1fr auto;
+  }
+
+  .min-matches {
+    width: 100%;
+  }
+
   .breakdown-grid {
     grid-template-columns: 1fr;
   }
