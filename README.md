@@ -10,8 +10,12 @@ Valorant stats for a group of friends: one card per player, a detailed profile f
 - Per-agent stats: win rate, ACS, ADR, K/D, KAST, headshot %, first bloods, multi-kills, clutches, utility use and best map
 - Map results, opening duels, trades, match grades and economy
 - Shareable player pages (`player.html?id=<player>&act=<act code>`)
+- Last 10 results on every card, and a recent-matches list in each profile
+- Party stats: results by queue size (solo to 5-stack), and your stats next to each friend's in the matches you queued together
+- RR over time, recorded at every update from V26: A6 onwards
 - Show what changed since the last update, with each card noting the previous value
-- Sort by any of 31 stats, highest or lowest first
+- Sort by any of 32 stats, highest or lowest first, with an optional minimum number of matches
+- Shareable views: the act, sort and filters are kept in the page link
 - Head-to-head comparison of two players across every stat, grouped by type, with a count of stats won
 - Performance breakdown with the game's own impact ratings and match grade ranges
 - Stats refresh automatically every 4 hours, and a new act is picked up and archived on its own
