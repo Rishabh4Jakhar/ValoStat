@@ -118,7 +118,7 @@ PARTY_COUNTER_KEYS = (
 )
 
 RECENT_MATCHES_KEPT = 10
-RR_HISTORY_KEPT = 400
+RR_HISTORY_KEPT = 1500  # about 3 months at several changes a day
 
 
 def rate_limited_get(url):
