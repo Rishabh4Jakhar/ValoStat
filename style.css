@@ -1553,21 +1553,60 @@ th {
 
 /* ---------- Matchmaking: RR over time ---------- */
 
+.rr-ranges {
+  display: inline-flex;
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+}
+
+.rr-range {
+  min-width: 52px;
+  padding: 7px 12px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.rr-range + .rr-range {
+  border-left: 1px solid var(--line);
+}
+
+.rr-range:hover {
+  background: var(--panel);
+  color: var(--strong);
+}
+
+.rr-range[aria-pressed="true"] {
+  background: var(--strong);
+  color: var(--ink);
+}
+
 .rr-summary {
   margin-bottom: 14px;
+}
+
+.rr-chart-wrap {
+  position: relative;
+  max-width: 900px;
 }
 
 .rr-chart {
   display: block;
   width: 100%;
-  max-width: 900px;
   height: auto;
   overflow: visible;
+  touch-action: pan-y;
 }
 
 .rr-grid {
   stroke: var(--line-soft);
   stroke-width: 1;
+}
+
+.rr-grid-tier {
+  stroke: var(--line);
 }
 
 .rr-rank,
@@ -1577,21 +1616,86 @@ th {
   font-size: 12px;
 }
 
+.rr-act {
+  stroke: var(--faint);
+  stroke-dasharray: 4 4;
+}
+
 .rr-area {
-  fill: color-mix(in srgb, var(--tier) 12%, transparent);
+  fill-opacity: 0.12;
+  stroke: none;
 }
 
 .rr-line {
   fill: none;
-  stroke: var(--tier);
   stroke-width: 2.5;
   stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
-.rr-dot {
+.rr-dot,
+.rr-cursor-dot {
   fill: var(--ink);
-  stroke: var(--tier);
   stroke-width: 2;
+}
+
+.rr-cursor {
+  stroke: var(--muted);
+  stroke-dasharray: 3 3;
+}
+
+.rr-hit {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.rr-tooltip {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 1px;
+  min-width: 150px;
+  padding: 8px 12px;
+  background: var(--panel-raised);
+  box-shadow: inset 0 0 0 1px var(--line), 0 8px 24px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 14px));
+  white-space: nowrap;
+}
+
+.rr-tooltip.below {
+  transform: translate(-50%, 14px);
+}
+
+.rr-tooltip span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.rr-tooltip strong {
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.rr-tooltip strong b {
+  margin-left: 4px;
+  font-weight: 700;
+}
+
+.rr-tooltip em {
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
+}
+
+.rr-tooltip em.good-stat {
+  color: var(--good);
+}
+
+.rr-tooltip em.bad-stat {
+  color: var(--bad);
 }
 
 /* ---------- Matchmaking: recent matches ---------- */
@@ -1766,6 +1870,72 @@ th {
 }
 
 /* ---------- Agents ---------- */
+
+.agent-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-bottom: 18px;
+}
+
+.role-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.role-toggle {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.role-toggle span {
+  color: var(--faint);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.role-toggle[aria-pressed="true"] {
+  border-color: var(--strong);
+  color: var(--strong);
+}
+
+.role-toggle[aria-pressed="true"] span {
+  color: var(--muted);
+}
+
+.role-toggle[data-empty] {
+  opacity: 0.55;
+}
+
+.role-toggle:hover {
+  background: var(--panel);
+}
+
+.agent-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.agent-role {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+}
 
 .agent-grid {
   display: grid;

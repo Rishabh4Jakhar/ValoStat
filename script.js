@@ -678,7 +678,47 @@ const AGENT_IMAGE_NAMES = {
   "KAY/O": "KAYO",
 };
 
+const AGENT_ROLE_ORDER = ["Duelist", "Sentinel", "Initiator", "Controller"];
+
+// Built-in roles, used until (or if) the live agent list below loads.
+const AGENT_ROLES = {
+  Jett: "Duelist", Phoenix: "Duelist", Reyna: "Duelist", Raze: "Duelist", Yoru: "Duelist",
+  Neon: "Duelist", Iso: "Duelist", Waylay: "Duelist",
+  Killjoy: "Sentinel", Cypher: "Sentinel", Sage: "Sentinel", Chamber: "Sentinel",
+  Deadlock: "Sentinel", Vyse: "Sentinel", Veto: "Sentinel",
+  Sova: "Initiator", Breach: "Initiator", Skye: "Initiator", "KAY/O": "Initiator",
+  Fade: "Initiator", Gekko: "Initiator", Tejo: "Initiator",
+  Brimstone: "Controller", Viper: "Controller", Omen: "Controller", Astra: "Controller",
+  Harbor: "Controller", Clove: "Controller", Miks: "Controller", Hush: "Duelist",
+};
+
+// Live agent list (roles and official icons) from valorant-api.com, so new
+// agents are classified without a code change.
+let agentCatalog = {};
+
+async function loadAgentCatalog() {
+  try {
+    const response = await fetch("https://valorant-api.com/v1/agents?isPlayableCharacter=true");
+    if (!response.ok) return;
+    const { data } = await response.json();
+    (data || []).forEach((agent) => {
+      if (!agent?.displayName) return;
+      agentCatalog[agent.displayName] = {
+        role: agent.role?.displayName || null,
+        icon: agent.displayIcon || agent.displayIconSmall || null,
+      };
+    });
+  } catch (error) {
+    console.warn("Agent list unavailable; using built-in roles", error);
+  }
+}
+
+function agentRole(name) {
+  return agentCatalog[name]?.role || AGENT_ROLES[name] || null;
+}
+
 function agentImageUrl(name) {
+  if (agentCatalog[name]?.icon) return agentCatalog[name].icon;
   const fileName = AGENT_IMAGE_NAMES[name] || name.trim().replace(/\s+/g, "_");
   return `https://wiki.playvalorant.com/en-us/images/${encodeURIComponent(fileName)}_icon.png`;
 }
@@ -783,6 +823,7 @@ function renderAgentCard(name, agent, totalMatches) {
 
         <div class="agent-card-title">
           <h4>${escapeHtml(name)}</h4>
+          ${agentRole(name) ? `<span class="agent-role">${escapeHtml(agentRole(name))}</span>` : ""}
         </div>
 
         <span class="agent-match-count">
@@ -810,6 +851,103 @@ function renderAgentCard(name, agent, totalMatches) {
   `;
 }
 
+const AGENT_SORTS = [
+  { key: "matches", label: "Most played", get: (s) => finite(s.matches) },
+  { key: "winrate", label: "Win rate", get: (s) => finite(s.winrate) },
+  { key: "acs", label: "ACS", get: (s) => finite(s.acs) },
+  { key: "adr", label: "ADR", get: (s) => finite(s.adr) },
+  { key: "kd", label: "K/D", get: (s) => finite(s.kd) },
+  { key: "kast", label: "KAST", get: (s) => finite(s.kast) },
+  { key: "hs", label: "Headshot %", get: (s) => finite(s.hs_percent) },
+  { key: "performance", label: "Performance", get: (s) => finite(s.avg_performance_score) },
+  { key: "firstBloods", label: "First bloods / match", get: (s) => (s.matches && s.first_bloods != null ? s.first_bloods / s.matches : null) },
+  { key: "dd", label: "Damage delta", get: (s) => finite(s.dd_delta) },
+  { key: "time", label: "Time played", get: (s) => finite(s.time_played_ms) },
+];
+
+// Filter by role, then sort. Agents with an unknown role only show while
+// every role is selected, since they can't be placed in one.
+function selectAgents(agents, roles, sortKey) {
+  const sort = AGENT_SORTS.find((item) => item.key === sortKey) || AGENT_SORTS[0];
+  const allRoles = roles.size === AGENT_ROLE_ORDER.length;
+  return agents
+    .filter(([name]) => {
+      const role = agentRole(name);
+      return role && AGENT_ROLE_ORDER.includes(role) ? roles.has(role) : allRoles;
+    })
+    .map((entry) => ({ entry, value: sort.get(agentSummary(entry[1])) }))
+    .sort((a, b) => {
+      if (a.value == null || b.value == null) return (a.value == null) - (b.value == null);
+      return b.value - a.value;
+    })
+    .map((item) => item.entry);
+}
+
+function renderAgentSection(player) {
+  const agents = Object.entries(player.agents || {})
+    .sort((a, b) => (b[1].matches || 0) - (a[1].matches || 0));
+  if (!agents.length) {
+    return `<p class="modal-empty">Agent-specific stats are not available for this period.</p>`;
+  }
+
+  const counts = {};
+  agents.forEach(([name]) => {
+    const role = agentRole(name);
+    counts[role] = (counts[role] || 0) + 1;
+  });
+  const detailed = agents.some(([, agent]) => agent.summary);
+
+  return `
+    <div class="agent-controls">
+      <div class="role-filters" role="group" aria-label="Show roles">
+        ${AGENT_ROLE_ORDER.map((role) => `
+          <button type="button" class="role-toggle" data-role="${role}" aria-pressed="true"${counts[role] ? "" : " data-empty"}>
+            ${role}<span>${counts[role] || 0}</span>
+          </button>
+        `).join("")}
+      </div>
+      ${detailed ? `
+        <label class="agent-sort">
+          Sort by
+          <select data-agent-sort>
+            ${AGENT_SORTS.map((item) => `<option value="${item.key}">${escapeHtml(item.label)}</option>`).join("")}
+          </select>
+        </label>
+      ` : ""}
+    </div>
+    <div class="agent-pool">${renderAgentPool(agents, player.summary?.matches ?? trackedMatches(player))}</div>
+  `;
+}
+
+function bindAgentControls(root, player) {
+  const section = root.querySelector('[data-panel="agents"]');
+  const pool = section?.querySelector(".agent-pool");
+  if (!pool) return;
+
+  const agents = Object.entries(player.agents || {})
+    .sort((a, b) => (b[1].matches || 0) - (a[1].matches || 0));
+  const total = player.summary?.matches ?? trackedMatches(player);
+  const roles = new Set(AGENT_ROLE_ORDER);
+  const sortSelect = section.querySelector("[data-agent-sort]");
+
+  const update = () => {
+    const shown = selectAgents(agents, roles, sortSelect?.value || "matches");
+    pool.innerHTML = shown.length
+      ? renderAgentPool(shown, total)
+      : `<p class="modal-empty">No agents played in the selected roles. Turn on another role to see more.</p>`;
+  };
+
+  section.querySelectorAll(".role-toggle").forEach((button) => {
+    button.addEventListener("click", () => {
+      const role = button.dataset.role;
+      if (roles.has(role)) roles.delete(role); else roles.add(role);
+      button.setAttribute("aria-pressed", String(roles.has(role)));
+      update();
+    });
+  });
+  sortSelect?.addEventListener("change", update);
+}
+
 function renderAgentPool(agents, totalMatches) {
   if (!agents.length) {
     return `<p class="modal-empty">Agent-specific stats are not available for this period.</p>`;
@@ -825,7 +963,7 @@ function renderAgentPool(agents, totalMatches) {
     .filter((item) => item.s[key] != null)
     .sort((a, b) => b.s[key] - a.s[key])[0];
 
-  const mostPlayed = agents[0];
+  const mostPlayed = agents.reduce((best, entry) => (num(agentSummary(entry[1]).matches) > num(agentSummary(best[1]).matches) ? entry : best), agents[0]);
   const bestAcs = leader("acs");
   const bestWin = leader("winrate");
   const bestKast = leader("kast");
@@ -913,6 +1051,8 @@ function openCardModal(player, act = currentAct) {
   modal.querySelector(".card-modal-content").dataset.tier = rankTier(player.rank);
   body.innerHTML = renderPlayerProfile(player, act);
   bindProfileTabs(body);
+  bindRrCharts(body, player);
+  bindAgentControls(body, player);
 
   openLink.href = trackerProfileUrl(player.riot_id || player.id);
   pageLink.href = playerPageUrl(player, act);
@@ -1091,7 +1231,7 @@ function renderPlayerProfile(player, act) {
     </div>
 
     <div class="modal-tab-panel" data-panel="agents" role="tabpanel" hidden>
-      ${modalSection("Agent pool", coverage || `${agents.length} agents with recorded stats`, renderAgentPool(agents, agentMatchesTotal))}
+      ${modalSection("Agent pool", coverage || `${agents.length} agents with recorded stats`, renderAgentSection(player))}
     </div>
 
     <div class="modal-tab-panel" data-panel="party" role="tabpanel" hidden>
@@ -1105,7 +1245,7 @@ function renderPlayerProfile(player, act) {
         ${modalStat("Average lobby rank", modalRank(rankLobby == null ? null : Math.round(rankLobby)), rankLobby == null ? "Not enough rank data" : `Rank value ${modalNumber(rankLobby, 2)} / 25`)}
         ${modalStat("Matches counted", modalNumber(player.enemy_rank_matches, 0), "For enemy rank average")}
       </div>
-      ${modalSection("RR over time", isOverall ? "Current act only" : "One point each time the rating changed", renderRrHistory(player))}
+      ${modalSection("RR over time", isOverall ? "Every act, each drawn as its own line" : "Rating at each update where it changed. Hover the line for details.", renderRrHistory(player))}
 
       ${modalSection("Recent matches", isOverall ? "Latest act, newest first" : "Last 10 matches, newest first", renderRecentMatches(player))}
 
@@ -1522,7 +1662,9 @@ function combinePlayerActs(entries) {
       ? entries.reduce((all, entry) => mergeParty(all, entry.player.party), { by_size: {}, friends: {} })
       : null,
     recent_matches: base.recent_matches || [],
-    rr_history: base.rr_history || [],
+    rr_history: entries
+      .flatMap((entry) => (entry.player.rr_history || []).map((point) => ({ ...point, act: entry.label })))
+      .sort((a, b) => Date.parse(a.t) - Date.parse(b.t)),
     schema_version: base.schema_version,
 
     actCount: entries.length,
@@ -1826,65 +1968,305 @@ function renderRecentMatches(player) {
   return `<ol class="match-list">${rows}</ol>`;
 }
 
-// RR over time, drawn from one point per rating change.
-function renderRrHistory(player) {
-  const history = (Array.isArray(player.rr_history) ? player.rr_history : [])
-    .filter((point) => finite(point.elo) != null);
+/* ---------- RR over time ---------- */
+// One point is stored each time a player's rating changes (checked every
+// update). The chart uses a real time axis, a range picker like a stock
+// chart, and colours the line by the rank tier it passes through.
 
-  if (!history.length) return notYetTracked(player, "RR changes");
+const RR_RANGES = [
+  { key: "1d", label: "1D", ms: 24 * 3600 * 1000 },
+  { key: "1w", label: "1W", ms: 7 * 24 * 3600 * 1000 },
+  { key: "1m", label: "1M", ms: 30 * 24 * 3600 * 1000 },
+  { key: "all", label: "All", ms: null },
+];
 
-  const first = history[0];
-  const last = history[history.length - 1];
+// Rating ("elo" in the API) is 100 per rank division: Iron 1 starts at 0,
+// so each tier (3 divisions) spans 300. Immortal and above share the top band.
+const TIER_BANDS = [
+  ["iron", 0, 300], ["bronze", 300, 600], ["silver", 600, 900], ["gold", 900, 1200],
+  ["platinum", 1200, 1500], ["diamond", 1500, 1800], ["ascendant", 1800, 2100],
+  ["immortal", 2100, Infinity],
+];
 
-  if (history.length < 2) {
-    return `<p class="modal-empty">Tracking started ${escapeHtml(shortDate(first.t))} at ${escapeHtml(first.rank)}, ${num(first.rr)} RR. The graph appears once the rating changes.</p>`;
+let rrChartCount = 0;
+
+function rrPoints(player) {
+  return (Array.isArray(player.rr_history) ? player.rr_history : [])
+    .map((point) => ({ ...point, time: Date.parse(point.t), elo: finite(point.elo) }))
+    .filter((point) => Number.isFinite(point.time) && point.elo != null)
+    .sort((a, b) => a.time - b.time);
+}
+
+function defaultRrRange(points) {
+  if (points.length < 2) return "all";
+  const span = points[points.length - 1].time - points[0].time;
+  return span > 30 * 24 * 3600 * 1000 ? "1m" : "all";
+}
+
+function rrTimeLabel(time, span) {
+  const date = new Date(time);
+  if (span <= 2 * 24 * 3600 * 1000) {
+    return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
   }
+  if (span <= 14 * 24 * 3600 * 1000) {
+    return `${date.toLocaleDateString(undefined, { weekday: "short" })} ${date.getDate()}`;
+  }
+  return date.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
 
-  const net = num(last.elo) - num(first.elo);
-  const peak = history.reduce((best, point) => (num(point.elo) > num(best.elo) ? point : best), first);
+function rrFullTime(time) {
+  return new Date(time).toLocaleString(undefined, {
+    weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+  });
+}
+
+// Points inside the range, plus the value carried in from before it and the
+// current value extended to "now", so the line always spans the whole range.
+function rrWindow(points, rangeKey) {
+  const range = RR_RANGES.find((item) => item.key === rangeKey) || RR_RANGES[3];
+  const last = points[points.length - 1];
+  const end = Math.max(Date.now(), last.time);
+  const start = range.ms ? end - range.ms : points[0].time;
+
+  const inside = points.filter((point) => point.time >= start);
+  const before = points.filter((point) => point.time < start).pop();
+  const series = [];
+  if (before) series.push({ ...before, time: start, carried: true });
+  series.push(...inside);
+  series.push({ ...last, time: end, extended: true });
+
+  return { start, end: Math.max(end, start + 1), inside, startValue: (before || inside[0] || last).elo, series };
+}
+
+function renderRrChart(points, rangeKey, chartId) {
+  const { start, end, inside, series } = rrWindow(points, rangeKey);
+  const last = points[points.length - 1];
+
+  // Ranks reset between acts, so in Overall the change is measured within
+  // the latest act only.
+  const sameAct = last.act ? points.filter((point) => point.act === last.act) : points;
+  const actWindow = rrWindow(sameAct, rangeKey);
+  const startValue = Math.max(actWindow.start, sameAct[0].time) === sameAct[0].time && actWindow.start <= sameAct[0].time
+    ? sameAct[0].elo
+    : actWindow.startValue;
+  const net = last.elo - startValue;
+  const actNote = last.act && sameAct.length < points.length ? ` (${last.act})` : "";
+  const peak = series.reduce((best, point) => (point.elo > best.elo ? point : best), series[0]);
+  const rangeLabel = RR_RANGES.find((item) => item.key === rangeKey)?.label || "All";
 
   const width = 760;
-  const height = 220;
-  const pad = { top: 16, right: 18, bottom: 26, left: 92 };
-  const elos = history.map((point) => num(point.elo));
-  const low = Math.floor((Math.min(...elos) - 20) / 100) * 100;
-  const high = Math.ceil((Math.max(...elos) + 20) / 100) * 100;
-  const x = (i) => pad.left + (i / (history.length - 1)) * (width - pad.left - pad.right);
-  const y = (elo) => pad.top + (1 - (elo - low) / Math.max(high - low, 1)) * (height - pad.top - pad.bottom);
+  const height = 240;
+  const pad = { top: 14, right: 16, bottom: 28, left: 96 };
+  const elos = series.map((point) => point.elo);
+  let low = Math.floor((Math.min(...elos) - 15) / 100) * 100;
+  let high = Math.ceil((Math.max(...elos) + 15) / 100) * 100;
+  if (high - low < 100) high = low + 100;
 
-  // A gridline at the start of each rank (every 100 rating).
+  const x = (time) => pad.left + ((time - start) / (end - start)) * (width - pad.left - pad.right);
+  const y = (elo) => pad.top + (1 - (elo - low) / (high - low)) * (height - pad.top - pad.bottom);
+
+  // Rank gridlines: every division when there are few, otherwise each tier.
+  const divisions = (high - low) / 100;
+  const step = divisions <= 8 ? 100 : 300;
   const grid = [];
-  for (let elo = low; elo <= high; elo += 100) {
-    grid.push(`
-      <line class="rr-grid" x1="${pad.left}" x2="${width - pad.right}" y1="${y(elo)}" y2="${y(elo)}" />
-      ${elo < high ? `<text class="rr-rank" x="${pad.left - 10}" y="${(y(elo) + y(elo + 100)) / 2 + 4}" text-anchor="end">${escapeHtml(modalRank(Math.floor(elo / 100) + 1))}</text>` : ""}
-    `);
+  for (let elo = Math.ceil(low / step) * step; elo <= high; elo += step) {
+    const tierEdge = elo % 300 === 0;
+    grid.push(`<line class="rr-grid${tierEdge ? " rr-grid-tier" : ""}" x1="${pad.left}" x2="${width - pad.right}" y1="${y(elo)}" y2="${y(elo)}" />`);
+    if (elo + step <= high) {
+      const label = step === 100
+        ? modalRank(Math.floor(elo / 100) + 1)
+        : modalRank(Math.floor(elo / 100) + 1).replace(/ \d$/, "");
+      grid.push(`<text class="rr-rank" x="${pad.left - 10}" y="${(y(elo) + y(elo + step)) / 2 + 4}" text-anchor="end">${escapeHtml(label)}</text>`);
+    }
   }
 
-  const points = history.map((point, i) => `${x(i).toFixed(1)},${y(num(point.elo)).toFixed(1)}`);
-  const area = `${pad.left},${height - pad.bottom} ${points.join(" ")} ${x(history.length - 1).toFixed(1)},${height - pad.bottom}`;
-  const dots = history.map((point, i) => `
-    <circle class="rr-dot" cx="${x(i).toFixed(1)}" cy="${y(num(point.elo)).toFixed(1)}" r="${i === history.length - 1 ? 4.5 : 3}">
-      <title>${escapeHtml(`${shortDate(point.t)}: ${point.rank}, ${num(point.rr)} RR`)}</title>
-    </circle>
+  // Line colour follows the tier at each height (hard stops at tier edges).
+  const gradientId = `rrTier${chartId}`;
+  const stops = [];
+  TIER_BANDS.slice().reverse().forEach(([tier, from, to]) => {
+    const top = Math.min(to, high);
+    const bottom = Math.max(from, low);
+    if (top <= bottom) return;
+    const offset = (elo) => ((high - elo) / (high - low)).toFixed(4);
+    stops.push(`<stop offset="${offset(top)}" style="stop-color: var(--tier-${tier})" />`);
+    stops.push(`<stop offset="${offset(bottom)}" style="stop-color: var(--tier-${tier})" />`);
+  });
+
+  // In Overall, acts are drawn as separate lines (ranks reset between acts).
+  const segments = [];
+  series.forEach((point) => {
+    const current = segments[segments.length - 1];
+    if (!current || (point.act && current.act !== point.act)) {
+      segments.push({ act: point.act, points: [point] });
+    } else {
+      current.points.push(point);
+    }
+  });
+  const baseline = height - pad.bottom;
+  const lines = segments.map((segment) => {
+    const coords = segment.points.map((point) => `${x(point.time).toFixed(1)},${y(point.elo).toFixed(1)}`);
+    const first = segment.points[0];
+    const lastPoint = segment.points[segment.points.length - 1];
+    return `
+      <polygon class="rr-area" fill="url(#${gradientId})" points="${x(first.time).toFixed(1)},${baseline} ${coords.join(" ")} ${x(lastPoint.time).toFixed(1)},${baseline}" />
+      <polyline class="rr-line" stroke="url(#${gradientId})" points="${coords.join(" ")}" />
+    `;
+  }).join("");
+  const actMarks = segments.slice(1).map((segment) => {
+    const at = x(segment.points[0].time);
+    return `
+      <line class="rr-act" x1="${at}" x2="${at}" y1="${pad.top}" y2="${baseline}" />
+      <text class="rr-axis" x="${at + 4}" y="${pad.top + 12}">${escapeHtml(segment.act)}</text>
+    `;
+  }).join("");
+
+  const dots = inside.length <= 40
+    ? inside.map((point) => `<circle class="rr-dot" cx="${x(point.time).toFixed(1)}" cy="${y(point.elo).toFixed(1)}" r="3" stroke="url(#${gradientId})" />`).join("")
+    : "";
+
+  const ticks = Array.from({ length: 5 }, (_, i) => start + ((end - start) * i) / 4).map((time, i) => `
+    <text class="rr-axis" x="${x(time)}" y="${height - 8}" text-anchor="${i === 0 ? "start" : i === 4 ? "end" : "middle"}">${escapeHtml(rrTimeLabel(time, end - start))}</text>
   `).join("");
+
+  const noChange = inside.length === 0;
+  const signed = (value) => `${value > 0 ? "+" : ""}${value} RR`;
 
   return `
     <div class="modal-stats-grid rr-summary">
-      ${modalStat("Since tracking began", `${net > 0 ? "+" : ""}${net} RR`, `From ${first.rank}, ${num(first.rr)} RR on ${shortDate(first.t)}`)}
-      ${modalStat("Peak", peak.rank, `${num(peak.rr)} RR on ${shortDate(peak.t)}`)}
+      ${modalStat(`Change, ${rangeLabel}${actNote}`, signed(net), noChange ? "No rating change in this range" : `From ${modalRank(Math.floor(startValue / 100) + 1)}, ${((startValue % 100) + 100) % 100} RR`)}
+      ${modalStat(`Peak, ${rangeLabel}`, peak.rank, `${num(peak.rr)} RR`)}
       ${modalStat("Now", last.rank, `${num(last.rr)} RR`)}
-      ${modalStat("Rating changes", modalNumber(history.length - 1, 0), "Recorded at each update")}
+      ${modalStat(`Rating changes, ${rangeLabel}`, modalNumber(inside.length, 0), "Checked every 4 hours")}
     </div>
-    <svg class="rr-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="RR over time, ${net >= 0 ? "up" : "down"} ${Math.abs(net)} since ${shortDate(first.t)}">
-      ${grid.join("")}
-      <polygon class="rr-area" points="${area}" />
-      <polyline class="rr-line" points="${points.join(" ")}" />
-      ${dots}
-      <text class="rr-axis" x="${pad.left}" y="${height - 6}">${escapeHtml(shortDate(first.t))}</text>
-      <text class="rr-axis" x="${width - pad.right}" y="${height - 6}" text-anchor="end">${escapeHtml(shortDate(last.t))}</text>
-    </svg>
+    <div class="rr-chart-wrap">
+      <svg class="rr-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="RR over the selected range: ${signed(net)}, now ${escapeHtml(last.rank)} ${num(last.rr)} RR">
+        <defs>
+          <linearGradient id="${gradientId}" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="${y(high)}" y2="${y(low)}">
+            ${stops.join("")}
+          </linearGradient>
+        </defs>
+        ${grid.join("")}
+        ${actMarks}
+        ${lines}
+        ${dots}
+        ${ticks}
+        <line class="rr-cursor" x1="0" x2="0" y1="${pad.top}" y2="${baseline}" hidden />
+        <circle class="rr-cursor-dot" r="5" cx="0" cy="0" stroke="url(#${gradientId})" hidden />
+        <rect class="rr-hit" x="${pad.left}" y="${pad.top}" width="${width - pad.left - pad.right}" height="${baseline - pad.top}" />
+      </svg>
+      <div class="rr-tooltip" hidden></div>
+    </div>
   `;
+}
+
+function renderRrHistory(player) {
+  const points = rrPoints(player);
+  if (!points.length) return notYetTracked(player, "RR changes");
+
+  if (points.length < 2) {
+    return `<p class="modal-empty">Tracking started ${escapeHtml(shortDate(points[0].t))} at ${escapeHtml(points[0].rank)}, ${num(points[0].rr)} RR. The graph appears once the rating changes.</p>`;
+  }
+
+  const range = defaultRrRange(points);
+  const chartId = ++rrChartCount;
+  return `
+    <div class="rr-block" data-rr-chart="${chartId}">
+      <div class="rr-ranges" role="group" aria-label="Time range">
+        ${RR_RANGES.map((item) => `
+          <button type="button" class="rr-range" data-range="${item.key}" aria-pressed="${item.key === range}">${item.label}</button>
+        `).join("")}
+      </div>
+      <div class="rr-body">${renderRrChart(points, range, chartId)}</div>
+    </div>
+  `;
+}
+
+// Range buttons and the hover readout.
+function bindRrCharts(root, player) {
+  const points = rrPoints(player);
+  root.querySelectorAll("[data-rr-chart]").forEach((block) => {
+    const chartId = block.dataset.rrChart;
+    let range = block.querySelector('.rr-range[aria-pressed="true"]')?.dataset.range || "all";
+
+    const attachHover = () => {
+      const svg = block.querySelector(".rr-chart");
+      const tooltip = block.querySelector(".rr-tooltip");
+      const cursor = block.querySelector(".rr-cursor");
+      const cursorDot = block.querySelector(".rr-cursor-dot");
+      const hit = block.querySelector(".rr-hit");
+      if (!svg || !hit) return;
+
+      const { start, end, inside, series } = rrWindow(points, range);
+      const real = inside.length ? inside : [series[series.length - 1]];
+      const box = svg.viewBox.baseVal;
+      const plotLeft = Number(hit.getAttribute("x"));
+      const plotWidth = Number(hit.getAttribute("width"));
+      const plotTop = Number(hit.getAttribute("y"));
+      const plotHeight = Number(hit.getAttribute("height"));
+      const elos = series.map((p) => p.elo);
+      let low = Math.floor((Math.min(...elos) - 15) / 100) * 100;
+      let high = Math.ceil((Math.max(...elos) + 15) / 100) * 100;
+      if (high - low < 100) high = low + 100;
+      const toX = (time) => plotLeft + ((time - start) / (end - start)) * plotWidth;
+      const toY = (elo) => plotTop + (1 - (elo - low) / (high - low)) * plotHeight;
+
+      const show = (event) => {
+        const rect = svg.getBoundingClientRect();
+        const svgX = ((event.clientX - rect.left) / rect.width) * box.width;
+        const time = start + ((svgX - plotLeft) / plotWidth) * (end - start);
+        const nearest = real.reduce((best, p) => (Math.abs(p.time - time) < Math.abs(best.time - time) ? p : best), real[0]);
+        const index = points.findIndex((p) => p.time === nearest.time && p.elo === nearest.elo);
+        const previous = index > 0 ? points[index - 1] : null;
+        const sameAct = previous && (!previous.act || previous.act === nearest.act);
+        const delta = sameAct ? nearest.elo - previous.elo : null;
+        const games = sameAct && nearest.matches != null && previous.matches != null ? nearest.matches - previous.matches : null;
+
+        const px = toX(nearest.time);
+        const py = toY(nearest.elo);
+        cursor.setAttribute("x1", px);
+        cursor.setAttribute("x2", px);
+        cursorDot.setAttribute("cx", px);
+        cursorDot.setAttribute("cy", py);
+        cursor.hidden = false;
+        cursorDot.hidden = false;
+
+        tooltip.innerHTML = `
+          <span>${escapeHtml(rrFullTime(nearest.time))}${nearest.act ? `, ${escapeHtml(nearest.act)}` : ""}</span>
+          <strong>${escapeHtml(nearest.rank)} <b>${num(nearest.rr)} RR</b></strong>
+          ${delta != null
+            ? `<em class="${delta > 0 ? "good-stat" : delta < 0 ? "bad-stat" : ""}">${delta > 0 ? "+" : ""}${delta} RR${games ? ` over ${games} ${games === 1 ? "match" : "matches"}` : ""}</em>`
+            : `<em>${previous ? "Start of act" : "Tracking started"}</em>`}
+        `;
+        tooltip.hidden = false;
+        const left = (px / box.width) * rect.width;
+        const top = (py / box.height) * rect.height;
+        tooltip.style.left = `${Math.min(Math.max(left, 80), rect.width - 80)}px`;
+        tooltip.style.top = `${top}px`;
+        tooltip.classList.toggle("below", top < 70);
+      };
+
+      const hide = () => {
+        tooltip.hidden = true;
+        cursor.hidden = true;
+        cursorDot.hidden = true;
+      };
+
+      hit.addEventListener("pointermove", show);
+      hit.addEventListener("pointerdown", show);
+      hit.addEventListener("pointerleave", hide);
+    };
+
+    block.querySelectorAll(".rr-range").forEach((button) => {
+      button.addEventListener("click", () => {
+        range = button.dataset.range;
+        block.querySelectorAll(".rr-range").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+        block.querySelector(".rr-body").innerHTML = renderRrChart(points, range, chartId);
+        attachHover();
+      });
+    });
+
+    attachHover();
+  });
 }
 
 const PARTY_KEYS = [
@@ -2514,6 +2896,8 @@ async function initPlayerPage() {
     </article>
   `;
   bindProfileTabs(root);
+  bindRrCharts(root, player);
+  bindAgentControls(root, player);
 }
 
 /* ------------------ Dashboard (index.html) ------------------ */
@@ -2586,6 +2970,7 @@ function initDashboard() {
 }
 
 async function init() {
+  loadAgentCatalog();
   await loadActsConfig();
   if (isPlayerPage) {
     await initPlayerPage();
