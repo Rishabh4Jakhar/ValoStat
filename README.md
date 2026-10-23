@@ -1,53 +1,72 @@
 # [ValoStat](https://rishabh4jakhar.github.io/ValoStat/)
 
-Valorant stats for a group of friends: one card per player, a detailed profile for each, and a score that makes it easy to compare everyone.
+Valorant stats for a group of friends: one card per player, a detailed profile for each, and a score that makes it easy to compare everyone. Stats refresh every 4 hours.
+
+## Contents
+
+- [ValoStat](#valostat)
+  - [Contents](#contents)
+  - [Features](#features)
+    - [Main page](#main-page)
+    - [Player profile](#player-profile)
+  - [ValoStat score](#valostat-score)
+  - [How the stats are worked out](#how-the-stats-are-worked-out)
+  - [How it works](#how-it-works)
+  - [New acts](#new-acts)
+  - [Running it yourself](#running-it-yourself)
+  - [Data files](#data-files)
 
 ## Features
 
-- Player cards for the current act, each coloured by the player's rank tier
-- Every past act, plus an Overall view that combines them
-- Detailed player profile with five tabs: overview, performance, agents, matchmaking and accolades
-- Per-agent stats, filterable by role and sortable by any stat: win rate, ACS, ADR, K/D, KAST, headshot %, first bloods, multi-kills, clutches, utility use and best map
-- Map results, opening duels, trades, match grades and economy
-- Shareable player pages (`player.html?id=<player>&act=<act code>`)
-- Last 10 results on every card, and a recent-matches list in each profile
-- Party stats: results by queue size (solo to 5-stack), and your stats next to each friend's in the matches you queued together
-- RR over time with 1D, 1W, 1M and All ranges, coloured by rank tier, recorded at every update from V26: A6 onwards
+### Main page
+
+- A card per player, coloured by rank tier, with avg performance score, wins, win rate, K/D, KAST, playtime and the last 10 results
+- The current act, every past act, and an Overall view that combines them
+- Sort by any of 33 stats, highest or lowest first, with an optional minimum number of matches
 - Show what changed since the last update, with each card noting the previous value
-- Sort by any of 32 stats, highest or lowest first, with an optional minimum number of matches
-- Shareable views: the act, sort and filters are kept in the page link
 - Head-to-head comparison of two players across every stat, grouped by type, with a count of stats won
-- Performance breakdown with the game's own impact ratings and match grade ranges
-- Stats refresh automatically every 4 hours, and a new act is picked up and archived on its own
+- Shareable views: the act, sort and filters are kept in the page link
+
+### Player profile
+
+Opens as a popup, or as its own page (`player.html?id=<player>&act=<act code>`).
+
+| Tab | What it shows |
+| --- | --- |
+| Overview | Headline stats, per-match averages and results by map |
+| Performance | Opening duels, trades, multi-kills and clutches; the API's per-round breakdown with the game's own impact icons; match grades; utility and economy |
+| Agents | Per-agent stats, filterable by role and sortable by 11 stats |
+| Party | Results by queue size (solo to 5-stack), and your stats next to each friend's in the matches you queued together |
+| Matchmaking | Average enemy and lobby rank, enemy rank compared with your own, RR over time (1D, 1W, 1M, All), and the last 10 matches |
+| Accolades | Season accolades with counts and best values |
 
 ## ValoStat score
 
 A single number from 10 to 1000 for one act.
 
-**Acts with the API performance score (V26: A6 onwards)**
+| Component | Acts with a performance score (V26: A6 onwards) | Older acts |
+| --- | --- | --- |
+| API performance score | 40% | — |
+| ACS | 20% | 30% |
+| KAST | 15% | 20% |
+| KA/D | 10% | 15% |
+| Damage delta per round | 10% | 25% |
+| Win rate | 5% | 10% |
 
-| Component | Weight |
-| --- | --- |
-| API performance score | 40% |
-| ACS | 20% |
-| KAST | 15% |
-| KA/D | 10% |
-| Damage delta per round | 10% |
-| Win rate | 5% |
+Each stat is scaled to 0–1 before weighting (an S-curve for ACS, KA/D, damage delta and performance score; a straight percentage for KAST and win rate), so one extreme stat can't dominate.
 
-**Older acts without a performance score**
+The **Overall** score is the average of the player's score in each act they played, with every act counting equally. An act with no matches is skipped rather than counted as zero.
 
-| Component | Weight |
-| --- | --- |
-| ACS | 30% |
-| KAST | 20% |
-| KA/D | 15% |
-| Damage delta per round | 25% |
-| Win rate | 10% |
+## How the stats are worked out
 
-Each stat is scaled to 0–1 before weighting (an S-curve for ACS, KA/D, damage delta and performance score; a straight percentage for KAST and win rate), so one extreme stat can't dominate the score.
-
-The **Overall** score is the average of the player's score in each act they played, with every act counting equally. A player with no matches in an act gets no score for it, rather than a zero.
+- **Rates use matching totals.** ACS, ADR, KAST and damage delta are totals divided by rounds. Per-match averages divide by the matches actually fetched, which can be fewer than the season game count.
+- **KAST** counts a round if the player got a kill or an assist, survived, or was traded within 5 seconds.
+- **Agent playtime** is the length of the matches played on that agent.
+- **Draws** are counted from fetched matches. The season data only gives games and wins, so in older acts a draw shows as a loss.
+- **Average enemy and lobby rank** use the 1–25 scale from Iron 1 to Radiant, skipping unrated players.
+- **Enemy rank vs own** is the average enemy rank minus your own rank, in divisions, per match. Your rank includes RR (Diamond 1 with 50 RR is 16.5). Enemy RR isn't in the match data, so enemies count as the middle of their division. +0.5 means enemies were half a division higher. Only matches fetched after this was added are counted.
+- **RR over time** gets a point at each update where the rating changed. Several matches between updates show as one point, with the match count in the hover readout.
+- **Party** groups players who queued together using the API's party ID.
 
 ## How it works
 
@@ -60,19 +79,21 @@ GitHub Pages
   └─ index.html / player.html + script.js read those files
 ```
 
-- `fetch_valo.py` only fetches matches it hasn't processed yet, stays under the API rate limit, and keeps running totals so rates like ACS and KAST are always computed from matching numerators and denominators.
-- Agent playtime is the length of the matches played on that agent.
-- KAST counts a round if the player got a kill or an assist, survived, or was traded within 5 seconds.
+- `fetch_valo.py` only fetches matches it hasn't processed yet, stops paging once it reaches an earlier act, and stays under the API rate limit.
+- It keeps running totals, so each run only adds new matches.
+- Agent roles and icons come from [valorant-api.com](https://valorant-api.com) when the page loads, with a built-in list as a fallback.
 
-## Changing acts
+## New acts
 
-Nothing to do by hand. When the MMR data shows a newer act, the fetch script:
+Nothing to do by hand. Valorant has 6 acts a year; the site labels them by year (`V26: A6`), and the API by episode (`e11a6`). After act 6 comes act 1 of the next year, so `e11a6` is followed by `e12a1` (`V27: A1`).
+
+Each run, the fetch script checks whether any tracked player has played the act right after the current one. When one has, it:
 
 1. copies `stats.json` to `data/<old act>.json`,
 2. adds the new act to the top of `acts.json` and makes it current,
 3. starts the new act's `stats.json` fresh.
 
-The site builds its act buttons from `acts.json`. The script guesses the label (for example `V26: A7`, or `V27: A1` when the episode changes); edit `acts.json` to change it.
+Only the next act in sequence triggers this, so a stray or older act code is ignored. The label is worked out automatically; edit `acts.json` to change it.
 
 ## Running it yourself
 
@@ -86,5 +107,16 @@ The site builds its act buttons from `acts.json`. The script guesses the label (
    HENRIK_API_KEY=your-key python fetch_valo.py
    python -m http.server
    ```
+
+To rebuild every player's stats for the current act from scratch, raise `STATS_SCHEMA_VERSION` in `fetch_valo.py`. The next run then re-fetches the whole act (RR history is kept).
+
+## Data files
+
+| File | Contents |
+| --- | --- |
+| `stats.json` | Current act: one entry per player with totals, derived stats, agents, party stats, recent matches and RR history |
+| `stats_prev.json` | The previous run's `stats.json`, used for "Show changes since last update" |
+| `data/<act>.json` | Finished acts. Acts before V26: A6 only have the basic stats |
+| `acts.json` | The current act and the list of acts shown on the site |
 
 Data from the [HenrikDev Valorant API](https://api.henrikdev.xyz/dashboard). Not affiliated with Riot Games.
