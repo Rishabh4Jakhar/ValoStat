@@ -1615,13 +1615,12 @@ async function lastUpdate(response) {
   updateTime.title = `Checked ${new Date(checked).toLocaleString()}${Number.isFinite(changed) ? `\nLast changed ${new Date(changed).toLocaleString()}` : ""}`;
 }
 
-/* ---------- Highlights (current act, last day or week) ---------- */
+/* ---------- Highlights (current act, last 24 hours) ---------- */
 
 const HIGHLIGHT_PERIODS = {
   "1d": { ms: 24 * 3600 * 1000, minMatches: 2, label: "24 hours" },
-  "1w": { ms: 7 * 24 * 3600 * 1000, minMatches: 3, label: "7 days" },
 };
-let highlightPeriod = "1w";
+const highlightPeriod = "1d";
 
 // Every match a player played in the window, oldest first.
 function matchesInWindow(player, start) {
@@ -1715,11 +1714,11 @@ function buildHighlights(list, periodKey) {
     },
     {
       title: "Highest ACS",
-      empty: `Needs ${period.minMatches}+ matches`,
-      note: `Min ${period.minMatches} matches`,
+      empty: "No matches played",
       format: (v) => `${Math.round(v)}`,
       unit: "ACS",
-      entries: top((r) => enough(r) && r.acs != null, (r) => r.acs, (r) => `${r.matches.length} matches`),
+      entries: top((r) => r.acs != null, (r) => r.acs,
+        (r) => `${r.matches.length} ${r.matches.length === 1 ? "match" : "matches"}`),
     },
     {
       title: "Best win rate",
@@ -1757,9 +1756,20 @@ function renderHighlights() {
   const totalMatches = new Set(list.flatMap((p) => matchesInWindow(p, Date.now() - period.ms).map((m) => m.match_id))).size;
   note.textContent = `${getActLabel(actsConfig.current)}, last ${period.label}: ${totalMatches} ${totalMatches === 1 ? "match" : "matches"} across the group`;
 
-  document.querySelectorAll(".highlight-periods .rr-range").forEach((button) => {
-    button.setAttribute("aria-pressed", String(button.dataset.period === highlightPeriod));
-  });
+  // A one-line preview on the collapsed bar, to make it worth opening.
+  const teaser = document.getElementById("highlightsTeaser");
+  if (teaser) {
+    const climb = tiles[0].entries[0];
+    const best = tiles[2].entries[0];
+    const played = `${totalMatches} ${totalMatches === 1 ? "match" : "matches"} played`;
+    teaser.textContent = !totalMatches
+      ? "No matches in the last 24 hours"
+      : climb
+        ? `Last 24 hours: ${climb.row.player.id} climbed ${climb.value} RR, ${played}`
+        : best
+          ? `Last 24 hours: ${best.row.player.id} scored ${Math.round(best.value)} performance, ${played}`
+          : `Last 24 hours: ${played}`;
+  }
 
   grid.innerHTML = tiles.map((tile) => {
     const [leader, ...rest] = tile.entries;
@@ -3197,11 +3207,12 @@ function initDashboard() {
 
   compareBtn.addEventListener("click", onCompareClick);
 
-  document.querySelectorAll(".highlight-periods .rr-range").forEach((button) => {
-    button.addEventListener("click", () => {
-      highlightPeriod = button.dataset.period;
-      renderHighlights();
-    });
+  document.getElementById("highlightsToggle")?.addEventListener("click", (event) => {
+    const toggle = event.currentTarget;
+    const open = toggle.getAttribute("aria-expanded") !== "true";
+    toggle.setAttribute("aria-expanded", String(open));
+    document.getElementById("highlightsPanel").hidden = !open;
+    toggle.closest(".highlights").classList.toggle("is-open", open);
   });
 
   document.getElementById("highlightGrid")?.addEventListener("click", (event) => {

@@ -121,9 +121,9 @@ PARTY_COUNTER_KEYS = (
 )
 
 RECENT_MATCHES_KEPT = 10
-# Compact log of every match from the last few days, for the 1-day and
-# 1-week highlights on the main page.
-MATCH_LOG_DAYS = 8
+# Compact log of every match from the last few days, for the
+# last-24-hours highlights on the main page.
+MATCH_LOG_DAYS = 2  # highlights cover the last 24 hours
 RR_HISTORY_KEPT = 1500  # about 3 months at several changes a day
 
 

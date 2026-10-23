@@ -25,18 +25,19 @@
     </div>
   </header>
 
-  <!-- HIGHLIGHTS: current act, independent of the act tabs below -->
-  <section class="highlights" aria-labelledby="highlightsTitle" hidden>
+  <!-- HIGHLIGHTS: last 24 hours of the current act, independent of the act tabs below.
+       Collapsed until clicked. -->
+  <section class="highlights" hidden>
     <div class="highlights-content">
-      <div class="highlights-head">
-        <h2 id="highlightsTitle">Highlights</h2>
-        <div class="rr-ranges highlight-periods" role="group" aria-label="Highlights period">
-          <button type="button" class="rr-range" data-period="1d" aria-pressed="false">1 Day</button>
-          <button type="button" class="rr-range" data-period="1w" aria-pressed="true">1 Week</button>
-        </div>
+      <button type="button" class="highlights-toggle" id="highlightsToggle" aria-expanded="false" aria-controls="highlightsPanel">
+        <span class="highlights-title">Highlights</span>
+        <span class="highlights-teaser" id="highlightsTeaser">The last 24 hours</span>
+        <span class="highlights-chevron" aria-hidden="true"></span>
+      </button>
+      <div class="highlights-panel" id="highlightsPanel" hidden>
         <p class="highlights-note" id="highlightsNote"></p>
+        <div class="highlight-grid" id="highlightGrid"></div>
       </div>
-      <div class="highlight-grid" id="highlightGrid"></div>
     </div>
   </section>
 
