@@ -145,6 +145,7 @@ const COUNTER_KEYS = [
   "performance_score_total", "performance_score_matches",
   "enemy_rank_sum", "enemy_rank_matches",
   "lobby_rank_sum", "lobby_rank_matches",
+  "rank_delta_sum", "rank_delta_matches",
 ];
 
 const MAP_COUNTER_KEYS = ["matches", "wins", "losses", "draws", "rounds", "rounds_won"];
@@ -289,6 +290,8 @@ function deriveSummary(t) {
     performance_breakdown_averages: breakdownAverages,
     enemy_rank_average_value: ratio(t.enemy_rank_sum, t.enemy_rank_matches, 2),
     lobby_rank_average_value: ratio(t.lobby_rank_sum, t.lobby_rank_matches, 2),
+    rank_delta_average: ratio(t.rank_delta_sum, t.rank_delta_matches, 2),
+    rank_delta_matches: t.rank_delta_matches,
 
     maps,
   };
@@ -899,9 +902,12 @@ function renderAgentSection(player) {
 
   return `
     <div class="agent-controls">
-      <div class="role-filters" role="group" aria-label="Show roles">
+      <div class="role-filters" role="group" aria-label="Filter agents by role">
+        <button type="button" class="role-toggle role-all" data-role="all" aria-pressed="true">
+          All<span>${agents.length}</span>
+        </button>
         ${AGENT_ROLE_ORDER.map((role) => `
-          <button type="button" class="role-toggle" data-role="${role}" aria-pressed="true"${counts[role] ? "" : " data-empty"}>
+          <button type="button" class="role-toggle" data-role="${role}" aria-pressed="false"${counts[role] ? "" : " data-empty"}>
             ${role}<span>${counts[role] || 0}</span>
           </button>
         `).join("")}
@@ -934,14 +940,38 @@ function bindAgentControls(root, player) {
     const shown = selectAgents(agents, roles, sortSelect?.value || "matches");
     pool.innerHTML = shown.length
       ? renderAgentPool(shown, total)
-      : `<p class="modal-empty">No agents played in the selected roles. Turn on another role to see more.</p>`;
+      : `<p class="modal-empty">No agents played in the selected roles. Pick another role or All.</p>`;
+  };
+
+  // All roles show at first. Picking a role narrows to just that role;
+  // further picks add or remove roles. Clearing every role, selecting all
+  // four, or pressing All goes back to showing everything.
+  const showAll = () => AGENT_ROLE_ORDER.forEach((role) => roles.add(role));
+  const isAll = () => roles.size === AGENT_ROLE_ORDER.length;
+
+  const syncButtons = () => {
+    section.querySelectorAll(".role-toggle").forEach((button) => {
+      const role = button.dataset.role;
+      const pressed = role === "all" ? isAll() : !isAll() && roles.has(role);
+      button.setAttribute("aria-pressed", String(pressed));
+    });
   };
 
   section.querySelectorAll(".role-toggle").forEach((button) => {
     button.addEventListener("click", () => {
       const role = button.dataset.role;
-      if (roles.has(role)) roles.delete(role); else roles.add(role);
-      button.setAttribute("aria-pressed", String(roles.has(role)));
+      if (role === "all") {
+        showAll();
+      } else if (isAll()) {
+        roles.clear();
+        roles.add(role);
+      } else if (roles.has(role)) {
+        roles.delete(role);
+        if (!roles.size) showAll();
+      } else {
+        roles.add(role);
+      }
+      syncButtons();
       update();
     });
   });
@@ -1012,27 +1042,55 @@ function ensureCardModal() {
 
   document.body.appendChild(modal);
 
-  modal.querySelector("#cardModalClose").addEventListener("click", () => {
-    modal.classList.remove("open");
-  });
+  modal.querySelector("#cardModalClose").addEventListener("click", () => closeCardModal());
 
   modal.querySelector("#cardModalCompare").addEventListener("click", (event) => {
     compareFromModal(event.currentTarget.dataset.playerId);
   });
 
   modal.addEventListener("click", (event) => {
-    if (event.target === modal) {
-      modal.classList.remove("open");
-    }
+    if (event.target === modal) closeCardModal();
   });
 
   document.addEventListener("keydown", (event) => {
+    if (!modal.classList.contains("open")) return;
     if (event.key === "Escape") {
-      modal.classList.remove("open");
+      closeCardModal();
+      return;
+    }
+    // Keep Tab inside the popup while it's open.
+    if (event.key === "Tab") {
+      const focusable = [...modal.querySelectorAll('a[href], button:not([disabled]), select, input, [tabindex]:not([tabindex="-1"])')]
+        .filter((el) => el.offsetParent !== null);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     }
   });
 
   return modal;
+}
+
+let focusBeforeModal = null;
+
+// Closing returns focus to whatever opened the popup (usually the card) and
+// lets the page scroll again.
+function closeCardModal({ restoreFocus = true } = {}) {
+  const modal = document.getElementById("cardModal");
+  if (!modal?.classList.contains("open")) return;
+  modal.classList.remove("open");
+  document.body.classList.remove("modal-open");
+  if (restoreFocus && focusBeforeModal?.isConnected) {
+    focusBeforeModal.focus({ preventScroll: true });
+  }
+  focusBeforeModal = null;
 }
 
 
@@ -1057,8 +1115,11 @@ function openCardModal(player, act = currentAct) {
   openLink.href = trackerProfileUrl(player.riot_id || player.id);
   pageLink.href = playerPageUrl(player, act);
   modal.querySelector("#cardModalCompare").dataset.playerId = player.id;
+  if (!modal.classList.contains("open")) focusBeforeModal = document.activeElement;
   modal.classList.add("open");
+  document.body.classList.add("modal-open");
   body.scrollTop = 0;
+  modal.querySelector("#cardModalClose").focus({ preventScroll: true });
 }
 
 // Full profile (hero, tabs, panels) used by both the popup and player.html.
@@ -1069,7 +1130,9 @@ function renderPlayerProfile(player, act) {
 
   const wins = Number(player.wins) || 0;
   const matches = Number(player.matches) || 0;
-  const losses = Math.max(0, matches - wins);
+  // MMR data gives games and wins only; draws come from the tracked matches.
+  const draws = Math.min(num(player.summary?.draws), Math.max(0, matches - wins));
+  const losses = Math.max(0, matches - wins - draws);
   const winRate = matches ? (wins / matches) * 100 : 0;
   const performanceMatches = Number(player.performance_score_matches) || 0;
   const averagePerformance = performanceMatches
@@ -1156,7 +1219,7 @@ function renderPlayerProfile(player, act) {
         <dl class="modal-hero-facts">
           <div><dt>Rank</dt><dd>${escapeHtml(player.rank || "Unrated")}<small>${modalNumber(player.rr, 0)} RR</small></dd></div>
           <div><dt>Level</dt><dd>${escapeHtml(player.level ?? "—")}</dd></div>
-          <div><dt>Record</dt><dd>${wins}W ${losses}L</dd></div>
+          <div><dt>Record</dt><dd>${wins}W ${losses}L${draws ? ` ${draws}D` : ""}</dd></div>
         </dl>
 
         <div class="modal-hero-winbar">
@@ -1184,7 +1247,7 @@ function renderPlayerProfile(player, act) {
 
     <div class="modal-tab-panel active" data-panel="overview" role="tabpanel">
       <div class="modal-stats-grid">
-        ${modalStat("Win rate", `${modalNumber(winRate, 1)}%`, `${wins} wins, ${losses} losses`)}
+        ${modalStat("Win rate", `${modalNumber(winRate, 1)}%`, `${wins} wins, ${losses} losses${draws ? `, ${draws} ${draws === 1 ? "draw" : "draws"}` : ""}`)}
         ${modalStat("Avg ACS", modalNumber(player.avg_acs), `${modalNumber(player.rounds_total, 0)} rounds`)}
         ${modalStat("ADR", summary ? modalNumber(summary.adr) : "N/A", "Damage per round")}
         ${modalStat("K/D", modalNumber(player.kd, 2), `${modalNumber(player.kills_total, 0)} kills / ${modalNumber(player.deaths_total, 0)} deaths`)}
@@ -1241,9 +1304,17 @@ function renderPlayerProfile(player, act) {
     <div class="modal-tab-panel" data-panel="matchmaking" role="tabpanel" hidden>
       <div class="modal-stats-grid">
         ${modalStat("Current rank", player.rank || "Unrated", `${modalNumber(player.rr, 0)} RR`)}
-        ${modalStat("Average enemy rank", modalRank(rankEnemy == null ? null : Math.round(rankEnemy)), rankEnemy == null ? "Not enough rank data" : `Rank value ${modalNumber(rankEnemy, 2)} / 25`)}
+        ${modalStat("Average enemy rank", modalRank(rankEnemy == null ? null : Math.round(rankEnemy)), rankEnemy == null ? "Not enough rank data" : `Rank value ${modalNumber(rankEnemy, 2)} / 25, ${modalNumber(player.enemy_rank_matches, 0)} matches`)}
         ${modalStat("Average lobby rank", modalRank(rankLobby == null ? null : Math.round(rankLobby)), rankLobby == null ? "Not enough rank data" : `Rank value ${modalNumber(rankLobby, 2)} / 25`)}
-        ${modalStat("Matches counted", modalNumber(player.enemy_rank_matches, 0), "For enemy rank average")}
+        ${(() => {
+          const delta = rankDeltaOf(player);
+          const counted = num(player.summary?.rank_delta_matches ?? player.rank_delta_matches);
+          return modalStat(
+            "Enemy rank vs own",
+            delta == null ? "N/A" : formatters.divisions(delta),
+            delta == null ? "Recorded for new matches from now on" : `${describeRankDelta(delta)}, ${counted} ${counted === 1 ? "match" : "matches"}`
+          );
+        })()}
       </div>
       ${modalSection("RR over time", isOverall ? "Every act, each drawn as its own line" : "Rating at each update where it changed. Hover the line for details.", renderRrHistory(player))}
 
@@ -1547,6 +1618,7 @@ const OVERALL_SUM_KEYS = [
   "performance_score_total", "performance_score_matches",
   "enemy_rank_sum", "enemy_rank_matches",
   "lobby_rank_sum", "lobby_rank_matches",
+  "rank_delta_sum", "rank_delta_matches",
   "headshots_total", "bodyshots_total", "legshots_total",
 ];
 
@@ -1737,6 +1809,20 @@ function finite(value) {
   return value != null && value !== "" && Number.isFinite(number) ? number : null;
 }
 
+// Average enemy rank minus the player's own rank, in rank divisions
+// (+0.5 = enemies half a division higher). Only matches fetched after this
+// was added are counted; earlier matches were never re-fetched.
+function rankDeltaOf(p) {
+  return finite(p?.summary?.rank_delta_average ?? p?.rank_delta_average);
+}
+
+function describeRankDelta(value) {
+  if (value == null) return "";
+  if (Math.abs(value) < 0.05) return "Enemies at your rank";
+  const amount = fixedNumber(Math.abs(value), 2);
+  return value > 0 ? `Enemies ${amount} divisions higher` : `Enemies ${amount} divisions lower`;
+}
+
 function rankValue(rank) {
   return rankValues[rank] || 0;
 }
@@ -1772,6 +1858,7 @@ const formatters = {
   signed: (v) => (v == null ? "N/A" : `${v > 0 ? "+" : ""}${modalNumber(v, 1)}`),
   time: (v) => (v == null ? "N/A" : formatTime(v)),
   rankAverage: (v) => (v == null ? "N/A" : `${modalRank(Math.round(v))} (${modalNumber(v, 1)})`),
+  divisions: (v) => (v == null ? "N/A" : `${v > 0 ? "+" : ""}${fixedNumber(v, 2)}`),
 };
 
 const STAT_GROUPS = ["General", "Combat", "Impact", "Utility & economy", "Matchmaking"];
@@ -1813,6 +1900,7 @@ const STATS = [
 
   { key: "enemyRank", label: "Avg enemy rank", group: "Matchmaking", better: null, get: (p) => finite(p.enemy_rank_average_value), format: formatters.rankAverage },
   { key: "lobbyRank", label: "Avg lobby rank", group: "Matchmaking", better: null, get: (p) => finite(p.lobby_rank_average_value), format: formatters.rankAverage },
+  { key: "rankDelta", label: "Enemy rank vs own", group: "Matchmaking", better: null, get: (p) => rankDeltaOf(p), format: formatters.divisions },
 ].map((stat) => ({ better: "high", compare: true, ...stat }));
 
 const STAT_BY_KEY = Object.fromEntries(STATS.map((stat) => [stat.key, stat]));
@@ -1920,15 +2008,16 @@ function renderFormStrip(player) {
   const ordered = recent.slice().reverse();
   const wins = ordered.filter((m) => m.result === "win").length;
   const losses = ordered.filter((m) => m.result === "loss").length;
+  const draws = ordered.filter((m) => m.result === "draw").length;
   const dots = ordered.map((m) => `
     <i class="form-dot form-${escapeHtml(m.result || "draw")}" title="${escapeHtml(matchSummaryText(m))}"></i>
   `).join("");
 
   return `
-    <div class="card-form" role="img" aria-label="Last ${ordered.length} matches: ${wins} wins, ${losses} losses">
+    <div class="card-form" role="img" aria-label="Last ${ordered.length} matches: ${wins} wins, ${losses} losses${draws ? `, ${draws} draws` : ""}">
       <span class="card-form-label">Last ${ordered.length}</span>
       <span class="form-dots">${dots}</span>
-      <span class="card-form-record">${wins}–${losses}</span>
+      <span class="card-form-record">${formatRecord(wins, losses, draws)}</span>
     </div>
   `;
 }
@@ -1957,6 +2046,7 @@ function renderRecentMatches(player) {
         <span class="match-result">${RESULT_NAMES[m.result] || "—"}${mvp ? `<small>${mvp}</small>` : ""}</span>
         <span class="match-score">${num(m.rounds_won)}–${num(m.rounds_lost)}<small>${escapeHtml(m.map || "")}</small></span>
         <span class="match-agent">${escapeHtml(m.agent || "")}<small>${escapeHtml(timeAgo(m.started_at))}</small></span>
+        <span class="match-lobby"${m.rank_delta != null ? ` title="${escapeHtml(describeRankDelta(m.rank_delta))}"` : ""}>${m.lobby_rank_value == null ? "—" : escapeHtml(modalRank(Math.round(m.lobby_rank_value)))}<small class="${m.rank_delta > 0.05 ? "delta-up" : m.rank_delta < -0.05 ? "delta-down" : ""}">${m.rank_delta == null ? "Lobby rank" : `Enemies ${formatters.divisions(m.rank_delta)}`}</small></span>
         <span class="match-kda">${num(m.kills)} / ${num(m.deaths)} / ${num(m.assists)}<small>K/D ${fixedNumber(kd, 2)}</small></span>
         <span class="match-acs">${m.acs == null ? "—" : Math.round(m.acs)}<small>ACS</small></span>
         <span class="match-perf">${m.performance_score == null ? "—" : Math.round(m.performance_score)}<small>${escapeHtml(m.grade ? m.grade.charAt(0).toUpperCase() + m.grade.slice(1) : "Performance")}</small></span>
@@ -2831,7 +2921,7 @@ function readUrlState() {
 // Start a comparison from a player's popup.
 function compareFromModal(playerId) {
   const modal = document.getElementById("cardModal");
-  modal?.classList.remove("open");
+  closeCardModal({ restoreFocus: false });
 
   selectA.value = playerId;
   if (selectB.value === playerId) {

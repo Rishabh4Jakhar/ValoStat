@@ -989,6 +989,10 @@ th {
   background: rgba(5, 10, 15, 0.82);
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 .card-modal.open {
   display: flex;
 }
@@ -1709,7 +1713,7 @@ th {
 
 .match-row {
   display: grid;
-  grid-template-columns: 74px 80px minmax(90px, 1.1fr) minmax(96px, 1fr) 54px 74px minmax(110px, 1.3fr);
+  grid-template-columns: 70px 70px minmax(84px, 1fr) minmax(104px, 1fr) minmax(96px, 1fr) 50px 70px minmax(110px, 1.2fr);
   align-items: center;
   gap: 12px;
   padding: 10px 12px 10px 14px;
@@ -1752,6 +1756,14 @@ th {
 
 .match-row[data-result="loss"] .match-result {
   color: var(--bad);
+}
+
+.match-lobby small.delta-up {
+  color: var(--changed);
+}
+
+.match-lobby small.delta-down {
+  color: var(--muted);
 }
 
 /* ---------- Party ---------- */
@@ -2203,15 +2215,16 @@ th {
 
 @media (max-width: 980px) {
   .match-row {
-    grid-template-columns: 70px 74px 1fr 1fr 70px;
+    grid-template-columns: 64px 66px 1fr 1fr 1fr 64px;
     grid-template-areas:
-      "result score agent kda acs"
-      "result score party party perf";
+      "result score agent lobby kda acs"
+      "result score party party party perf";
   }
 
   .match-result { grid-area: result; }
   .match-score { grid-area: score; }
   .match-agent { grid-area: agent; }
+  .match-lobby { grid-area: lobby; }
   .match-kda { grid-area: kda; }
   .match-acs { grid-area: acs; }
   .match-perf { grid-area: perf; }
@@ -2287,8 +2300,8 @@ th {
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-areas:
       "result score agent"
-      "kda acs perf"
-      "party party party";
+      "lobby kda acs"
+      "party party perf";
     gap: 8px 10px;
   }
 
