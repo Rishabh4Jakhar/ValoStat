@@ -3,7 +3,7 @@ import json
 import os
 import re
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 API_KEY = os.environ["HENRIK_API_KEY"]
 HEADERS = {"Authorization": API_KEY}
@@ -121,6 +121,9 @@ PARTY_COUNTER_KEYS = (
 )
 
 RECENT_MATCHES_KEPT = 10
+# Compact log of every match from the last few days, for the 1-day and
+# 1-week highlights on the main page.
+MATCH_LOG_DAYS = 8
 RR_HISTORY_KEPT = 1500  # about 3 months at several changes a day
 
 
@@ -635,7 +638,7 @@ def rank_delta(match_stats, own_value):
     enemy = match_stats.get("enemy_rank_value")
     if enemy is None or own_value is None:
         return None
-    return (enemy) - own_value
+    return (enemy + 0.5) - own_value
 
 
 def empty_party_totals():
@@ -683,6 +686,24 @@ def recent_match_entry(match_stats, puuid_to_id):
         "party_size": match_stats["party_size"],
         # Only friends tracked on the site are named.
         "party_with": [puuid_to_id[p] for p in match_stats["party_puuids"] if p in puuid_to_id],
+    }
+
+
+def match_log_entry(match):
+    """Smallest record of a match needed for the highlights."""
+    return {
+        "match_id": match.get("match_id"),
+        "t": match.get("started_at"),
+        "result": match.get("result"),
+        "rounds_won": match.get("rounds_won"),
+        "rounds_lost": match.get("rounds_lost"),
+        "kills": match.get("kills"),
+        "deaths": match.get("deaths"),
+        "assists": match.get("assists"),
+        "acs": match.get("acs"),
+        "performance_score": match.get("performance_score"),
+        "agent": match.get("agent"),
+        "map": match.get("map"),
     }
 
 
@@ -821,7 +842,9 @@ puuid_to_id = {
     if not isinstance(value, Exception) and value[0]
 }
 
-RUN_TIME = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+RUN_NOW = datetime.now(timezone.utc)
+RUN_TIME = RUN_NOW.strftime("%Y-%m-%dT%H:%M:%SZ")
+LOG_CUTOFF = (RUN_NOW - timedelta(days=MATCH_LOG_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 # Pass 2: matches and stats for the current act.
 out = []
@@ -882,6 +905,13 @@ for pid, riot in PLAYERS.items():
             for friend, value in (old_party.get("friends") or {}).items()
         }
         recent = {m["match_id"]: m for m in (old.get("recent_matches") or []) if m.get("match_id")} if up_to_date else {}
+        # The match log starts from the stored recent matches the first time.
+        same_act = old.get("season") == CURRENT_ACT
+        match_log = {
+            m["match_id"]: m
+            for m in (old.get("match_log") or [match_log_entry(r) for r in old.get("recent_matches") or []])
+            if m.get("match_id")
+        } if same_act else {}
 
         expected_new_matches = max(0, int(matches_played) - len(processed_match_ids))
         if expected_new_matches:
@@ -934,6 +964,7 @@ for pid, riot in PLAYERS.items():
                 add_party_match(pair["them"], friend_stats)
 
             recent[match_id] = recent_match_entry(match_stats, puuid_to_id)
+            match_log[match_id] = match_log_entry(recent[match_id])
 
             # The match feed is newest first, so only take level/card from the
             # newest match we see in this run.
@@ -973,6 +1004,12 @@ for pid, riot in PLAYERS.items():
 
         # Newest matches first; started_at is an ISO timestamp, so it sorts as text.
         recent_matches = sorted(recent.values(), key=lambda m: m.get("started_at") or "", reverse=True)[:RECENT_MATCHES_KEPT]
+        match_log_cutoff = LOG_CUTOFF
+        match_log_out = sorted(
+            (m for m in match_log.values() if (m.get("t") or "") >= match_log_cutoff),
+            key=lambda m: m.get("t") or "",
+            reverse=True,
+        )
 
         # RR over time: one point each time the rating changes. Kept across
         # schema rebuilds within the same act.
@@ -1060,6 +1097,7 @@ for pid, riot in PLAYERS.items():
                 "friends": dict(sorted(party_friends.items(), key=lambda item: -item[1]["me"]["matches"])),
             },
             "recent_matches": recent_matches,
+            "match_log": match_log_out,
             "rr_history": rr_history,
 
             "processed_matches": sorted(processed_match_ids),
@@ -1070,6 +1108,15 @@ for pid, riot in PLAYERS.items():
         if old and old.get("season") == CURRENT_ACT:
             out.append(old)
 
+# meta.json: when the stats were last checked, and when they last changed,
+# so the site can show an accurate "updated" time.
+old_meta = load_json("meta.json", {}) or {}
+stats_changed = json.dumps(out, sort_keys=True) != json.dumps(old_data, sort_keys=True)
 write_json("stats.json", out)
+write_json("meta.json", {
+    "checked_at": RUN_TIME,
+    "changed_at": RUN_TIME if stats_changed or not old_meta.get("changed_at") else old_meta["changed_at"],
+    "act": CURRENT_ACT,
+})
 
 print("stats.json updated")

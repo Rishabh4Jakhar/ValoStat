@@ -37,12 +37,22 @@ jobs:
           git config user.name "valostat-bot"
           git config user.email "bot@github.com"
 
-          # acts.json and data/ change when a new act starts and the old one is archived.
-          if [ -z "$(git status --porcelain -- stats.json acts.json data)" ]; then
-            echo "No changes in stats.json, acts.json or data/; skipping commit."
+          # Stats files are committed only when they changed, so stats_prev.json
+          # keeps pointing at the last real change for "Show changes".
+          # acts.json and data/ change when a new act starts.
+          if [ -n "$(git status --porcelain -- stats.json acts.json data)" ]; then
+            git add stats.json stats_prev.json acts.json data
+            message="Auto-update Valorant stats"
+          else
+            message="Stats checked, no changes"
+          fi
+
+          # meta.json records when the stats were checked, so it changes every run.
+          git add meta.json
+          if git diff --cached --quiet; then
+            echo "Nothing to commit."
             exit 0
           fi
 
-          git add stats.json stats_prev.json acts.json data
-          git commit -m "Auto-update Valorant stats"
+          git commit -m "$message"
           git push
