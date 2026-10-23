@@ -1527,6 +1527,7 @@ async function loadStats() {
 
   const data = await renderCards(currentAct);
   populateDropdowns(data);
+  renderHighlights();
   lastUpdate(current);
 }
 
@@ -1574,27 +1575,223 @@ function computeDiff(curr, previous) {
   }).filter(Boolean);
 }
 
-function lastUpdate(response) {
-  const lastModified = response.headers.get("Last-Modified");
-  if (!lastModified) return;
+function agoText(time) {
+  const minutes = Math.max(0, Math.floor((Date.now() - time) / 60000));
+  if (minutes < 1) return "just now";
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (hours >= 48) return `${Math.floor(hours / 24)}d ago`;
+  return `${hours ? `${hours}h ` : ""}${rest || !hours ? `${rest}m ` : ""}ago`;
+}
 
-  const date = new Date(lastModified);
-  const now = new Date();
-  const diffMinutes = Math.floor((now - date) / 60000);
-  const hours = Math.floor(diffMinutes / 60);
-  const minutes = diffMinutes % 60;
+// meta.json (written by the fetcher) holds the real fetch time. The file's
+// Last-Modified header is only a fallback: it changes on every site deploy,
+// including code pushes, so it can make old data look fresh.
+async function lastUpdate(response) {
+  const updateTime = document.getElementById("updateTime");
+  if (!updateTime) return;
 
-  let text = "Stats last updated ";
-  if (diffMinutes < 1) {
-    text += "just now";
-  } else {
-    if (hours > 0) text += `${hours}h `;
-    if (minutes > 0) text += `${minutes}m `;
-    text += "ago";
+  let checked = null;
+  let changed = null;
+  try {
+    const meta = await fetch(`meta.json?ts=${Date.now()}`).then((r) => (r.ok ? r.json() : null));
+    checked = Date.parse(meta?.checked_at || "");
+    changed = Date.parse(meta?.changed_at || "");
+  } catch (error) {
+    // Fall through to the header.
   }
 
-  const updateTime = document.getElementById("updateTime");
-  if (updateTime) updateTime.textContent = text;
+  if (!Number.isFinite(checked)) {
+    const lastModified = Date.parse(response.headers.get("Last-Modified") || "");
+    if (!Number.isFinite(lastModified)) return;
+    updateTime.textContent = `Stats last updated ${agoText(lastModified)}`;
+    return;
+  }
+
+  const stale = Number.isFinite(changed) && checked - changed > 10 * 60 * 1000;
+  updateTime.textContent = stale
+    ? `Checked ${agoText(checked)}, last change ${agoText(changed)}`
+    : `Stats updated ${agoText(checked)}`;
+  updateTime.title = `Checked ${new Date(checked).toLocaleString()}${Number.isFinite(changed) ? `\nLast changed ${new Date(changed).toLocaleString()}` : ""}`;
+}
+
+/* ---------- Highlights (current act, last day or week) ---------- */
+
+const HIGHLIGHT_PERIODS = {
+  "1d": { ms: 24 * 3600 * 1000, minMatches: 2, label: "24 hours" },
+  "1w": { ms: 7 * 24 * 3600 * 1000, minMatches: 3, label: "7 days" },
+};
+let highlightPeriod = "1w";
+
+// Every match a player played in the window, oldest first.
+function matchesInWindow(player, start) {
+  const log = Array.isArray(player.match_log) && player.match_log.length
+    ? player.match_log
+    : (player.recent_matches || []).map((m) => ({ ...m, t: m.started_at }));
+  return log
+    .map((m) => ({ ...m, time: Date.parse(m.t || "") }))
+    .filter((m) => Number.isFinite(m.time) && m.time >= start)
+    .sort((a, b) => a.time - b.time);
+}
+
+function rrChangeInWindow(player, start) {
+  const points = rrPoints(player);
+  const inside = points.filter((p) => p.time >= start);
+  if (!inside.length) return null;
+  const before = points.filter((p) => p.time < start).pop() || inside[0];
+  const last = inside[inside.length - 1];
+  return { change: last.elo - before.elo, from: before, to: last };
+}
+
+function longestWinStreak(matches) {
+  let best = 0;
+  let run = 0;
+  let bestEnd = null;
+  matches.forEach((m) => {
+    run = m.result === "win" ? run + 1 : 0;
+    if (run > best) {
+      best = run;
+      bestEnd = m;
+    }
+  });
+  return { length: best, end: bestEnd };
+}
+
+function windowRecord(matches) {
+  const count = (result) => matches.filter((m) => m.result === result).length;
+  return { wins: count("win"), losses: count("loss"), draws: count("draw") };
+}
+
+function buildHighlights(list, periodKey) {
+  const period = HIGHLIGHT_PERIODS[periodKey];
+  const start = Date.now() - period.ms;
+
+  const rows = list.map((player) => {
+    const matches = matchesInWindow(player, start);
+    const record = windowRecord(matches);
+    const scored = matches.filter((m) => finite(m.acs) != null);
+    return {
+      player,
+      matches,
+      record,
+      rr: rrChangeInWindow(player, start),
+      acs: scored.length ? scored.reduce((sum, m) => sum + m.acs, 0) / scored.length : null,
+      winrate: matches.length ? (record.wins / matches.length) * 100 : null,
+      best: matches.reduce((top, m) => (finite(m.performance_score) != null && (!top || m.performance_score > top.performance_score) ? m : top), null),
+      streak: longestWinStreak(matches),
+    };
+  });
+
+  const top = (filter, value, detail) => rows
+    .filter(filter)
+    .sort((a, b) => value(b) - value(a))
+    .slice(0, 3)
+    .map((row) => ({ row, value: value(row), detail: detail(row) }));
+
+  const enough = (row) => row.matches.length >= period.minMatches;
+  const recordText = (r) => formatRecord(r.wins, r.losses, r.draws);
+
+  return [
+    {
+      title: "Biggest climb",
+      empty: "No one gained RR",
+      format: (v) => `+${v} RR`,
+      entries: top((r) => r.rr && r.rr.change > 0, (r) => r.rr.change,
+        (r) => (r.rr.from.rank === r.rr.to.rank ? `${r.rr.to.rank}, ${num(r.rr.to.rr)} RR` : `${r.rr.from.rank} to ${r.rr.to.rank}`)),
+    },
+    {
+      title: "Most matches",
+      empty: "No matches played",
+      format: (v) => `${v} ${v === 1 ? "match" : "matches"}`,
+      entries: top((r) => r.matches.length > 0, (r) => r.matches.length, (r) => recordText(r.record)),
+    },
+    {
+      title: "Best match",
+      empty: "No rated matches",
+      format: (v) => `${Math.round(v)}`,
+      unit: "performance",
+      entries: top((r) => r.best, (r) => r.best.performance_score,
+        (r) => `${r.best.agent} on ${r.best.map}, ${num(r.best.rounds_won)}–${num(r.best.rounds_lost)}, ${num(r.best.kills)}/${num(r.best.deaths)}/${num(r.best.assists)}`),
+    },
+    {
+      title: "Highest ACS",
+      empty: `Needs ${period.minMatches}+ matches`,
+      note: `Min ${period.minMatches} matches`,
+      format: (v) => `${Math.round(v)}`,
+      unit: "ACS",
+      entries: top((r) => enough(r) && r.acs != null, (r) => r.acs, (r) => `${r.matches.length} matches`),
+    },
+    {
+      title: "Best win rate",
+      empty: `Needs ${period.minMatches}+ matches`,
+      note: `Min ${period.minMatches} matches`,
+      format: (v) => `${Math.round(v)}%`,
+      entries: top((r) => enough(r), (r) => r.winrate + r.matches.length / 1000, (r) => recordText(r.record)),
+    },
+    {
+      title: "Longest win streak",
+      empty: "No streaks of 2+ wins",
+      format: (v) => `${Math.floor(v)} wins`,
+      entries: top((r) => r.streak.length >= 2, (r) => r.streak.length,
+        (r) => `Ended ${timeAgo(r.streak.end.t)}`),
+    },
+  ];
+}
+
+function renderHighlights() {
+  const section = document.querySelector(".highlights");
+  const grid = document.getElementById("highlightGrid");
+  const note = document.getElementById("highlightsNote");
+  if (!section || !grid) return;
+
+  // Only the current act has match logs and RR history.
+  const list = Array.isArray(cache) ? cache.filter((p) => p.rr_history || p.match_log || p.recent_matches) : [];
+  if (!list.length) {
+    section.hidden = true;
+    return;
+  }
+  section.hidden = false;
+
+  const period = HIGHLIGHT_PERIODS[highlightPeriod];
+  const tiles = buildHighlights(list, highlightPeriod);
+  const totalMatches = new Set(list.flatMap((p) => matchesInWindow(p, Date.now() - period.ms).map((m) => m.match_id))).size;
+  note.textContent = `${getActLabel(actsConfig.current)}, last ${period.label}: ${totalMatches} ${totalMatches === 1 ? "match" : "matches"} across the group`;
+
+  document.querySelectorAll(".highlight-periods .rr-range").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.period === highlightPeriod));
+  });
+
+  grid.innerHTML = tiles.map((tile) => {
+    const [leader, ...rest] = tile.entries;
+    const name = (row) => `
+      <button type="button" class="highlight-player" data-player-id="${escapeHtml(row.player.id)}" data-tier="${rankTier(row.player.rank)}">${escapeHtml(row.player.id)}</button>
+    `;
+    return `
+      <article class="highlight-tile"${leader ? ` data-tier="${rankTier(leader.row.player.rank)}"` : ""}>
+        <header>
+          <h3>${escapeHtml(tile.title)}</h3>
+          ${tile.note ? `<span>${escapeHtml(tile.note)}</span>` : ""}
+        </header>
+        ${leader ? `
+          <div class="highlight-leader">
+            ${name(leader.row)}
+            <strong>${escapeHtml(tile.format(leader.value))}${tile.unit ? `<small>${escapeHtml(tile.unit)}</small>` : ""}</strong>
+            <p>${escapeHtml(leader.detail)}</p>
+          </div>
+          ${rest.length ? `
+            <ol class="highlight-rest" start="2">
+              ${rest.map((entry) => `
+                <li>
+                  ${name(entry.row)}
+                  <span>${escapeHtml(tile.format(entry.value))}</span>
+                </li>
+              `).join("")}
+            </ol>
+          ` : ""}
+        ` : `<p class="highlight-empty">${escapeHtml(tile.empty)}</p>`}
+      </article>
+    `;
+  }).join("");
 }
 
 /* ---------- Loading State ---------- */
@@ -2999,6 +3196,20 @@ function initDashboard() {
   buildActNav();
 
   compareBtn.addEventListener("click", onCompareClick);
+
+  document.querySelectorAll(".highlight-periods .rr-range").forEach((button) => {
+    button.addEventListener("click", () => {
+      highlightPeriod = button.dataset.period;
+      renderHighlights();
+    });
+  });
+
+  document.getElementById("highlightGrid")?.addEventListener("click", (event) => {
+    const button = event.target.closest(".highlight-player");
+    if (!button) return;
+    const player = cache.find((item) => item.id === button.dataset.playerId);
+    if (player) openCardModal(player, actsConfig.current);
+  });
 
   let minMatchesTimer = null;
   document.getElementById("minMatches").addEventListener("input", () => {

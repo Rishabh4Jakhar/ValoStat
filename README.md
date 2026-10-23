@@ -20,6 +20,7 @@ Valorant stats for a group of friends: one card per player, a detailed profile f
 
 ### Main page
 
+- Highlights for the last day or week: biggest RR climb, most matches, best single match, highest ACS, best win rate and longest win streak, with the top three for each
 - A card per player, coloured by rank tier, with avg performance score, wins, win rate, K/D, KAST, playtime and the last 10 results
 - The current act, every past act, and an Overall view that combines them
 - Sort by any of 33 stats, highest or lowest first, with an optional minimum number of matches
@@ -67,6 +68,7 @@ The **Overall** score is the average of the player's score in each act they play
 - **Enemy rank vs own** is the average enemy rank minus your own rank, in divisions, per match. Your rank includes RR (Diamond 1 with 50 RR is 16.5). Enemy RR isn't in the match data, so enemies count as the middle of their division. +0.5 means enemies were half a division higher. Only matches fetched after this was added are counted.
 - **RR over time** gets a point at each update where the rating changed. Several matches between updates show as one point, with the match count in the hover readout.
 - **Party** groups players who queued together using the API's party ID.
+- **Highlights** use the current act only. Highest ACS and best win rate need at least 2 matches in a day or 3 in a week.
 
 ## How it works
 
@@ -114,9 +116,10 @@ To rebuild every player's stats for the current act from scratch, raise `STATS_S
 
 | File | Contents |
 | --- | --- |
-| `stats.json` | Current act: one entry per player with totals, derived stats, agents, party stats, recent matches and RR history |
+| `stats.json` | Current act: one entry per player with totals, derived stats, agents, party stats, recent matches, RR history and a log of the last 8 days of matches |
 | `stats_prev.json` | The previous run's `stats.json`, used for "Show changes since last update" |
 | `data/<act>.json` | Finished acts. Acts before V26: A6 only have the basic stats |
 | `acts.json` | The current act and the list of acts shown on the site |
+| `meta.json` | When the stats were last checked and last changed, for the "updated" time at the top of the page |
 
 Data from the [HenrikDev Valorant API](https://api.henrikdev.xyz/dashboard). Not affiliated with Riot Games.

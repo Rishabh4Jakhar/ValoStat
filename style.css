@@ -137,6 +137,198 @@ h4 {
   font-size: 14px;
 }
 
+/* ---------- Highlights ---------- */
+/* Sits between the header and the act tabs, and always shows the current
+   act, so it stays separate from whichever act is selected below. */
+
+.highlights {
+  border-bottom: 1px solid var(--line);
+  background: var(--ink-deep);
+}
+
+.highlights-content {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: 20px 28px 26px;
+}
+
+.highlights-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-bottom: 16px;
+}
+
+.highlights-head h2 {
+  font-size: 30px;
+  text-transform: uppercase;
+}
+
+.highlights-head .rr-ranges {
+  margin: 0;
+}
+
+.highlights-note {
+  margin: 0 0 0 auto;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+}
+
+/* Six tiles split evenly: 6, 3 or 2 across, never 5 + 1. */
+@media (max-width: 1360px) {
+  .highlight-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .highlight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.highlight-tile {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px 16px 14px;
+  background:
+    linear-gradient(var(--tier), var(--tier)) top / 100% 3px no-repeat,
+    radial-gradient(120% 80% at 0% 0%, color-mix(in srgb, var(--tier) 11%, transparent), transparent 70%),
+    var(--panel);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
+}
+
+.highlight-tile:not([data-tier]) {
+  --tier: var(--line);
+}
+
+.highlight-tile header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.highlight-tile h3 {
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.highlight-tile header span {
+  color: var(--faint);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.highlight-player {
+  padding: 0;
+  background: none;
+  color: var(--tier);
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.highlight-player:hover {
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.highlight-leader .highlight-player {
+  font-size: 26px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.highlight-leader strong {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 6px;
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.highlight-leader strong small {
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.highlight-leader p {
+  margin: 6px 0 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.highlight-rest {
+  margin: auto 0 0;
+  padding: 10px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+  counter-reset: place 1;
+}
+
+.highlight-rest li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+  counter-increment: place;
+}
+
+.highlight-rest li::before {
+  content: counter(place);
+  width: 12px;
+  color: var(--faint);
+  font-size: 12px;
+}
+
+.highlight-rest .highlight-player {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.highlight-rest span {
+  margin-left: auto;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.highlight-empty {
+  margin: 4px 0 0;
+  color: var(--faint);
+  font-size: 14px;
+}
+
+.highlight-leader {
+  margin-bottom: 12px;
+}
+
 /* ---------- Act navigation ---------- */
 
 .act-navbar {
@@ -2296,6 +2488,33 @@ body.modal-open {
 }
 
 @media (max-width: 640px) {
+  .highlights-content {
+    padding: 16px 16px 20px;
+  }
+
+  .highlights-note {
+    width: 100%;
+    margin: 0;
+  }
+
+  /* Tiles scroll sideways on phones instead of stacking six deep. */
+  .highlight-grid {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 78%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .highlight-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .highlight-tile {
+    scroll-snap-align: start;
+  }
+
   .match-row {
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-areas:
