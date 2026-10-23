@@ -103,6 +103,9 @@ COUNTER_KEYS = (
     "performance_score_total", "performance_score_matches",
     "enemy_rank_sum", "enemy_rank_matches",
     "lobby_rank_sum", "lobby_rank_matches",
+    # Enemy rank minus the player's own rank, per match (added without a
+    # schema bump, so only matches fetched after this change count).
+    "rank_delta_sum", "rank_delta_matches",
 )
 
 MAP_COUNTER_KEYS = ("matches", "wins", "losses", "draws", "rounds", "rounds_won")
@@ -174,8 +177,10 @@ def get_unprocessed_current_act_matches(puuid, current_act, processed_match_ids,
     collected = []
     seen_this_run = set()
     start = 0
+    current_key = act_key(current_act)
+    reached_older_act = False
 
-    while len(collected) < expected_new_matches:
+    while len(collected) < expected_new_matches and not reached_older_act:
         page = get_matches(puuid, start=start, size=page_size)
         if not page:
             break
@@ -184,6 +189,13 @@ def get_unprocessed_current_act_matches(puuid, current_act, processed_match_ids,
             metadata = match.get("metadata", {})
             match_id = metadata.get("match_id")
             act = (metadata.get("season") or {}).get("short")
+            # The feed is newest first, so once it reaches an earlier act
+            # there are no more current-act matches to find. Without this,
+            # a player whose season game count is ahead of what the API
+            # returns would have their whole history paged every run.
+            key = act_key(act)
+            if current_key and key and key < current_key:
+                reached_older_act = True
             if (
                 match_id
                 and act == current_act
@@ -357,6 +369,8 @@ def derive_summary(t):
         },
         "enemy_rank_average_value": ratio(t["enemy_rank_sum"], t["enemy_rank_matches"], 2),
         "lobby_rank_average_value": ratio(t["lobby_rank_sum"], t["lobby_rank_matches"], 2),
+        "rank_delta_average": ratio(t["rank_delta_sum"], t["rank_delta_matches"], 2),
+        "rank_delta_matches": t["rank_delta_matches"],
 
         "maps": {
             map_name: {
@@ -562,6 +576,9 @@ def analyse_match(match, puuid):
         rounds_lost = len(rounds) - rounds_won
 
     return {
+        "tier_name": (player.get("tier") or {}).get("name"),
+        "enemy_rank_value": sum(enemy_ranks) / len(enemy_ranks) if enemy_ranks else None,
+        "lobby_rank_value": sum(lobby_ranks) / len(lobby_ranks) if lobby_ranks else None,
         "match_id": metadata.get("match_id"),
         "started_at": metadata.get("started_at"),
         "result": "draw" if draw else ("win" if won else "loss"),
@@ -583,6 +600,42 @@ def analyse_match(match, puuid):
         "account_level": player.get("account_level"),
         "card_id": (player.get("customization") or {}).get("card"),
     }
+
+
+def own_rank_value(tier_name, started_at, rr_points, current_rank, current_rr):
+    """The player's rank on the 1-25 scale plus RR as a fraction (Diamond 1,
+    50 RR = 16.5) going into a match.
+
+    Match data has the tier but not RR, so RR comes from the last RR history
+    point before the match (if it was the same rank), else from the current
+    rating (if the rank still matches), else the middle of the division.
+    """
+    base = RANK_VALUES.get(tier_name)
+    if base is None:
+        return None
+    rr = None
+    if started_at:
+        earlier = [p for p in rr_points if (p.get("t") or "") <= started_at]
+        if earlier and earlier[-1].get("rank") == tier_name:
+            rr = earlier[-1].get("rr")
+    if rr is None and current_rank == tier_name:
+        rr = current_rr
+    if not isinstance(rr, (int, float)):
+        rr = 50
+    return base + min(max(rr, 0), 99) / 100
+
+
+def rank_delta(match_stats, own_value):
+    """Average enemy rank minus the player's own rank, in divisions.
+
+    Enemy RR isn't in the match data, so each enemy counts as the middle of
+    their division (+0.5), the same way an unknown own RR is treated.
+    Positive means the enemies were ranked higher.
+    """
+    enemy = match_stats.get("enemy_rank_value")
+    if enemy is None or own_value is None:
+        return None
+    return (enemy) - own_value
 
 
 def empty_party_totals():
@@ -621,6 +674,12 @@ def recent_match_entry(match_stats, puuid_to_id):
         "grade": match_stats["grade"],
         "match_mvp": bool(c["match_mvps"]),
         "team_mvp": bool(c["team_mvps"]),
+        "lobby_rank_value": round(match_stats["lobby_rank_value"], 2)
+            if match_stats.get("lobby_rank_value") is not None else None,
+        "enemy_rank_value": round(match_stats["enemy_rank_value"], 2)
+            if match_stats.get("enemy_rank_value") is not None else None,
+        "rank_delta": round(match_stats["rank_delta"], 2)
+            if match_stats.get("rank_delta") is not None else None,
         "party_size": match_stats["party_size"],
         # Only friends tracked on the site are named.
         "party_with": [puuid_to_id[p] for p in match_stats["party_puuids"] if p in puuid_to_id],
@@ -792,6 +851,12 @@ for pid, riot in PLAYERS.items():
             continue
 
         matches_played = season.get("games", 0) or 0
+
+        current_tier = mmr.get("current") or {}
+        current_rank = (current_tier.get("tier") or {}).get("name", old.get("rank", "Unrated"))
+        current_rr = current_tier.get("rr", old.get("rr", 0))
+        current_elo = current_tier.get("elo", old.get("elo", 0))
+        previous_rr_points = list(old.get("rr_history") or []) if old.get("season") == CURRENT_ACT else []
         wins = season.get("wins", 0) or 0
 
         processed_match_ids = set(old.get("processed_matches", [])) if up_to_date else set()
@@ -843,6 +908,15 @@ for pid, riot in PLAYERS.items():
             if match_stats is None:
                 print(f"Skipping match {match_id} for {riot} (no rounds or player missing)")
                 continue
+
+            own_value = own_rank_value(
+                match_stats["tier_name"], match_stats["started_at"],
+                previous_rr_points, current_rank, current_rr,
+            )
+            delta = rank_delta(match_stats, own_value)
+            match_stats["rank_delta"] = delta
+            match_stats["counters"]["rank_delta_sum"] = delta if delta is not None else 0
+            match_stats["counters"]["rank_delta_matches"] = 1 if delta is not None else 0
 
             add_match(totals, match_stats)
             add_match(agent_totals.setdefault(match_stats["agent"], empty_totals()), match_stats)
@@ -896,11 +970,6 @@ for pid, riot in PLAYERS.items():
                 "summary": agent_summary,
                 "totals": agent,
             }
-
-        current_tier = mmr.get("current") or {}
-        current_rank = (current_tier.get("tier") or {}).get("name", old.get("rank", "Unrated"))
-        current_rr = current_tier.get("rr", old.get("rr", 0))
-        current_elo = current_tier.get("elo", old.get("elo", 0))
 
         # Newest matches first; started_at is an ISO timestamp, so it sorts as text.
         recent_matches = sorted(recent.values(), key=lambda m: m.get("started_at") or "", reverse=True)[:RECENT_MATCHES_KEPT]
@@ -974,6 +1043,9 @@ for pid, riot in PLAYERS.items():
             "lobby_rank_sum": totals["lobby_rank_sum"],
             "lobby_rank_matches": totals["lobby_rank_matches"],
             "lobby_rank_average_value": summary["lobby_rank_average_value"],
+            "rank_delta_sum": round(totals["rank_delta_sum"], 3),
+            "rank_delta_matches": totals["rank_delta_matches"],
+            "rank_delta_average": summary["rank_delta_average"],
 
             # New: full derived stats for the act, per-agent stats and the raw
             # totals needed to keep adding matches incrementally.
