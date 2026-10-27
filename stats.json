@@ -43761,34 +43761,6 @@
         "performance_score": 140.7,
         "agent": "Omen",
         "map": "Haven"
-      },
-      {
-        "match_id": "3f69dfbf-3deb-451c-b763-56a4af380c89",
-        "t": "2026-10-25T00:57:23.781Z",
-        "result": "loss",
-        "rounds_won": 11,
-        "rounds_lost": 13,
-        "kills": 11,
-        "deaths": 16,
-        "assists": 10,
-        "acs": 130.5,
-        "performance_score": 206.1,
-        "agent": "Harbor",
-        "map": "Lotus"
-      },
-      {
-        "match_id": "355d0fc0-363d-4570-9686-09d12197e744",
-        "t": "2026-10-25T00:08:30.121Z",
-        "result": "win",
-        "rounds_won": 13,
-        "rounds_lost": 7,
-        "kills": 15,
-        "deaths": 12,
-        "assists": 14,
-        "acs": 221.1,
-        "performance_score": 320.4,
-        "agent": "Brimstone",
-        "map": "Bind"
       }
     ],
     "rr_history": [
