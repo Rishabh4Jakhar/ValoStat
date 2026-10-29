@@ -702,6 +702,8 @@ def match_log_entry(match):
         "assists": match.get("assists"),
         "acs": match.get("acs"),
         "performance_score": match.get("performance_score"),
+        "match_mvp": match.get("match_mvp"),
+        "team_mvp": match.get("team_mvp"),
         "agent": match.get("agent"),
         "map": match.get("map"),
     }

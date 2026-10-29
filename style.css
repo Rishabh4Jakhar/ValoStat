@@ -251,18 +251,12 @@ h4 {
 
 .highlight-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
-/* Six tiles split evenly: 6, 3 or 2 across, never 5 + 1. */
-@media (max-width: 1360px) {
-  .highlight-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 820px) {
+/* Eight tiles split evenly: 4 or 2 across (phones scroll sideways). */
+@media (max-width: 1100px) {
   .highlight-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

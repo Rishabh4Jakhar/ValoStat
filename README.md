@@ -4,19 +4,23 @@ Valorant stats for a group of friends: one card per player, a detailed profile f
 
 ## Contents
 
-- [Features](#features)
-- [ValoStat score](#valostat-score)
-- [How the stats are worked out](#how-the-stats-are-worked-out)
-- [How it works](#how-it-works)
-- [New acts](#new-acts)
-- [Running it yourself](#running-it-yourself)
-- [Data files](#data-files)
+- [ValoStat](#valostat)
+  - [Contents](#contents)
+  - [Features](#features)
+    - [Main page](#main-page)
+    - [Player profile](#player-profile)
+  - [ValoStat score](#valostat-score)
+  - [How the stats are worked out](#how-the-stats-are-worked-out)
+  - [How it works](#how-it-works)
+  - [New acts](#new-acts)
+  - [Running it yourself](#running-it-yourself)
+  - [Data files](#data-files)
 
 ## Features
 
 ### Main page
 
-- Highlights for the last 24 hours, opened from a bar at the top: biggest RR climb, most matches, best single match, highest ACS, best win rate and longest win streak, with the top three for each
+- Highlights for the last 24 hours, opened from a bar at the top: biggest RR climb, most matches, most kills, highest single-match ACS, best single match, best K/D, most MVPs, and best win rate with win streak, with the top three for each
 - A card per player, coloured by rank tier, with avg performance score, wins, win rate, K/D, KAST, playtime and the last 10 results
 - The current act, every past act, and an Overall view that combines them
 - Sort by any of 33 stats, highest or lowest first, with an optional minimum number of matches
@@ -64,7 +68,7 @@ The **Overall** score is the average of the player's score in each act they play
 - **Enemy rank vs own** is the average enemy rank minus your own rank, in divisions, per match. Your rank includes RR (Diamond 1 with 50 RR is 16.5). Enemy RR isn't in the match data, so enemies count as the middle of their division. +0.5 means enemies were half a division higher. Only matches fetched after this was added are counted.
 - **RR over time** gets a point at each update where the rating changed. Several matches between updates show as one point, with the match count in the hover readout.
 - **Party** groups players who queued together using the API's party ID.
-- **Highlights** use the current act only. Best win rate needs at least 2 matches in the 24 hours.
+- **Highlights** use the current act only. Single-match highlights (ACS, best match) use each player's best match. Only best win rate has a minimum, 2 matches.
 
 ## How it works
 

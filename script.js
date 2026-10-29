@@ -1624,8 +1624,11 @@ const highlightPeriod = "1d";
 
 // Every match a player played in the window, oldest first.
 function matchesInWindow(player, start) {
+  // Log entries written before MVPs were logged pick them up from the
+  // recent-matches list when the same match is there.
+  const recentById = new Map((player.recent_matches || []).map((m) => [m.match_id, m]));
   const log = Array.isArray(player.match_log) && player.match_log.length
-    ? player.match_log
+    ? player.match_log.map((m) => ({ ...(recentById.get(m.match_id) || {}), ...m }))
     : (player.recent_matches || []).map((m) => ({ ...m, t: m.started_at }));
   return log
     .map((m) => ({ ...m, time: Date.parse(m.t || "") }))
@@ -1665,33 +1668,47 @@ function buildHighlights(list, periodKey) {
   const period = HIGHLIGHT_PERIODS[periodKey];
   const start = Date.now() - period.ms;
 
+  // Each player's single best match by some per-match number.
+  const bestBy = (matches, key) => matches.reduce(
+    (top, m) => (finite(m[key]) != null && (!top || m[key] > top[key]) ? m : top),
+    null
+  );
+
   const rows = list.map((player) => {
     const matches = matchesInWindow(player, start);
-    const record = windowRecord(matches);
-    const scored = matches.filter((m) => finite(m.acs) != null);
+    const kills = matches.reduce((sum, m) => sum + num(m.kills), 0);
+    const deaths = matches.reduce((sum, m) => sum + num(m.deaths), 0);
     return {
       player,
       matches,
-      record,
+      record: windowRecord(matches),
       rr: rrChangeInWindow(player, start),
-      acs: scored.length ? scored.reduce((sum, m) => sum + m.acs, 0) / scored.length : null,
-      winrate: matches.length ? (record.wins / matches.length) * 100 : null,
-      best: matches.reduce((top, m) => (finite(m.performance_score) != null && (!top || m.performance_score > top.performance_score) ? m : top), null),
+      kills,
+      deaths,
+      kd: matches.length ? kills / Math.max(deaths, 1) : null,
+      matchMvps: matches.filter((m) => m.match_mvp).length,
+      teamMvps: matches.filter((m) => m.team_mvp).length,
+      topAcs: bestBy(matches, "acs"),
+      topPerformance: bestBy(matches, "performance_score"),
       streak: longestWinStreak(matches),
     };
   });
 
+  // Top three players for a highlight; one row per player.
   const top = (filter, value, detail) => rows
     .filter(filter)
     .sort((a, b) => value(b) - value(a))
     .slice(0, 3)
     .map((row) => ({ row, value: value(row), detail: detail(row) }));
 
-  const enough = (row) => row.matches.length >= period.minMatches;
+  const matchCount = (n) => `${n} ${n === 1 ? "match" : "matches"}`;
   const recordText = (r) => formatRecord(r.wins, r.losses, r.draws);
+  const matchLine = (m) => `${m.agent} on ${m.map}, ${num(m.rounds_won)}–${num(m.rounds_lost)}, ${num(m.kills)}/${num(m.deaths)}/${num(m.assists)}`;
+  const winrate = (r) => (r.record.wins / r.matches.length) * 100;
 
   return [
     {
+      key: "climb",
       title: "Biggest climb",
       empty: "No one gained RR",
       format: (v) => `+${v} RR`,
@@ -1699,40 +1716,66 @@ function buildHighlights(list, periodKey) {
         (r) => (r.rr.from.rank === r.rr.to.rank ? `${r.rr.to.rank}, ${num(r.rr.to.rr)} RR` : `${r.rr.from.rank} to ${r.rr.to.rank}`)),
     },
     {
+      key: "matches",
       title: "Most matches",
       empty: "No matches played",
-      format: (v) => `${v} ${v === 1 ? "match" : "matches"}`,
+      format: (v) => matchCount(v),
       entries: top((r) => r.matches.length > 0, (r) => r.matches.length, (r) => recordText(r.record)),
     },
     {
-      title: "Best match",
-      empty: "No rated matches",
-      format: (v) => `${Math.round(v)}`,
-      unit: "performance",
-      entries: top((r) => r.best, (r) => r.best.performance_score,
-        (r) => `${r.best.agent} on ${r.best.map}, ${num(r.best.rounds_won)}–${num(r.best.rounds_lost)}, ${num(r.best.kills)}/${num(r.best.deaths)}/${num(r.best.assists)}`),
+      key: "kills",
+      title: "Most kills",
+      empty: "No matches played",
+      format: (v) => `${v} ${v === 1 ? "kill" : "kills"}`,
+      entries: top((r) => r.kills > 0, (r) => r.kills,
+        (r) => `${matchCount(r.matches.length)}, K/D ${fixedNumber(r.kd, 2)}`),
     },
     {
+      key: "acs",
       title: "Highest ACS",
+      note: "Single match",
       empty: "No matches played",
       format: (v) => `${Math.round(v)}`,
       unit: "ACS",
-      entries: top((r) => r.acs != null, (r) => r.acs,
-        (r) => `${r.matches.length} ${r.matches.length === 1 ? "match" : "matches"}`),
+      entries: top((r) => r.topAcs, (r) => r.topAcs.acs, (r) => matchLine(r.topAcs)),
     },
     {
+      key: "performance",
+      title: "Best match",
+      note: "Single match",
+      empty: "No rated matches",
+      format: (v) => `${Math.round(v)}`,
+      unit: "performance",
+      entries: top((r) => r.topPerformance, (r) => r.topPerformance.performance_score, (r) => matchLine(r.topPerformance)),
+    },
+    {
+      key: "kd",
+      title: "Best K/D",
+      empty: "No matches played",
+      format: (v) => fixedNumber(v, 2),
+      entries: top((r) => r.matches.length > 0, (r) => r.kd,
+        (r) => `${r.kills}/${r.deaths} over ${matchCount(r.matches.length)}`),
+    },
+    {
+      key: "mvps",
+      title: "Most MVPs",
+      empty: "No MVPs yet",
+      format: (v) => `${v} MVP${v === 1 ? "" : "s"}`,
+      entries: top((r) => r.matchMvps + r.teamMvps > 0, (r) => r.matchMvps + r.teamMvps,
+        (r) => [r.matchMvps && `${r.matchMvps} match MVP`, r.teamMvps && `${r.teamMvps} team MVP`].filter(Boolean).join(", ")),
+    },
+    {
+      // Win rate and streak together; the only highlight with a minimum,
+      // since one win would otherwise be a perfect 100%.
+      key: "form",
       title: "Best win rate",
-      empty: `Needs ${period.minMatches}+ matches`,
       note: `Min ${period.minMatches} matches`,
+      empty: `Needs ${period.minMatches}+ matches`,
       format: (v) => `${Math.round(v)}%`,
-      entries: top((r) => enough(r), (r) => r.winrate + r.matches.length / 1000, (r) => recordText(r.record)),
-    },
-    {
-      title: "Longest win streak",
-      empty: "No streaks of 2+ wins",
-      format: (v) => `${Math.floor(v)} wins`,
-      entries: top((r) => r.streak.length >= 2, (r) => r.streak.length,
-        (r) => `Ended ${timeAgo(r.streak.end.t)}`),
+      entries: top((r) => r.matches.length >= period.minMatches,
+        // Ties go to the longer streak, then more matches.
+        (r) => winrate(r) + r.streak.length / 100 + r.matches.length / 10000,
+        (r) => `${recordText(r.record)}${r.streak.length >= 2 ? `, ${r.streak.length}-win streak` : ""}`),
     },
   ];
 }
@@ -1759,8 +1802,9 @@ function renderHighlights() {
   // A one-line preview on the collapsed bar, to make it worth opening.
   const teaser = document.getElementById("highlightsTeaser");
   if (teaser) {
-    const climb = tiles[0].entries[0];
-    const best = tiles[2].entries[0];
+    const byKey = Object.fromEntries(tiles.map((tile) => [tile.key, tile]));
+    const climb = byKey.climb.entries[0];
+    const best = byKey.performance.entries[0];
     const played = `${totalMatches} ${totalMatches === 1 ? "match" : "matches"} played`;
     teaser.textContent = !totalMatches
       ? "No matches in the last 24 hours"
