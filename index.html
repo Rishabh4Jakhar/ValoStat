@@ -59,6 +59,12 @@
           <option value="default">Default order</option>
         </select>
         <button id="sortDirection" class="sort-direction" type="button" disabled>Highest first</button>
+        <div id="rrSortRanges" class="rr-ranges sort-ranges" role="group" aria-label="RR change period" hidden>
+          <button type="button" class="rr-range" data-range="1d" aria-pressed="false">1D</button>
+          <button type="button" class="rr-range" data-range="1w" aria-pressed="true">1W</button>
+          <button type="button" class="rr-range" data-range="1m" aria-pressed="false">1M</button>
+          <button type="button" class="rr-range" data-range="all" aria-pressed="false">All</button>
+        </div>
         <label id="minMatchesControl" class="min-matches" hidden>
           Min. matches
           <input type="number" id="minMatches" min="0" step="1" inputmode="numeric" placeholder="0" />
