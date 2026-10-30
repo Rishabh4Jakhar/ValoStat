@@ -21,24 +21,25 @@ Valorant stats for a group of friends: one card per player, a detailed profile f
 ### Main page
 
 - Highlights for the last 24 hours, opened from a bar at the top: biggest RR climb, most matches, most kills, highest single-match ACS, best single match, best K/D, most MVPs, and best win rate with win streak, with the top three for each
-- A card per player, coloured by rank tier, with avg performance score, wins, win rate, K/D, KAST, playtime and the last 10 results
+- A card per player, coloured by rank tier and with the rank badge, with avg performance score, wins, win rate, K/D, KAST, playtime and the last 10 results
 - The current act, every past act, and an Overall view that combines them
-- Sort by any of 33 stats, highest or lowest first, with an optional minimum number of matches
+- Sort by any of 34 stats, highest or lowest first, with an optional minimum number of matches. RR change can be sorted over the last day, week, month or the whole act
 - Show what changed since the last update, with each card noting the previous value
 - Head-to-head comparison of two players across every stat, grouped by type, with a count of stats won
 - Shareable views: the act, sort and filters are kept in the page link
+- "This is me": mark your own player from their profile. Your card is labelled and listed first, and Compare starts with you. Saved in your browser only
 
 ### Player profile
 
-Opens as a popup, or as its own page (`player.html?id=<player>&act=<act code>`).
+Opens as a popup, or as its own page (`player.html?id=<player>&act=<act code>`). The header shows the player's wide in-game card art behind their name.
 
 | Tab | What it shows |
 | --- | --- |
-| Overview | Headline stats, per-match averages and results by map |
+| Overview | Headline stats, score in every act (coloured by the rank held), per-match averages and results by map |
 | Performance | Opening duels, trades, multi-kills and clutches; the API's per-round breakdown with the game's own impact icons; match grades; utility and economy |
 | Agents | Per-agent stats, filterable by role and sortable by 11 stats |
 | Party | Results by queue size (solo to 5-stack), and your stats next to each friend's in the matches you queued together |
-| Matchmaking | Average enemy and lobby rank, enemy rank compared with your own, RR over time (1D, 1W, 1M, All), and the last 10 matches |
+| Matchmaking | Average enemy and lobby rank, enemy rank compared with your own, RR over time (1D, 1W, 1M, All), and the last 10 matches grouped into play sessions (record, RR and average ACS per session) |
 | Accolades | Season accolades with counts and best values |
 
 ## ValoStat score
