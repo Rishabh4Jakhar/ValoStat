@@ -558,6 +558,17 @@ select:hover {
   font-size: 14px;
 }
 
+/* Period buttons shown next to the sort menu while sorting by RR change. */
+.sort-ranges {
+  margin: 0;
+}
+
+.sort-ranges .rr-range {
+  min-width: 44px;
+  padding: 7px 10px;
+  font-size: 16px;
+}
+
 .sort-direction {
   padding: 8px 12px;
   border: 1px solid var(--line);
@@ -779,10 +790,86 @@ main {
 }
 
 .card-rank strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--tier);
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 600;
+}
+
+/* Rank badges and agent icons (images from valorant-api.com) */
+.rank-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.rank-icon-lg {
+  width: 30px;
+  height: 30px;
+  margin-right: 6px;
+}
+
+.agent-icon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  background: var(--ink);
+}
+
+.agent-icon-sm {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  vertical-align: -4px;
+}
+
+/* "This is me" */
+.card.is-me {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tier) 70%, var(--line));
+}
+
+.me-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 2px 8px;
+  background: var(--strong);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.modal-me-btn[aria-pressed="true"] {
+  border-color: var(--tier);
+  color: var(--tier);
+}
+
+/* Shown when stats.json can't be loaded */
+.load-error {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 18px 20px;
+  background: var(--panel);
+  box-shadow: inset 3px 0 0 var(--bad);
+}
+
+.load-error p {
+  margin: 0;
+  color: var(--text);
 }
 
 .card-rank span {
@@ -1080,6 +1167,11 @@ main {
   overflow-wrap: anywhere;
 }
 
+.cmp-player span .rank-icon {
+  margin-right: 6px;
+  vertical-align: -5px;
+}
+
 .cmp-player span {
   color: var(--tier);
   font-family: var(--font-display);
@@ -1347,6 +1439,39 @@ body.modal-open {
   border-top: 2px solid var(--tier);
 }
 
+/* The player's wide card art behind the header, darkened from the left
+   and the bottom so the text stays readable over any image. */
+.modal-hero.has-art {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.modal-hero.has-art::before,
+.modal-hero.has-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.modal-hero.has-art::before {
+  z-index: -2;
+  background: var(--hero-art) center 30% / cover no-repeat;
+}
+
+.modal-hero.has-art::after {
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(17, 19, 25, 0.96) 0%, rgba(17, 19, 25, 0.84) 45%, rgba(17, 19, 25, 0.4) 100%),
+    linear-gradient(0deg, rgba(17, 19, 25, 0.9), transparent 65%);
+}
+
+.modal-hero.has-art .modal-score-panel {
+  background: rgba(24, 27, 35, 0.82);
+  backdrop-filter: blur(6px);
+}
+
 .modal-hero-art img {
   display: block;
   width: 136px;
@@ -1389,6 +1514,10 @@ body.modal-open {
 .modal-hero-facts dt {
   color: var(--muted);
   font-size: 12px;
+}
+
+.modal-hero-facts dd .rank-icon {
+  vertical-align: -6px;
 }
 
 .modal-hero-facts dd {
@@ -1815,6 +1944,78 @@ body.modal-open {
   color: var(--tier);
 }
 
+/* ---------- Overview: score across acts ---------- */
+
+.act-score-chart {
+  display: grid;
+  grid-template-columns: repeat(var(--acts), minmax(70px, 1fr));
+  gap: 10px;
+  max-width: 760px;
+  overflow-x: auto;
+}
+
+.act-score {
+  display: grid;
+  grid-template-rows: auto 150px auto auto;
+  justify-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+}
+
+.act-score-value {
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.act-score-track {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 56px;
+  height: 100%;
+  background: var(--line-soft);
+}
+
+.act-score-track i {
+  display: block;
+  width: 100%;
+  background: color-mix(in srgb, var(--tier) 75%, transparent);
+}
+
+.act-score.is-best .act-score-track i {
+  background: var(--tier);
+}
+
+.act-score.is-best .act-score-value {
+  color: var(--tier);
+}
+
+.act-score-label {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.act-score small {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.act-score small .rank-icon {
+  width: 16px;
+  height: 16px;
+}
+
 /* ---------- Matchmaking: RR over time ---------- */
 
 .rr-ranges {
@@ -1964,6 +2165,67 @@ body.modal-open {
 
 /* ---------- Matchmaking: recent matches ---------- */
 
+.session + .session {
+  margin-top: 18px;
+}
+
+.session-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  padding: 12px 16px;
+  background: var(--panel);
+  box-shadow: inset 3px 0 0 var(--tier);
+}
+
+.session-when strong {
+  display: block;
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.session-when span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.session-stats {
+  display: flex;
+  gap: 28px;
+  margin: 0 0 0 auto;
+}
+
+.session-stats dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.session-stats dd {
+  margin: 0;
+  color: var(--strong);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.session-stats dd.good-stat {
+  color: var(--good);
+}
+
+.session-stats dd.bad-stat {
+  color: var(--bad);
+}
+
+.session .match-list {
+  border-top: 0;
+}
+
+
 .match-list {
   margin: 0;
   padding: 0;
@@ -1987,6 +2249,12 @@ body.modal-open {
 
 .match-row[data-result="loss"] {
   box-shadow: inset 3px 0 0 var(--bad);
+}
+
+.match-agent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .match-row > span {
@@ -2556,6 +2824,12 @@ body.modal-open {
 }
 
 @media (max-width: 640px) {
+  .session-stats {
+    width: 100%;
+    margin: 0;
+    gap: 22px;
+  }
+
   .highlights-content {
     padding: 12px 16px;
   }
@@ -2702,8 +2976,16 @@ body.modal-open {
 
   .card-modal-actions {
     width: 100%;
+    flex-wrap: wrap;
     justify-content: flex-end;
+    gap: 6px;
     padding-right: 0;
+  }
+
+  .card-modal-actions .modal-link-btn {
+    padding: 6px 10px;
+    font-size: 15px;
+    white-space: nowrap;
   }
 
   .card-modal-body {
