@@ -1113,8 +1113,24 @@ for pid, riot in PLAYERS.items():
 # meta.json: when the stats were last checked, and when they last changed,
 # so the site can show an accurate "updated" time.
 old_meta = load_json("meta.json", {}) or {}
-stats_changed = json.dumps(out, sort_keys=True) != json.dumps(old_data, sort_keys=True)
-write_json("stats.json", out)
+
+
+def without_match_log(entries):
+    # match_log only loses entries as they age past MATCH_LOG_DAYS, so it
+    # changing on its own is not a real update.
+    return json.dumps(
+        [{k: v for k, v in p.items() if k != "match_log"} if isinstance(p, dict) else p for p in entries],
+        sort_keys=True,
+    )
+
+
+stats_changed = without_match_log(out) != without_match_log(old_data)
+if stats_changed:
+    write_json("stats.json", out)
+else:
+    # Leave stats.json untouched so the workflow doesn't commit it (or
+    # stats_prev.json). Old match_log entries are pruned on the next real update.
+    print("No stat changes; stats.json left as is")
 write_json("meta.json", {
     "checked_at": RUN_TIME,
     "changed_at": RUN_TIME if stats_changed or not old_meta.get("changed_at") else old_meta["changed_at"],
