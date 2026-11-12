@@ -1768,9 +1768,9 @@ function rrChangeInWindow(player, start) {
   const points = rrPoints(player);
   const inside = points.filter((p) => p.time >= start);
   if (!inside.length) return null;
-  const before = points.filter((p) => p.time < start).pop() || inside[0];
+  const before = points.filter((p) => p.time < start).pop();
   const last = inside[inside.length - 1];
-  return { change: last.elo - before.elo, from: before, to: last };
+  return { change: rrSumSteps(before ? [before, ...inside] : inside), from: before || inside[0], to: last };
 }
 
 function longestWinStreak(matches) {
@@ -2307,7 +2307,7 @@ function statText(stat, player, act = currentAct) {
 /* ------------------ Sorting ------------------ */
 
 let sortDirection = "desc";
-let rrSortRange = "1w";
+let rrSortRange = "all";
 
 // Net RR over a period, from the RR history (current act; in Overall, the
 // latest act only, since ranks reset between acts). No change in the period
@@ -2319,13 +2319,13 @@ function rrChangeFor(player, rangeKey) {
   if (last.act) points = points.filter((point) => point.act === last.act);
 
   const range = RR_RANGES.find((item) => item.key === rangeKey);
-  if (!range?.ms) return last.elo - points[0].elo;
+  if (!range?.ms) return rrSumSteps(points);
 
   const start = Date.now() - range.ms;
   const inside = points.filter((point) => point.time >= start);
   if (!inside.length) return 0;
   const before = points.filter((point) => point.time < start).pop();
-  return last.elo - (before || inside[0]).elo;
+  return rrSumSteps(before ? [before, ...inside] : inside);
 }
 
 function updateRrSortRanges() {
@@ -2503,6 +2503,7 @@ function sessionRrChange(session, newer, older, points) {
     ? after.matches - before.matches
     : null;
   if (games != null && games !== session.matches.length) return null;
+  if (points.some((p) => p.placement && p.time > before.time && p.time <= after.time)) return null;
   return after.elo - before.elo;
 }
 
@@ -2589,13 +2590,32 @@ const TIER_BANDS = [
 
 let rrChartCount = 0;
 
+function isUnratedPoint(p) {
+  return !p.rank || /^(unrated|unranked|unknown)/i.test(p.rank) || (p.elo === 0 && !/^iron/i.test(p.rank));
+}
+
 function rrPoints(player) {
-  return (Array.isArray(player.rr_history) ? player.rr_history : [])
+  const points = (Array.isArray(player.rr_history) ? player.rr_history : [])
     .map((point) => ({ ...point, time: Date.parse(point.t), elo: finite(point.elo) }))
     .filter((point) => Number.isFinite(point.time) && point.elo != null)
     .sort((a, b) => a.time - b.time);
+  // The first rating after being unrated is a placement, not a gain.
+  points.forEach((point, i) => {
+    const prev = points[i - 1];
+    point.placement = Boolean(prev && prev.act === point.act && isUnratedPoint(prev) && !isUnratedPoint(point));
+  });
+  return points;
 }
 
+// Net RR over consecutive points. A step into a placement, or across acts, counts as 0.
+function rrSumSteps(list) {
+  let total = 0;
+  for (let i = 1; i < list.length; i++) {
+    if (list[i].placement || list[i - 1].act !== list[i].act) continue;
+    total += list[i].elo - list[i - 1].elo;
+  }
+  return total;
+}
 function defaultRrRange(points) {
   if (points.length < 2) return "all";
   const span = points[points.length - 1].time - points[0].time;
@@ -2630,9 +2650,9 @@ function rrWindow(points, rangeKey) {
   const inside = points.filter((point) => point.time >= start);
   const before = points.filter((point) => point.time < start).pop();
   const series = [];
-  if (before) series.push({ ...before, time: start, carried: true });
+  if (before) series.push({ ...before, time: start, carried: true, placement: false });
   series.push(...inside);
-  series.push({ ...last, time: end, extended: true });
+  series.push({ ...last, time: end, extended: true, placement: false });
 
   return { start, end: Math.max(end, start + 1), inside, startValue: (before || inside[0] || last).elo, series };
 }
@@ -2645,10 +2665,11 @@ function renderRrChart(points, rangeKey, chartId) {
   // the latest act only.
   const sameAct = last.act ? points.filter((point) => point.act === last.act) : points;
   const actWindow = rrWindow(sameAct, rangeKey);
-  const startValue = Math.max(actWindow.start, sameAct[0].time) === sameAct[0].time && actWindow.start <= sameAct[0].time
-    ? sameAct[0].elo
-    : actWindow.startValue;
-  const net = last.elo - startValue;
+  const startValue = actWindow.startValue;
+  const actInside = sameAct.filter((p) => p.time >= actWindow.start);
+  const actBefore = sameAct.filter((p) => p.time < actWindow.start).pop();
+  const net = rrSumSteps(actBefore ? [actBefore, ...actInside] : actInside);
+  const placed = actInside.find((p) => p.placement);
   const actNote = last.act && sameAct.length < points.length ? ` (${last.act})` : "";
   const peak = series.reduce((best, point) => (point.elo > best.elo ? point : best), series[0]);
   const rangeLabel = RR_RANGES.find((item) => item.key === rangeKey)?.label || "All";
@@ -2703,12 +2724,18 @@ function renderRrChart(points, rangeKey, chartId) {
   });
   const baseline = height - pad.bottom;
   const lines = segments.map((segment) => {
-    const coords = segment.points.map((point) => `${x(point.time).toFixed(1)},${y(point.elo).toFixed(1)}`);
-    const first = segment.points[0];
-    const lastPoint = segment.points[segment.points.length - 1];
+    const pts = segment.points;
+    const at = (p) => `${x(p.time).toFixed(1)},${y(p.elo).toFixed(1)}`;
+    const runs = [[pts[0]]];
+    const steps = [];
+    for (let i = 1; i < pts.length; i++) {
+      if (pts[i].placement) { steps.push([pts[i - 1], pts[i]]); runs.push([pts[i]]); }
+      else runs[runs.length - 1].push(pts[i]);
+    }
     return `
-      <polygon class="rr-area" fill="url(#${gradientId})" points="${x(first.time).toFixed(1)},${baseline} ${coords.join(" ")} ${x(lastPoint.time).toFixed(1)},${baseline}" />
-      <polyline class="rr-line" stroke="url(#${gradientId})" points="${coords.join(" ")}" />
+      <polygon class="rr-area" fill="url(#${gradientId})" points="${x(pts[0].time).toFixed(1)},${baseline} ${pts.map(at).join(" ")} ${x(pts[pts.length - 1].time).toFixed(1)},${baseline}" />
+      ${runs.map((run) => `<polyline class="rr-line" stroke="url(#${gradientId})" points="${run.map(at).join(" ")}" />`).join("")}
+      ${steps.map(([a, b]) => `<polyline class="rr-line" stroke="url(#${gradientId})" stroke-dasharray="6 5" points="${at(a)} ${at(b)}" />`).join("")}
     `;
   }).join("");
   const actMarks = segments.slice(1).map((segment) => {
@@ -2732,7 +2759,9 @@ function renderRrChart(points, rangeKey, chartId) {
 
   return `
     <div class="modal-stats-grid rr-summary">
-      ${modalStat(`Change, ${rangeLabel}${actNote}`, signed(net), noChange ? "No rating change in this range" : `From ${modalRank(Math.floor(startValue / 100) + 1)}, ${((startValue % 100) + 100) % 100} RR`)}
+      ${modalStat(`Change, ${rangeLabel}${actNote}`, signed(net), noChange ? "No rating change in this range"
+  : placed ? `Placed into ${placed.rank}, ${num(placed.rr)} RR (not counted as a gain)`
+  : `From ${modalRank(Math.floor(startValue / 100) + 1)}, ${((startValue % 100) + 100) % 100} RR`)}
       ${modalStat(`Peak, ${rangeLabel}`, peak.rank, `${num(peak.rr)} RR`)}
       ${modalStat("Now", last.rank, `${num(last.rr)} RR`)}
       ${modalStat(`Rating changes, ${rangeLabel}`, modalNumber(inside.length, 0), "Checked every 4 hours")}
@@ -2817,7 +2846,7 @@ function bindRrCharts(root, player) {
         const index = points.findIndex((p) => p.time === nearest.time && p.elo === nearest.elo);
         const previous = index > 0 ? points[index - 1] : null;
         const sameAct = previous && (!previous.act || previous.act === nearest.act);
-        const delta = sameAct ? nearest.elo - previous.elo : null;
+        const delta = sameAct && !nearest.placement ? nearest.elo - previous.elo : null;
         const games = sameAct && nearest.matches != null && previous.matches != null ? nearest.matches - previous.matches : null;
 
         const px = toX(nearest.time);
@@ -2832,9 +2861,11 @@ function bindRrCharts(root, player) {
         tooltip.innerHTML = `
           <span>${escapeHtml(rrFullTime(nearest.time))}${nearest.act ? `, ${escapeHtml(nearest.act)}` : ""}</span>
           <strong>${escapeHtml(nearest.rank)} <b>${num(nearest.rr)} RR</b></strong>
-          ${delta != null
-            ? `<em class="${delta > 0 ? "good-stat" : delta < 0 ? "bad-stat" : ""}">${delta > 0 ? "+" : ""}${delta} RR${games ? ` over ${games} ${games === 1 ? "match" : "matches"}` : ""}</em>`
-            : `<em>${previous ? "Start of act" : "Tracking started"}</em>`}
+          ${nearest.placement
+            ? `<em>Placed, not counted as a gain</em>`
+            : delta != null
+              ? `<em class="${delta > 0 ? "good-stat" : delta < 0 ? "bad-stat" : ""}">${delta > 0 ? "+" : ""}${delta} RR${games ? ` over ${games} ${games === 1 ? "match" : "matches"}` : ""}</em>`
+              : `<em>${previous ? "Start of act" : "Tracking started"}</em>`}
         `;
         tooltip.hidden = false;
         const left = (px / box.width) * rect.width;
@@ -3459,7 +3490,7 @@ function syncUrlState() {
     const defaultDirection = stat?.better === "low" ? "asc" : "desc";
     if (sortDirection !== defaultDirection) params.set("dir", sortDirection);
     if (getMinMatches()) params.set("min", String(getMinMatches()));
-    if (sort === "rrChange" && rrSortRange !== "1w") params.set("range", rrSortRange);
+    if (sort === "rrChange" && rrSortRange !== "all") params.set("range", rrSortRange);
   }
 
   const query = params.toString();
