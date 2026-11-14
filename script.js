@@ -2746,9 +2746,9 @@ function renderRrChart(points, rangeKey, chartId) {
     `;
   }).join("");
 
-  const dots = inside.length <= 40
-    ? inside.map((point) => `<circle class="rr-dot" cx="${x(point.time).toFixed(1)}" cy="${y(point.elo).toFixed(1)}" r="3" stroke="url(#${gradientId})" />`).join("")
-    : "";
+  const dots = inside
+    .map((point) => `<circle class="rr-dot" cx="${x(point.time).toFixed(1)}" cy="${y(point.elo).toFixed(1)}" r="3" stroke="url(#${gradientId})" />`)
+    .join("");
 
   const ticks = Array.from({ length: 5 }, (_, i) => start + ((end - start) * i) / 4).map((time, i) => `
     <text class="rr-axis" x="${x(time)}" y="${height - 8}" text-anchor="${i === 0 ? "start" : i === 4 ? "end" : "middle"}">${escapeHtml(rrTimeLabel(time, end - start))}</text>
