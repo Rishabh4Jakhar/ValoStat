@@ -882,7 +882,9 @@ for pid, riot in PLAYERS.items():
         current_rr = current_tier.get("rr", old.get("rr", 0))
         current_elo = current_tier.get("elo", old.get("elo", 0))
         previous_rr_points = list(old.get("rr_history") or []) if old.get("season") == CURRENT_ACT else []
-        wins = season.get("wins", 0) or 0
+        # Keep the stored aggregate and update it from each newly processed
+        # match. The MMR season summary can occasionally report stale wins.
+        wins = num(old.get("wins")) if up_to_date else 0
 
         processed_match_ids = set(old.get("processed_matches", [])) if up_to_date else set()
         totals = normalize_totals(old.get("totals")) if up_to_date else empty_totals()
@@ -952,6 +954,7 @@ for pid, riot in PLAYERS.items():
 
             add_match(totals, match_stats)
             add_match(agent_totals.setdefault(match_stats["agent"], empty_totals()), match_stats)
+            wins += match_stats["counters"]["wins"]
 
             add_party_match(party_sizes.setdefault(str(match_stats["party_size"]), empty_party_totals()), match_stats)
             for friend_puuid in match_stats["party_puuids"]:
@@ -1043,7 +1046,8 @@ for pid, riot in PLAYERS.items():
             "elo": current_elo,
             "season": CURRENT_ACT,
 
-            # MMR is the source of truth for games and wins in the act.
+            # MMR remains the source of truth for the number of games. Wins
+            # are carried forward and updated from each analyzed match above.
             "matches": matches_played,
             "wins": wins,
             "winrate": round(wins / matches_played * 100, 1) if matches_played else 0,
