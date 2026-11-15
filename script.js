@@ -3348,8 +3348,16 @@ function compareWinner(va, vb, better) {
 
 function compareRow(label, a, b, options = {}) {
   const { va, vb, winner, note } = options;
-  const max = Math.max(Math.abs(va ?? 0), Math.abs(vb ?? 0));
-  const width = (value) => (value == null || !max ? 0 : (Math.abs(value) / max) * 100);
+  const numericValues = [va, vb].filter((value) => value != null);
+  const hasNegativeValue = numericValues.some((value) => value < 0);
+  const min = hasNegativeValue ? Math.min(...numericValues) : 0;
+  const max = hasNegativeValue ? Math.max(...numericValues) : Math.max(...numericValues.map(Math.abs), 0);
+  const range = max - min;
+  const width = (value) => {
+    if (value == null) return 0;
+    if (hasNegativeValue) return range ? ((value - min) / range) * 100 : 100;
+    return max ? (Math.abs(value) / max) * 100 : 0;
+  };
   const side = (who) => {
     if (winner === "tie") return "equal-stat";
     if (!winner) return "";
@@ -3438,7 +3446,7 @@ function renderComparison(a, b) {
       ${headline(b, "b")}
     </div>
     ${groups}
-    <p class="modal-footnote">Bars show each value relative to the larger of the two. Stats where neither side is better, like credits spent or average enemy rank, aren't counted.</p>
+    <p class="modal-footnote">Bars show each value relative to the compared values; signed stats are scaled by their numeric range. Stats where neither side is better, like credits spent or average enemy rank, aren't counted.</p>
   `;
 
   try {
