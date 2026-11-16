@@ -1837,10 +1837,18 @@ function buildHighlights(list, periodKey) {
   return [
     {
       key: "climb",
-      title: "Biggest climb",
+      title: "Biggest rankup",
       empty: "No one gained RR",
       format: (v) => `+${v} RR`,
       entries: top((r) => r.rr && r.rr.change > 0, (r) => r.rr.change,
+        (r) => (r.rr.from.rank === r.rr.to.rank ? `${r.rr.to.rank}, ${num(r.rr.to.rr)} RR` : `${r.rr.from.rank} to ${r.rr.to.rank}`)),
+    },
+    {
+      key: "derank",
+      title: "Biggest derank",
+      empty: "No one lost RR",
+      format: (v) => `-${v} RR`,
+      entries: top((r) => r.rr && r.rr.change < 0, (r) => -r.rr.change,
         (r) => (r.rr.from.rank === r.rr.to.rank ? `${r.rr.to.rank}, ${num(r.rr.to.rr)} RR` : `${r.rr.from.rank} to ${r.rr.to.rank}`)),
     },
     {
@@ -1849,14 +1857,6 @@ function buildHighlights(list, periodKey) {
       empty: "No matches played",
       format: (v) => matchCount(v),
       entries: top((r) => r.matches.length > 0, (r) => r.matches.length, (r) => recordText(r.record)),
-    },
-    {
-      key: "kills",
-      title: "Most kills",
-      empty: "No matches played",
-      format: (v) => `${v} ${v === 1 ? "kill" : "kills"}`,
-      entries: top((r) => r.kills > 0, (r) => r.kills,
-        (r) => `${matchCount(r.matches.length)}, K/D ${fixedNumber(r.kd, 2)}`),
     },
     {
       key: "acs",
@@ -1932,12 +1932,17 @@ function renderHighlights() {
   if (teaser) {
     const byKey = Object.fromEntries(tiles.map((tile) => [tile.key, tile]));
     const climb = byKey.climb.entries[0];
+    const derank = byKey.derank.entries[0];
     const best = byKey.performance.entries[0];
     const played = `${totalMatches} ${totalMatches === 1 ? "match" : "matches"} played`;
+    const rankText = [
+      climb && `${climb.row.player.id} gained ${climb.value} RR`,
+      derank && `${derank.row.player.id} lost ${derank.value} RR`,
+    ].filter(Boolean).join(", ");
     teaser.textContent = !totalMatches
       ? "No matches in the last 24 hours"
-      : climb
-        ? `Last 24 hours: ${climb.row.player.id} climbed ${climb.value} RR, ${played}`
+      : rankText
+        ? `Last 24 hours: ${rankText}, ${played}`
         : best
           ? `Last 24 hours: ${best.row.player.id} scored ${Math.round(best.value)} performance, ${played}`
           : `Last 24 hours: ${played}`;
