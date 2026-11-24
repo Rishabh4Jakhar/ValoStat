@@ -50,6 +50,7 @@ PLAYERS = {
     "Eklavya": "MadLiberator2005#9683",
     "Aryan": "TheChosenOne#2205",
     "Yash": "yashkali997#kali",
+    "Pragun": "SENTenSION#6969",
     "Ria": "Ria4#2222",
     "Ria_alt": "Ria4#4444",
     "Bodit": "Limited065#8643",
